@@ -303,6 +303,7 @@ def main():
     application.run_webhook(
         listen="0.0.0.0",
         port=int(os.getenv("PORT", "8080")),
+        url_path="/webhook",
         webhook_url=f"{os.getenv('BASE_URL')}/webhook"
     )
 
