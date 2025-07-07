@@ -269,13 +269,16 @@ async def clear_cache():
         await db.commit()
 
 
-# ─── Main (sincrono) ──────────────────────────────────────────────────────────
+# ─── Main ─────────────────────────────────────────────────────────────────────
 def main():
-    asyncio.run(init_db())
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    loop.run_until_complete(init_db())
 
     application = ApplicationBuilder().token(os.getenv("BOT_TOKEN")).build()
 
-    scheduler = AsyncIOScheduler(timezone="Europe/Rome")
+    scheduler = AsyncIOScheduler(event_loop=loop, timezone="Europe/Rome")
     scheduler.add_job(clear_cache, "cron", hour=4)
     if ENABLE_DONATION:
         scheduler.add_job(monthly_report, "cron", day=1, hour=9, args=[application])
