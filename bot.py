@@ -1,8 +1,8 @@
 import os, math, asyncio, datetime as dt, aiohttp, aiosqlite
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton
 from telegram.ext import (
-    ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler,
-    ConversationHandler, filters
+    ApplicationBuilder, ContextTypes, CommandHandler,
+    MessageHandler, ConversationHandler, filters
 )
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
@@ -77,13 +77,13 @@ async def geocode(address: str):
         cur = await db.execute("SELECT lat,lng FROM geocache WHERE query=?", (address,))
         row = await cur.fetchone()
         if row:
-            return row  # cache hit
+            return row
 
         month = dt.date.today().strftime("%Y-%m")
         cur = await db.execute("SELECT cnt FROM geostats WHERE month=?", (month,))
         row = await cur.fetchone()
         if row and row[0] >= GEOCODE_HARD_CAP:
-            return None  # hard-cap reached
+            return None
 
     params = {
         "address": address,
@@ -269,20 +269,17 @@ async def clear_cache():
         await db.commit()
 
 
-# ─── Main ─────────────────────────────────────────────────────────────────────
-async def main():
-    await init_db()
+# ─── Main (sincrono) ──────────────────────────────────────────────────────────
+def main():
+    asyncio.run(init_db())
+
+    application = ApplicationBuilder().token(os.getenv("BOT_TOKEN")).build()
 
     scheduler = AsyncIOScheduler(timezone="Europe/Rome")
     scheduler.add_job(clear_cache, "cron", hour=4)
     if ENABLE_DONATION:
-        scheduler.add_job(monthly_report, "cron", day=1, hour=9, args=[None])
+        scheduler.add_job(monthly_report, "cron", day=1, hour=9, args=[application])
     scheduler.start()
-
-    app = ApplicationBuilder().token(os.getenv("BOT_TOKEN")).build()
-    for job in scheduler.get_jobs():
-        if job.func == monthly_report:
-            job.modify(args=[app])
 
     conv = ConversationHandler(
         entry_points=[CommandHandler("trova", trova)],
@@ -293,18 +290,18 @@ async def main():
         fallbacks=[]
     )
 
-    app.add_handlers([
+    application.add_handlers([
         CommandHandler("start", start),
         CommandHandler("profilo", profilo),
         conv,
         MessageHandler(filters.TEXT & ~filters.COMMAND, text_handler)
     ])
 
-    await app.run_webhook(
+    application.run_webhook(
         listen="0.0.0.0",
         port=int(os.getenv("PORT", "8080")),
         webhook_url=f"{os.getenv('BASE_URL')}/webhook"
     )
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
