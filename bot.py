@@ -194,8 +194,8 @@ async def handle_address(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 async def process_coords(update: Update, ctx: ContextTypes.DEFAULT_TYPE, lat: float, lng: float):
     fuel, service = await get_user(update.effective_user.id)
     fuel_type = f"{FUEL_MAP[fuel]}-{SERVICE_MAP[service]}"
-    d1 = await call_api(lat, lng, 2.5, fuel_type);
-    d2 = await call_api(lat, lng, 7.5, fuel_type)
+    d1 = await call_api(lat, lng, 2, fuel_type);
+    d2 = await call_api(lat, lng, 7, fuel_type)
     if not d1["results"] and not d2["results"]:
         await update.message.reply_text("Nessun distributore trovato!");
         return
