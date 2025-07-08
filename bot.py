@@ -1,11 +1,11 @@
-import aiohttp
-import aiosqlite
 import asyncio
 import datetime as dt
 import logging
 import os
 import re
 
+import aiohttp
+import aiosqlite
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton
 from telegram.constants import ParseMode
@@ -211,8 +211,8 @@ async def process_coords(update: Update, ctx: ContextTypes.DEFAULT_TYPE, lat: fl
         s1[0]["address"] = await fetch_address(s1[0]["id"]) or "Indirizzo non disponibile"
     if s2 and not s2[0]["address"]:
         s2[0]["address"] = await fetch_address(s2[0]["id"]) or "Indirizzo non disponibile"
-    parts = ["<b>Il distributore più economico è:</b>", fmt(s1[0], s1[1], avg1, fuel)]
-    if s2: parts += ["", "<b>A maggiore distanza trovi anche:</b>", fmt(s2[0], s2[1], avg2, fuel)]
+    parts = ["Il distributore più economico è:", fmt(s1[0], s1[1], avg1, fuel)]
+    if s2: parts += ["", "A maggiore distanza trovi anche:", fmt(s2[0], s2[1], avg2, fuel)]
     await log_search(update.effective_user.id, avg2 or avg1, s1[1])
     await update.message.reply_text("\n".join(parts),
                                     reply_markup=ReplyKeyboardMarkup([["/trova"]], resize_keyboard=True),
