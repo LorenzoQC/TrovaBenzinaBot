@@ -2,7 +2,6 @@ import asyncio
 import datetime as dt
 import logging
 import os
-import re
 
 import aiohttp
 import aiosqlite
@@ -94,14 +93,13 @@ async def fetch_address(station_id: int):
     url = f"https://carburanti.mise.gov.it/ospzSearch/dettaglio/{station_id}"
     try:
         async with aiohttp.ClientSession() as s:
-            async with s.get(url, headers={"Accept": "application/json"}, timeout=10) as r:
-                if r.status == 200: return (await r.json()).get("address")
-                html = await r.text()
+            async with s.get(url, timeout=10) as r:
+                if r.status != 200: return None
+                data = await r.json(content_type=None)  # ignore wrong mimetype
+                if isinstance(data, dict): return data.get("address")
     except Exception as e:
-        log.warning("detail API id=%s err=%s", station_id, e);
-        return None
-    m = re.search(r'"address":"([^"]+)"', html);
-    return m.group(1) if m else None
+        log.warning("detail API id=%s err=%s", station_id, e)
+    return None
 
 
 # ── Mise API ──────────────────────────────────────────────────────────────
