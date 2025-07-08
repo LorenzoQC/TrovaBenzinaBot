@@ -391,7 +391,6 @@ def main():
     app = (
         ApplicationBuilder()
         .token(os.getenv("BOT_TOKEN"))
-        .parse_mode(ParseMode.HTML)
         .build()
     )
 
