@@ -15,6 +15,7 @@ from config import (
 
 log = logging.getLogger(__name__)
 
+
 async def geocode(addr: str):
     """Return (lat, lng) or None if not found or over quota."""
     async with aiosqlite.connect(DB) as db:
