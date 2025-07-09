@@ -90,13 +90,15 @@ async def geocode(addr: str):
 
 # ── detail address ────────────────────────────────────────────────────────
 async def fetch_address(station_id: int):
-    url = f"https://carburanti.mise.gov.it/ospzSearch/dettaglio/{station_id}"
+    url = f"https://carburanti.mise.gov.it/ospzApi/registry/servicearea/{station_id}"
     try:
         async with aiohttp.ClientSession() as s:
             async with s.get(url, timeout=10) as r:
-                if r.status != 200: return None
-                data = await r.json(content_type=None)  # ignore wrong mimetype
-                if isinstance(data, dict): return data.get("address")
+                if r.status != 200:
+                    return None
+                data = await r.json(content_type=None)
+                if isinstance(data, dict):
+                    return data.get("address")
     except Exception as e:
         log.warning("detail API id=%s err=%s", station_id, e)
     return None
@@ -144,29 +146,58 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 
 async def text_handler(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    step = ctx.user_data.get("step");
+    step = ctx.user_data.get("step")
     txt = update.message.text
-    if step == "fuel" and txt in FUEL_MAP:
-        ctx.user_data["fuel"] = txt
-        kb = [["Self-service", "Servito"], ["Indifferente"]]
-        await update.message.reply_text("Tipo di servizio?",
-                                        reply_markup=ReplyKeyboardMarkup(kb, one_time_keyboard=True))
-        ctx.user_data["step"] = "service";
+
+    if step == "fuel":
+        if txt in FUEL_MAP:
+            ctx.user_data["fuel"] = txt
+            kb = [["Self-service", "Servito"], ["Indifferente"]]
+            await update.message.reply_text(
+                "Tipo di servizio?",
+                reply_markup=ReplyKeyboardMarkup(kb, one_time_keyboard=True, resize_keyboard=True),
+            )
+            ctx.user_data["step"] = "service"
+        else:
+            kb = [["Benzina", "Gasolio"], ["Metano", "GPL"], ["L-GNC", "GNL"]]
+            await update.message.reply_text(
+                "Per favore seleziona il carburante usando i pulsanti qui sotto ⛽",
+                reply_markup=ReplyKeyboardMarkup(kb, one_time_keyboard=True, resize_keyboard=True),
+            )
         return
-    if step == "service" and txt in SERVICE_MAP:
-        await upsert_user(update.effective_user.id, ctx.user_data["fuel"], txt)
-        await update.message.reply_text("Profilo salvato. Usa /trova quando vuoi risparmiare ⛽")
-        ctx.user_data.clear();
+
+    if step == "service":
+        if txt in SERVICE_MAP:
+            await upsert_user(update.effective_user.id, ctx.user_data["fuel"], txt)
+            await update.message.reply_text(
+                "Profilo salvato. Usa /trova quando vuoi risparmiare ⛽",
+                reply_markup=ReplyKeyboardMarkup([["/trova"]], resize_keyboard=True),
+            )
+            ctx.user_data.clear()
+        else:
+            kb = [["Self-service", "Servito"], ["Indifferente"]]
+            await update.message.reply_text(
+                "Per favore seleziona il tipo di servizio usando i pulsanti qui sotto 🛠️",
+                reply_markup=ReplyKeyboardMarkup(kb, one_time_keyboard=True, resize_keyboard=True),
+            )
         return
-    await update.message.reply_text("Digita /trova per cercare un distributore o /start per configurare il profilo.")
+
+    await update.message.reply_text(
+        "Digita /trova per cercare un distributore o /start per configurare il profilo.")
 
 
-async def profilo(update: Update, _):
+async def profilo(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if ctx.user_data.get("step"):
+        await update.message.reply_text("Completa prima la configurazione selezionando carburante e servizio.")
+        return
     u = await get_user(update.effective_user.id)
     await update.message.reply_text("Nessun profilo. Usa /start." if not u else f"Fuel: {u[0]}\nServizio: {u[1]}")
 
 
-async def trova(update: Update, _):
+async def trova(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if ctx.user_data.get("step"):
+        await update.message.reply_text("Completa prima la configurazione selezionando carburante e servizio.")
+        return ConversationHandler.END
     if not await get_user(update.effective_user.id):
         await update.message.reply_text("Prima configura il profilo con /start.");
         return ConversationHandler.END
@@ -249,6 +280,7 @@ async def monthly_report(app):
 
 
 # ── Main ─────────────────────────────────────────────────────────────────
+
 def main():
     loop = asyncio.new_event_loop();
     asyncio.set_event_loop(loop)
@@ -265,10 +297,14 @@ def main():
             MessageHandler(filters.LOCATION, handle_location),
             MessageHandler(filters.TEXT & ~filters.COMMAND, handle_address)]},
         fallbacks=[],
-        block=True,  # ignore other commands/messages during state
+        block=True,
     )
-    app.add_handlers([CommandHandler("start", start), CommandHandler("profilo", profilo),
-                      conv, MessageHandler(filters.TEXT & ~filters.COMMAND, text_handler)])
+    app.add_handlers([
+        CommandHandler("start", start),
+        CommandHandler("profilo", profilo),
+        conv,
+        MessageHandler(filters.TEXT & ~filters.COMMAND, text_handler),
+    ])
     log.info("Bot via webhook")
     app.run_webhook(listen="0.0.0.0",
                     port=int(os.getenv("PORT", "8080")),
