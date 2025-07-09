@@ -1,92 +1,64 @@
-import datetime as dt
+import asyncio
 import logging
+import os
 
-import aiohttp
-import aiosqlite
-
-from config import (
-    DB_PATH as DB,
-    GEOCODE_HARD_CAP,
-    GOOGLE_API_KEY,
-    GEOCODE_URL,
-    MISE_SEARCH_URL,
-    MISE_DETAIL_URL,
+from telegram.ext import (
+    ApplicationBuilder,
+    CommandHandler,
+    MessageHandler,
+    ConversationHandler,
+    filters
 )
 
+from config import BOT_TOKEN, BASE_URL, LOC_STATE
+from db import init_db
+from handlers import start, text_handler, profilo, trova, handle_location, handle_address
+from scheduler import setup_scheduler
+
+logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
-async def geocode(addr: str):
-    """Return (lat, lng) or None if not found or over quota."""
-    async with aiosqlite.connect(DB) as db:
-        row = await (await db.execute(
-            "SELECT lat,lng FROM geocache WHERE query=?", (addr,)
-        )).fetchone()
-        if row:
-            return row
-        month = dt.date.today().strftime("%Y-%m")
-        cnt_row = await (await db.execute(
-            "SELECT cnt FROM geostats WHERE month=?", (month,)
-        )).fetchone()
-        if cnt_row and cnt_row[0] >= GEOCODE_HARD_CAP:
-            return None
 
-    params = {
-        "address": addr,
-        "components": "country:IT",
-        "language": "it",
-        "key": GOOGLE_API_KEY,
-    }
-    async with aiohttp.ClientSession() as session:
-        async with session.get(GEOCODE_URL, params=params, timeout=10) as resp:
-            if resp.status != 200:
-                return None
-            data = await resp.json()
+def main():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(init_db())
+    log.info("Database initialized")
 
-    results = data.get("results", [])
-    if not results:
-        return None
-    best = next((x for x in results if not x.get("partial_match")), results[0])
-    comps = {c["types"][0]: c for c in best.get("address_components", [])}
-    if not {"street_number", "locality"}.issubset(comps) or best["geometry"]["location_type"] != "ROOFTOP":
-        return None
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
 
-    latlng = best["geometry"]["location"]
-    async with aiosqlite.connect(DB) as db:
-        await db.execute(
-            "INSERT OR REPLACE INTO geocache(query,lat,lng) VALUES(?,?,?)",
-            (addr, latlng["lat"], latlng["lng"]),
-        )
-        await db.execute(
-            "INSERT INTO geostats(month,cnt) VALUES(?,1) ON CONFLICT(month) DO UPDATE SET cnt=cnt+1",
-            (month,),
-        )
-        await db.commit()
+    # Register command handlers
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("profilo", profilo))
 
-    return latlng["lat"], latlng["lng"]
+    # Conversation handler for location/address
+    conv = ConversationHandler(
+        entry_points=[CommandHandler("trova", trova)],
+        states={
+            LOC_STATE: [
+                MessageHandler(filters.LOCATION, handle_location),
+                MessageHandler(filters.TEXT & ~filters.COMMAND, handle_address)
+            ]
+        },
+        fallbacks=[],
+        block=True
+    )
+    app.add_handler(conv)
+
+    # Catch-all text handler
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, text_handler))
+
+    # Setup scheduled jobs
+    setup_scheduler(loop, app)
+
+    log.info("Starting webhook")
+    app.run_webhook(
+        listen="0.0.0.0",
+        port=int(os.getenv("PORT", "8080")),
+        url_path="webhook",
+        webhook_url=f"{BASE_URL}/webhook"
+    )
 
 
-async def fetch_address(station_id: int):
-    """Get full address from public station registry."""
-    url = MISE_DETAIL_URL.format(id=station_id)
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, timeout=10) as resp:
-                if resp.status == 200:
-                    data = await resp.json(content_type=None)
-                    return data.get("address") if isinstance(data, dict) else None
-    except Exception as exc:
-        log.warning("Error fetching address for station %s: %s", station_id, exc)
-    return None
-
-
-async def call_api(lat: float, lng: float, radius: float, fuel_type: str):
-    """Query fuel price API by location."""
-    payload = {
-        "points": [{"lat": lat, "lng": lng}],
-        "radius": radius,
-        "fuelType": fuel_type,
-        "priceOrder": "asc",
-    }
-    async with aiohttp.ClientSession() as session:
-        async with session.post(MISE_SEARCH_URL, json=payload, timeout=10) as resp:
-            return await resp.json() if resp.status == 200 else None
+if __name__ == "__main__":
+    main()
