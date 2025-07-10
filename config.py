@@ -26,7 +26,7 @@ MISE_DETAIL_URL = os.getenv("MISE_DETAIL_URL", "https://carburanti.mise.gov.it/o
 # Maps API
 GEOCODE_URL = os.getenv("GEOCODE_URL", "https://maps.googleapis.com/maps/api/geocode/json")
 
-# Defaults
+# Defaults distances
 DEFAULT_RADIUS_NEAR = float(os.getenv("DEFAULT_RADIUS_NEAR", "2"))  # km
 DEFAULT_RADIUS_FAR = float(os.getenv("DEFAULT_RADIUS_FAR", "7"))  # km
 
@@ -36,3 +36,17 @@ SERVICE_MAP = {"Self-service": "1", "Servito": "0", "Indifferente": "x"}
 
 # Conversation states
 LOC_STATE = 1
+
+# Supported languages
+LANGUAGES = {
+    "it": "Italiano",
+    "en": "English",
+    "es": "Español",
+    "fr": "Français",
+    "de": "Deutsch",
+    "zh": "中文",
+    "ar": "العربية",
+}
+
+# Default language
+DEFAULT_LANGUAGE = "it"

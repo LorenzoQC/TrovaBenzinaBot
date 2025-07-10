@@ -7,12 +7,23 @@ from telegram.ext import (
     CommandHandler,
     MessageHandler,
     ConversationHandler,
+    CallbackQueryHandler,
     filters
 )
 
-from config import BOT_TOKEN, BASE_URL, LOC_STATE
+from config import BOT_TOKEN, BASE_URL
 from db import init_db
-from handlers import start, text_handler, profilo, trova, handle_location, handle_address
+from handlers import (
+    STEP_LANG, STEP_FUEL, STEP_SERVICE,
+    STEP_FAV_NAME, STEP_FAV_LOC, STEP_LOC
+)
+from handlers import (
+    start, language_choice, text_handler,
+    profilo, profile_callback,
+    handle_location, handle_address,
+    show_favorites, favorite_selected,
+    addfav
+)
 from scheduler import setup_scheduler
 
 logging.basicConfig(level=logging.INFO)
@@ -27,28 +38,38 @@ def main():
 
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
-    # Register command handlers
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("profilo", profilo))
-
-    # Conversation handler for location/address
+    # Conversation handler for setup, favorites, and search flows
     conv = ConversationHandler(
-        entry_points=[CommandHandler("trova", trova)],
+        entry_points=[CommandHandler("start", start)],
         states={
-            LOC_STATE: [
+            STEP_LANG: [MessageHandler(filters.TEXT & ~filters.COMMAND, language_choice)],
+            STEP_FUEL: [MessageHandler(filters.TEXT & ~filters.COMMAND, text_handler)],
+            STEP_SERVICE: [MessageHandler(filters.TEXT & ~filters.COMMAND, text_handler)],
+            STEP_FAV_NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, text_handler)],
+            STEP_FAV_LOC: [
                 MessageHandler(filters.LOCATION, handle_location),
                 MessageHandler(filters.TEXT & ~filters.COMMAND, handle_address)
-            ]
+            ],
+            STEP_LOC: [
+                MessageHandler(filters.LOCATION, handle_location),
+                MessageHandler(filters.TEXT & ~filters.COMMAND, handle_address)
+            ],
         },
         fallbacks=[],
         block=True
     )
     app.add_handler(conv)
 
-    # Catch-all text handler
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, text_handler))
+    # Inline callbacks for profile editing and favorites
+    app.add_handler(CallbackQueryHandler(profile_callback, pattern="^edit_"))
+    app.add_handler(CallbackQueryHandler(show_favorites, pattern="^show_favorites$"))
+    app.add_handler(CallbackQueryHandler(favorite_selected, pattern="^fav_"))
 
-    # Setup scheduled jobs
+    # Simple commands
+    app.add_handler(CommandHandler("profilo", profilo))
+    app.add_handler(CommandHandler("addfav", addfav))
+
+    # Scheduler
     setup_scheduler(loop, app)
 
     log.info("Starting webhook")
