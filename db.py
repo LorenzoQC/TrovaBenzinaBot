@@ -22,19 +22,26 @@ async def init_db():
             price_avg    REAL,
             price_min    REAL
         );
-        CREATE TABLE IF NOT EXISTS geocache(...);  -- rimane uguale
-        CREATE TABLE IF NOT EXISTS geostats(...);
+        CREATE TABLE IF NOT EXISTS geocache(
+            query TEXT PRIMARY KEY,
+            lat   REAL,
+            lng   REAL,
+            ts    DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE TABLE IF NOT EXISTS geostats(
+            month TEXT PRIMARY KEY,
+            cnt   INTEGER
+        );
         CREATE TABLE IF NOT EXISTS favorites(
-            id           INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id      INTEGER,
-            name         TEXT,
-            lat          REAL,
-            lng          REAL,
+            id      INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            name    TEXT,
+            lat     REAL,
+            lng     REAL,
             UNIQUE(user_id,name)
         );
         """)
         await db.commit()
-
 
 async def upsert_user(uid: int, fuel: str, service: str, language: str = None):
     """Save or update user preferences (incl. language)."""
@@ -54,11 +61,12 @@ async def upsert_user(uid: int, fuel: str, service: str, language: str = None):
         await db.commit()
 
 async def get_user(uid: int):
-    """Return (fuel, service, language)."""
+    """Return (fuel, service, language) or None."""
     async with aiosqlite.connect(DB) as db:
-        cur = await db.execute("SELECT fuel,service,language FROM users WHERE user_id=?", (uid,))
+        cur = await db.execute(
+            "SELECT fuel,service,language FROM users WHERE user_id=?", (uid,)
+        )
         return await cur.fetchone()
-
 
 async def log_search(uid: int, avg: float, minimum: float):
     """Record search results for analytics."""
@@ -69,8 +77,8 @@ async def log_search(uid: int, avg: float, minimum: float):
         )
         await db.commit()
 
-
 async def add_favorite(uid: int, name: str, lat: float, lng: float):
+    """Add or update a favorite location."""
     async with aiosqlite.connect(DB) as db:
         await db.execute(
             "INSERT OR REPLACE INTO favorites(user_id,name,lat,lng) VALUES(?,?,?,?)",
@@ -78,16 +86,16 @@ async def add_favorite(uid: int, name: str, lat: float, lng: float):
         )
         await db.commit()
 
-
 async def list_favorites(uid: int):
+    """List all favorite locations for a user."""
     async with aiosqlite.connect(DB) as db:
         cur = await db.execute(
             "SELECT name,lat,lng FROM favorites WHERE user_id=?", (uid,)
         )
         return await cur.fetchall()
 
-
 async def delete_favorite(uid: int, name: str):
+    """Delete a favorite location by name."""
     async with aiosqlite.connect(DB) as db:
         await db.execute(
             "DELETE FROM favorites WHERE user_id=? AND name=?", (uid, name)
