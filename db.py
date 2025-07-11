@@ -6,14 +6,14 @@ from config import DB_PATH as DB
 
 
 async def init_db():
-    """Create tables if they don't exist."""
+    """Create tables if they don't exist and migrate schema."""
     async with aiosqlite.connect(DB) as db:
+        # Initial schema creation
         await db.executescript("""
         CREATE TABLE IF NOT EXISTS users(
             user_id      INTEGER PRIMARY KEY,
             fuel         TEXT,
-            service      TEXT,
-            language     TEXT DEFAULT 'it'
+            service      TEXT
         );
         CREATE TABLE IF NOT EXISTS searches(
             id           INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -41,6 +41,10 @@ async def init_db():
             UNIQUE(user_id,name)
         );
         """)
+        # Migrate: add language column if missing
+        cols = await (await db.execute("PRAGMA table_info(users)")).fetchall()
+        if not any(c[1] == 'language' for c in cols):
+            await db.execute("ALTER TABLE users ADD COLUMN language TEXT DEFAULT 'it'")
         await db.commit()
 
 async def upsert_user(uid: int, fuel: str, service: str, language: str = None):
