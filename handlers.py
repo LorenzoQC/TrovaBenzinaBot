@@ -21,7 +21,6 @@ from config import (
     DEFAULT_RADIUS_FAR,
     LANGUAGES,
     DEFAULT_LANGUAGE,
-    LOC_STATE,
 )
 from db import (
     upsert_user,
@@ -119,8 +118,8 @@ async def text_handler(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             t("ask_location", lang),
             reply_markup=ReplyKeyboardMarkup(kb, one_time_keyboard=True, resize_keyboard=True)
         )
-        ctx.user_data["step"] = LOC_STATE
-        return LOC_STATE
+        ctx.user_data["step"] = STEP_LOC
+        return STEP_LOC
 
     if step == STEP_FAV_NAME:
         ctx.user_data["fav_name"] = text
