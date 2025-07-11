@@ -50,6 +50,14 @@ MSG = {
         "it": "Profilo:\nCarburante: {fuel}\nServizio: {service}\nLingua: {language}",
         "en": "Profile:\nFuel: {fuel}\nService: {service}\nLanguage: {language}",
     },
+    "select_radius": {
+        "it": "Seleziona raggio di ricerca 📏",
+        "en": "Select search radius 📏",
+    },
+    "invalid_radius": {
+        "it": "⚠️ Raggio non valido",
+        "en": "⚠️ Invalid radius",
+    },
     "send_location": {
         "it": "Invia posizione 📍",
         "en": "Send location 📍",
@@ -61,6 +69,10 @@ MSG = {
     "ask_location": {
         "it": "➤ Invia posizione o scegli un preferito",
         "en": "➤ Send location or choose a favorite",
+    },
+    "fav_saved": {
+        "it": "✅ Preferito salvato con successo",
+        "en": "✅ Favorite saved successfully",
     },
     "invalid_address": {
         "it": "⚠️ Indirizzo non valido",
@@ -82,18 +94,29 @@ MSG = {
         "it": "Invia posizione o indirizzo per il preferito",
         "en": "Send location or address for the favorite",
     },
+    "note_cheaper": {
+        "it": "Risparmi {pct}%!",
+        "en": "Save {pct}%!",
+    },
+    "note_equal": {
+        "it": "In linea con la media",
+        "en": "In line with average",
+    },
+    "note_more_expensive": {
+        "it": "Costa {pct}% in più",
+        "en": "Costs {pct}% more",
+    },
+    "compared_to_avg": {
+        "it": "(media: {avg:.3f} €/L)",
+        "en": "(average: {avg:.3f} €/L)",
+    },
+    "no_address": {
+        "it": "Indirizzo non disponibile",
+        "en": "Address not available",
+    },
     "no_stations": {
         "it": "❌ Nessun distributore trovato",
         "en": "❌ No station found"
-    },
-    "no_address": {
-
-    },
-    "primary_result": {
-
-    },
-    "secondary_result": {
-
     }
 }
 
