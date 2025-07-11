@@ -26,7 +26,6 @@ from handlers import (
     start,
     language_choice,
     text_handler,
-    message_handler,
     profilo,
     profile_callback,
     handle_location,
@@ -56,7 +55,7 @@ def main():
             STEP_LANG: [MessageHandler(filters.TEXT & ~filters.COMMAND, language_choice)],
             STEP_FUEL: [MessageHandler(filters.TEXT & ~filters.COMMAND, text_handler)],
             STEP_SERVICE: [MessageHandler(filters.TEXT & ~filters.COMMAND, text_handler)],
-            STEP_RADIUS: [MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler)],
+            STEP_RADIUS: [MessageHandler(filters.TEXT & ~filters.COMMAND, text_handler)],
             STEP_FAV_NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, text_handler)],
             STEP_FAV_LOC: [
                 MessageHandler(filters.LOCATION, handle_location),
