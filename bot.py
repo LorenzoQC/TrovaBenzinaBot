@@ -14,14 +14,25 @@ from telegram.ext import (
 from config import BOT_TOKEN, BASE_URL
 from db import init_db
 from handlers import (
-    STEP_LANG, STEP_FUEL, STEP_SERVICE,
-    STEP_FAV_NAME, STEP_FAV_LOC, STEP_LOC
+    STEP_LANG,
+    STEP_FUEL,
+    STEP_SERVICE,
+    STEP_RADIUS,
+    STEP_FAV_NAME,
+    STEP_FAV_LOC,
+    STEP_LOC
 )
 from handlers import (
-    start, language_choice, text_handler,
-    profilo, profile_callback,
-    handle_location, handle_address,
-    show_favorites, favorite_selected,
+    start,
+    language_choice,
+    text_handler,
+    message_handler,
+    profilo,
+    profile_callback,
+    handle_location,
+    handle_address,
+    show_favorites,
+    favorite_selected,
     addfav
 )
 from scheduler import setup_scheduler
@@ -38,13 +49,14 @@ def main():
 
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
-    # Conversation handler for setup, favorites, and search flows
+    # Conversation handler for setup, radius selection, and search flows
     conv = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
         states={
             STEP_LANG: [MessageHandler(filters.TEXT & ~filters.COMMAND, language_choice)],
             STEP_FUEL: [MessageHandler(filters.TEXT & ~filters.COMMAND, text_handler)],
             STEP_SERVICE: [MessageHandler(filters.TEXT & ~filters.COMMAND, text_handler)],
+            STEP_RADIUS: [MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler)],
             STEP_FAV_NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, text_handler)],
             STEP_FAV_LOC: [
                 MessageHandler(filters.LOCATION, handle_location),
