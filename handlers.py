@@ -18,8 +18,10 @@ from config import (
     FUEL_MAP,
     SERVICE_MAP,
     DEFAULT_RADIUS_NEAR,
+    DEFAULT_RADIUS_FAR,
     LANGUAGES,
     DEFAULT_LANGUAGE,
+    LOC_STATE,
 )
 from db import (
     upsert_user,
@@ -100,6 +102,25 @@ async def text_handler(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             return STEP_RADIUS
         else:
             return await update.message.reply_text(t("invalid_service", lang))
+
+    if step == STEP_RADIUS:
+        if text == "Cerca entro 2km":
+            ctx.user_data["radius"] = DEFAULT_RADIUS_NEAR
+        elif text == "Cerca entro 7km":
+            ctx.user_data["radius"] = DEFAULT_RADIUS_FAR
+        else:
+            kb = [["Cerca entro 2km", "Cerca entro 7km"]]
+            return await update.message.reply_text(
+                t("invalid_radius", lang),
+                reply_markup=ReplyKeyboardMarkup(kb, one_time_keyboard=True, resize_keyboard=True)
+            )
+        kb = [[KeyboardButton(t("send_location", lang), request_location=True)]]
+        await update.message.reply_text(
+            t("ask_location", lang),
+            reply_markup=ReplyKeyboardMarkup(kb, one_time_keyboard=True, resize_keyboard=True)
+        )
+        ctx.user_data["step"] = LOC_STATE
+        return LOC_STATE
 
     if step == STEP_FAV_NAME:
         ctx.user_data["fav_name"] = text
