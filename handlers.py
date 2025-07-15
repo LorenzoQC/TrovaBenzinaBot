@@ -1,5 +1,4 @@
 import logging
-from urllib.parse import quote_plus
 
 from telegram import (
     Update,
@@ -29,224 +28,232 @@ from db import (
     log_search,
     add_favorite,
     list_favorites,
+    delete_favorite,
 )
 from translations import t
 
 log = logging.getLogger(__name__)
 
-# Stati di conversazione
-STEP_LANG, STEP_FUEL, STEP_SERVICE, STEP_RADIUS, STEP_FAV_NAME, STEP_FAV_LOC, STEP_LOC = range(7)
+# ---- STEP indices ----
+STEP_LANG, STEP_FUEL, STEP_SERVICE = range(3)  # /start
+STEP_FIND_LOC, STEP_FIND_RADIUS = range(3, 5)  # /find
+STEP_FAV_ACTION, STEP_FAV_NAME, STEP_FAV_LOC, STEP_FAV_REMOVE = range(5, 9)
 
+
+# -----------------------------------------------------------
+#  /START
+# -----------------------------------------------------------
 async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """/start → scegli lingua"""
     kb = [[f"{code} - {name}" for code, name in LANGUAGES.items()]]
     await update.message.reply_text(
         t("ask_language_choice", DEFAULT_LANGUAGE),
         reply_markup=ReplyKeyboardMarkup(kb, one_time_keyboard=True, resize_keyboard=True),
     )
+    ctx.user_data.clear()
     ctx.user_data["step"] = STEP_LANG
     return STEP_LANG
 
 
 async def language_choice(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Gestisci scelta lingua → chiedi carburante"""
-    text = update.message.text.split(" - ")[0]
-    if text not in LANGUAGES:
+    code = update.message.text.split(" - ")[0]
+    if code not in LANGUAGES:
         return await update.message.reply_text(t("invalid_language", DEFAULT_LANGUAGE))
-    # Salva lingua (mantieni fuel/service se già impostati)
-    prev = await get_user(update.effective_user.id) or (None, None, DEFAULT_LANGUAGE)
-    fuel, service, _ = prev
-    await upsert_user(update.effective_user.id,
-                      fuel or list(FUEL_MAP.keys())[0],
-                      service or list(SERVICE_MAP.keys())[0],
-                      text)
-    ctx.user_data["lang"] = text
-
-    # Chiedi carburante
+    ctx.user_data["lang"] = code
     kb = [[name for name in FUEL_MAP.keys()]]
     await update.message.reply_text(
-        t("ask_fuel", text),
+        t("ask_fuel", code),
         reply_markup=ReplyKeyboardMarkup(kb, one_time_keyboard=True, resize_keyboard=True),
     )
     ctx.user_data["step"] = STEP_FUEL
     return STEP_FUEL
 
-async def text_handler(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Fuel, service e nome preferito"""
-    step = ctx.user_data.get("step")
-    text = update.message.text
-    lang = ctx.user_data.get("lang") or (await get_user(update.effective_user.id))[2]
 
-    if step == STEP_FUEL:
-        if text in FUEL_MAP:
-            ctx.user_data["fuel"] = text
-            kb = [[name for name in SERVICE_MAP.keys()]]
-            await update.message.reply_text(
-                t("ask_service", lang),
-                reply_markup=ReplyKeyboardMarkup(kb, one_time_keyboard=True, resize_keyboard=True),
-            )
-            ctx.user_data["step"] = STEP_SERVICE
-            return STEP_SERVICE
-        else:
-            return await update.message.reply_text(t("invalid_fuel", lang))
-
-    if step == STEP_SERVICE:
-        if text in SERVICE_MAP:
-            ctx.user_data["service"] = text
-            kb = [["Cerca entro 2km", "Cerca entro 7km"]]
-            await update.message.reply_text(
-                t("select_radius", lang) if "select_radius" in t.__code__.co_consts else "Seleziona raggio di ricerca:",
-                reply_markup=ReplyKeyboardMarkup(kb, one_time_keyboard=True, resize_keyboard=True),
-            )
-            ctx.user_data["step"] = STEP_RADIUS
-            return STEP_RADIUS
-        else:
-            return await update.message.reply_text(t("invalid_service", lang))
-
-    if step == STEP_RADIUS:
-        if text == "Cerca entro 2km":
-            ctx.user_data["radius"] = DEFAULT_RADIUS_NEAR
-        elif text == "Cerca entro 7km":
-            ctx.user_data["radius"] = DEFAULT_RADIUS_FAR
-        else:
-            kb = [["Cerca entro 2km", "Cerca entro 7km"]]
-            return await update.message.reply_text(
-                t("invalid_radius", lang),
-                reply_markup=ReplyKeyboardMarkup(kb, one_time_keyboard=True, resize_keyboard=True)
-            )
-        kb = [[KeyboardButton(t("send_location", lang), request_location=True)]]
-        await update.message.reply_text(
-            t("ask_location", lang),
-            reply_markup=ReplyKeyboardMarkup(kb, one_time_keyboard=True, resize_keyboard=True)
-        )
-        ctx.user_data["step"] = STEP_LOC
-        return STEP_LOC
-
-    if step == STEP_FAV_NAME:
-        ctx.user_data["fav_name"] = text
-        await update.message.reply_text(t("ask_fav_location", lang))
-        ctx.user_data["step"] = STEP_FAV_LOC
-        return STEP_FAV_LOC
-
-    # fallback generale
-    return await update.message.reply_text(t("use_commands", lang))
-
-async def profilo(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """/profilo → mostra profilo con bottoni inline"""
-    fuel, service, lang = (await get_user(update.effective_user.id)) or (None, None, DEFAULT_LANGUAGE)
-    kb = [
-        [InlineKeyboardButton(t("edit_fuel", lang), callback_data="edit_fuel")],
-        [InlineKeyboardButton(t("edit_service", lang), callback_data="edit_service")],
-        [InlineKeyboardButton(t("edit_language", lang), callback_data="edit_language")],
-    ]
-    text = t("profile_info", lang).format(
-        fuel=fuel, service=service, language=LANGUAGES[lang]
+async def fuel_choice(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    lang = ctx.user_data["lang"]
+    fuel = update.message.text
+    if fuel not in FUEL_MAP:
+        return await update.message.reply_text(t("invalid_fuel", lang))
+    ctx.user_data["fuel"] = fuel
+    kb = [[name for name in SERVICE_MAP.keys()]]
+    await update.message.reply_text(
+        t("ask_service", lang),
+        reply_markup=ReplyKeyboardMarkup(kb, one_time_keyboard=True, resize_keyboard=True),
     )
-    await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb))
+    ctx.user_data["step"] = STEP_SERVICE
+    return STEP_SERVICE
 
 
-async def profile_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Inline callback per modifiche profilo"""
+async def service_choice(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    lang = ctx.user_data["lang"]
+    service = update.message.text
+    if service not in SERVICE_MAP:
+        return await update.message.reply_text(t("invalid_service", lang))
+    ctx.user_data["service"] = service
+
+    # Salva tutto e termina /start
+    await upsert_user(
+        update.effective_user.id,
+        ctx.user_data["fuel"],
+        ctx.user_data["service"],
+        ctx.user_data["lang"],
+    )
+    await update.message.reply_text(t("profile_saved", lang))
+    ctx.user_data.clear()
+    return ConversationHandler.END
+
+
+# -----------------------------------------------------------
+#  /FIND
+# -----------------------------------------------------------
+async def find_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    fuel, service, lang = await get_user(update.effective_user.id) or (None, None, DEFAULT_LANGUAGE)
+    kb = [[KeyboardButton(t("send_location", lang), request_location=True)]]
+    # aggiungi bottoni preferiti
+    favs = await list_favorites(update.effective_user.id)
+    kb += [[fav[0]] for fav in favs]  # un bottone per riga
+    await update.message.reply_text(
+        t("ask_location", lang),
+        reply_markup=ReplyKeyboardMarkup(kb, one_time_keyboard=True, resize_keyboard=True),
+    )
+    ctx.user_data["step"] = STEP_FIND_LOC
+    return STEP_FIND_LOC
+
+
+async def find_receive_location(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    loc = update.message.location
+    ctx.user_data["search_lat"] = loc.latitude
+    ctx.user_data["search_lng"] = loc.longitude
+    return await _ask_radius(update, ctx)
+
+
+async def find_receive_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    uid = update.effective_user.id
+    lang = (await get_user(uid))[2]
+    text = update.message.text
+
+    # se corrisponde a un preferito
+    fav = next((f for f in await list_favorites(uid) if f[0] == text), None)
+    if fav:
+        ctx.user_data["search_lat"], ctx.user_data["search_lng"] = fav[1], fav[2]
+        return await _ask_radius(update, ctx)
+
+    # altrimenti prova geocode
+    coords = await geocode(text)
+    if not coords:
+        return await update.message.reply_text(t("invalid_address", lang))
+    ctx.user_data["search_lat"], ctx.user_data["search_lng"] = coords
+    return await _ask_radius(update, ctx)
+
+
+async def _ask_radius(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    lang = (await get_user(update.effective_user.id))[2]
+    kb = [["2 km", "7 km"]]
+    await update.message.reply_text(
+        t("select_radius", lang),
+        reply_markup=ReplyKeyboardMarkup(kb, one_time_keyboard=True, resize_keyboard=True),
+    )
+    ctx.user_data["step"] = STEP_FIND_RADIUS
+    return STEP_FIND_RADIUS
+
+
+async def find_radius_choice(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    lang = (await get_user(update.effective_user.id))[2]
+    text = update.message.text
+    if text == "2 km":
+        ctx.user_data["radius"] = DEFAULT_RADIUS_NEAR
+    elif text == "7 km":
+        ctx.user_data["radius"] = DEFAULT_RADIUS_FAR
+    else:
+        return await update.message.reply_text(t("invalid_radius", lang))
+
+    # fai la ricerca vera e propria
+    msg = await _process_search(
+        update, ctx, ctx.user_data["search_lat"], ctx.user_data["search_lng"]
+    )
+
+    # aggiungi bottone "Salva tra i preferiti"
+    name_cb = f"savefav:{ctx.user_data['search_lat']}:{ctx.user_data['search_lng']}"
+    await msg.reply_text(
+        "⭐",
+        reply_markup=InlineKeyboardMarkup.from_button(
+            InlineKeyboardButton("⭐ Salva tra i preferiti", callback_data=name_cb)
+        ),
+    )
+    ctx.user_data.clear()
+    return ConversationHandler.END
+
+
+# -----------------------------------------------------------
+#  /FAVORITES
+# -----------------------------------------------------------
+async def favorites_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    lang = (await get_user(update.effective_user.id))[2]
+    favs = await list_favorites(update.effective_user.id)
+    if not favs:
+        txt = t("no_favorites", lang)
+    else:
+        lines = [
+            f"{i + 1}) {name} • {await _reverse_geocode_or_blank(lat, lng)}"
+            for i, (name, lat, lng) in enumerate(favs)
+        ]
+        txt = f"{t('favorites_title', lang)}\n" + "\n".join(lines)
+    kb = [
+        [InlineKeyboardButton(t("add_favorite_btn", lang), callback_data="fav_add")],
+    ]
+    if favs:
+        kb.append([InlineKeyboardButton(t("edit_favorite_btn", lang), callback_data="fav_edit")])
+    await update.message.reply_text(txt, reply_markup=InlineKeyboardMarkup(kb))
+    ctx.user_data["step"] = STEP_FAV_ACTION
+    return STEP_FAV_ACTION
+
+
+async def favorites_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     uid = query.from_user.id
-    fuel, service, lang = (await get_user(uid)) or (None, None, DEFAULT_LANGUAGE)
-
-    if query.data == "edit_fuel":
-        kb = [[name for name in FUEL_MAP.keys()]]
-        await query.edit_message_text(
-            t("ask_fuel", lang),
-            reply_markup=ReplyKeyboardMarkup(kb, one_time_keyboard=True, resize_keyboard=True),
-        )
-        ctx.user_data["step"] = STEP_FUEL
-        return STEP_FUEL
-
-    if query.data == "edit_service":
-        kb = [[name for name in SERVICE_MAP.keys()]]
-        await query.edit_message_text(
-            t("ask_service", lang),
-            reply_markup=ReplyKeyboardMarkup(kb, one_time_keyboard=True, resize_keyboard=True),
-        )
-        ctx.user_data["step"] = STEP_SERVICE
-        return STEP_SERVICE
-
-    if query.data == "edit_language":
-        kb = [[f"{code} - {name}" for code, name in LANGUAGES.items()]]
-        await query.edit_message_text(
-            t("ask_language_choice", lang),
-            reply_markup=ReplyKeyboardMarkup(kb, one_time_keyboard=True, resize_keyboard=True),
-        )
-        ctx.user_data["step"] = STEP_LANG
-        return STEP_LANG
-
-async def trova(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """/trova → scegli raggio o mostra preferiti"""
-    fuel, service, lang = (await get_user(update.effective_user.id)) or (None, None, DEFAULT_LANGUAGE)
-    kb = [
-        [KeyboardButton(t("send_location", lang), request_location=True)],
-        [InlineKeyboardButton(t("favorites", lang), callback_data="show_favorites")],
-    ]
-    await update.message.reply_text(
-        t("ask_location", lang),
-        reply_markup=InlineKeyboardMarkup(kb)
-    )
-    ctx.user_data["step"] = STEP_LOC
-    return STEP_LOC
-
-async def handle_location(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Process GPS per ricerca o salvataggio preferito."""
-    loc = update.message.location
-    return await _process_search(update, ctx, loc.latitude, loc.longitude)
-
-async def handle_address(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Process testo geocoding per ricerca o salvataggio preferito."""
-    coords = await geocode(update.message.text)
-    lang = (await get_user(update.effective_user.id))[2]
-    if not coords:
-        return await update.message.reply_text(t("invalid_address", lang))
-    return await _process_search(update, ctx, *coords)
-
-
-async def show_favorites(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Inline callback: mostra lista preferiti."""
-    uid = update.callback_query.from_user.id
     lang = (await get_user(uid))[2]
-    favs = await list_favorites(uid)
-    if not favs:
-        return await update.callback_query.message.reply_text(t("no_favorites", lang))
-    buttons = [[InlineKeyboardButton(n, callback_data=f"fav_{n}")] for n, _, _ in favs]
-    await update.callback_query.message.reply_text(
-        t("choose_favorite", lang),
-        reply_markup=InlineKeyboardMarkup(buttons),
-    )
+
+    if query.data == "fav_add":
+        await query.edit_message_text(t("ask_fav_name", lang))
+        ctx.user_data["step"] = STEP_FAV_NAME
+        return STEP_FAV_NAME
+
+    if query.data == "fav_edit":
+        favs = await list_favorites(uid)
+        if not favs:
+            return await query.edit_message_text(t("no_favorites", lang))
+        kb = [
+            [InlineKeyboardButton(name, callback_data=f"favdel_{name}")] for name, _, _ in favs
+        ]
+        await query.edit_message_text(
+            t("which_fav_remove", lang), reply_markup=InlineKeyboardMarkup(kb)
+        )
+        ctx.user_data["step"] = STEP_FAV_REMOVE
+        return STEP_FAV_REMOVE
+
+    if query.data.startswith("favdel_"):
+        name = query.data.split("_", 1)[1]
+        await delete_favorite(uid, name)
+        await query.edit_message_text(t("fav_removed", lang))
+        ctx.user_data.clear()
+        return ConversationHandler.END
+
+    if query.data.startswith("savefav:"):
+        _, lat, lng = query.data.split(":")
+        await add_favorite(uid, f"Pos {lat[:6]},{lng[:6]}", float(lat), float(lng))
+        await query.edit_message_text(t("fav_saved", lang))
+        return ConversationHandler.END
 
 
-async def favorite_selected(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Inline callback: utente ha scelto uno dei preferiti."""
-    uid = update.callback_query.from_user.id
-    _, lat, lng = next(f for f in await list_favorites(uid) if f[0] == update.callback_query.data.split("_", 1)[1])
-    return await _process_search(update, ctx, lat, lng)
-
-
-async def addfav(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """/addfav → chiedi nome del preferito."""
-    lang = (await get_user(update.effective_user.id))[2]
-    await update.message.reply_text(t("ask_fav_name", lang))
-    ctx.user_data["step"] = STEP_FAV_NAME
-    return STEP_FAV_NAME
-
-
-async def handle_fav_name(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Riceve il nome e chiede la posizione."""
-    lang = (await get_user(update.effective_user.id))[2]
+async def fav_name(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     ctx.user_data["fav_name"] = update.message.text
+    lang = (await get_user(update.effective_user.id))[2]
     await update.message.reply_text(t("ask_fav_location", lang))
     ctx.user_data["step"] = STEP_FAV_LOC
     return STEP_FAV_LOC
 
 
-async def handle_fav_loc(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Salva il preferito dopo invio posizione o indirizzo."""
+async def fav_loc(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     uid = update.effective_user.id
     lang = (await get_user(uid))[2]
     name = ctx.user_data["fav_name"]
@@ -263,11 +270,47 @@ async def handle_fav_loc(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     return ConversationHandler.END
 
 
+# -----------------------------------------------------------
+#  /PROFILE
+# -----------------------------------------------------------
+async def profile_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    fuel, service, lang = (await get_user(update.effective_user.id)) or (None, None, DEFAULT_LANGUAGE)
+    kb = [
+        [InlineKeyboardButton(t("edit_language", lang), callback_data="edit_language")],
+        [InlineKeyboardButton(t("edit_fuel", lang), callback_data="edit_fuel")],
+        [InlineKeyboardButton(t("edit_service", lang), callback_data="edit_service")],
+        [InlineKeyboardButton(t("edit_favorite_btn", lang), callback_data="fav_edit")],
+    ]
+    text = t("profile_info", lang).format(
+        fuel=fuel, service=service, language=LANGUAGES[lang]
+    )
+    await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb))
+
+
+profile_callback = favorites_callback  # riusa la stessa logica
+
+
+# -----------------------------------------------------------
+#  /HELP
+# -----------------------------------------------------------
+async def help_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    lang = (await get_user(update.effective_user.id))[2] if await get_user(
+        update.effective_user.id) else DEFAULT_LANGUAGE
+    await update.message.reply_text(t("help", lang))
+
+
+# -----------------------------------------------------------
+#  UTILITIES
+# -----------------------------------------------------------
+async def _reverse_geocode_or_blank(lat, lng):
+    """Potresti usare Nominatim o lasciare vuoto per ora"""
+    return ""
+
+
 async def _process_search(update: Update, ctx: ContextTypes.DEFAULT_TYPE, lat: float, lng: float):
-    """Logica unificata per ricerca top 3 distributori."""
     uid = update.effective_user.id
     fuel, service, lang = await get_user(uid)
-    radius = ctx.user_data.get("radius", DEFAULT_RADIUS_NEAR) if "radius" in ctx.user_data else DEFAULT_RADIUS_NEAR
+    radius = ctx.user_data.get("radius", DEFAULT_RADIUS_NEAR)
     ft = f"{FUEL_MAP[fuel]}-{SERVICE_MAP[service]}"
 
     res = await call_api(lat, lng, radius, ft)
@@ -281,13 +324,11 @@ async def _process_search(update: Update, ctx: ContextTypes.DEFAULT_TYPE, lat: f
 
     sorted_res = sorted(results, key=lambda r: next(f["price"] for f in r["fuels"] if f["fuelId"] == fid))
     medals = ["🥇", "🥈", "🥉"]
-    Lines = []
+    lines = []
     for i, station in enumerate(sorted_res[:3]):
         price = next(f["price"] for f in station["fuels"] if f["fuelId"] == fid)
         pct = int(round((avg - price) / avg * 100))
-        lat = station.get("location", {}).get("lat")
-        lng = station.get("location", {}).get("lng")
-        dest = f"{lat},{lng}" if lat and lng else quote_plus(station["address"])
+        dest = f"{station['location']['lat']},{station['location']['lng']}"
         link = f"https://www.google.com/maps/dir/?api=1&destination={dest}"
 
         if price < avg:
@@ -296,22 +337,20 @@ async def _process_search(update: Update, ctx: ContextTypes.DEFAULT_TYPE, lat: f
             note = t("note_more_expensive", lang).format(pct=pct)
         else:
             note = t("note_equal", lang)
+
         if not station.get("address"):
             station["address"] = await fetch_address(station["id"]) or t("no_address", lang)
-        Lines.append(
-            f"{medals[i]} *Distributore*: {station['brand']} • {station['name']} • {station['address']}\n"
-            f"*Costo {fuel}*: {price:.3f} € / L, {note} {t('compared_to_avg', lang).format(avg=avg)}\n"
+
+        lines.append(
+            f"{medals[i]} *{station['brand']} • {station['name']} • {station['address']}*\n"
+            f"{price:.3f} €/L – {note} {t('compared_to_avg', lang).format(avg=avg)}\n"
             f"[{t('lets_go', lang)}]({link})"
         )
 
     await log_search(uid, avg, prices[0])
-    kb = [["Cerca entro 2km", "Cerca entro 7km"]]
-    await update.message.reply_text(
-        "\n\n".join(Lines),
+    msg = await update.message.reply_text(
+        "\n\n".join(lines),
         parse_mode=ParseMode.MARKDOWN,
         disable_web_page_preview=True,
-        reply_markup=ReplyKeyboardMarkup(kb, one_time_keyboard=True, resize_keyboard=True)
     )
-
-    ctx.user_data["step"] = STEP_RADIUS
-    return STEP_RADIUS
+    return msg

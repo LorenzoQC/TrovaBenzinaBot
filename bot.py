@@ -8,31 +8,38 @@ from telegram.ext import (
     MessageHandler,
     ConversationHandler,
     CallbackQueryHandler,
-    filters
+    filters,
 )
 
 from config import BOT_TOKEN, BASE_URL
 from db import init_db
 from handlers import (
+    # conversation states
     STEP_LANG,
     STEP_FUEL,
     STEP_SERVICE,
-    STEP_RADIUS,
+    STEP_FIND_LOC,
+    STEP_FIND_RADIUS,
+    STEP_FAV_ACTION,
     STEP_FAV_NAME,
     STEP_FAV_LOC,
-    STEP_LOC
-)
-from handlers import (
+    STEP_FAV_REMOVE,
+    # handlers
     start,
     language_choice,
-    text_handler,
-    profilo,
+    fuel_choice,
+    service_choice,
+    find_cmd,
+    find_receive_location,
+    find_receive_text,
+    find_radius_choice,
+    favorites_cmd,
+    favorites_callback,
+    fav_name,
+    fav_loc,
+    profile_cmd,
     profile_callback,
-    handle_location,
-    handle_address,
-    show_favorites,
-    favorite_selected,
-    addfav
+    help_cmd,
 )
 from scheduler import setup_scheduler
 
@@ -40,55 +47,80 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
 
-def main():
+def main() -> None:
+    # ── event-loop & DB ──────────────────────────────────────────────────────────
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     loop.run_until_complete(init_db())
     log.info("Database initialized")
 
+    # ── bot application ─────────────────────────────────────────────────────────
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
-    # Conversation handler for setup, radius selection, and search flows
-    conv = ConversationHandler(
+    # /start ─ profile setup
+    start_conv = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
         states={
             STEP_LANG: [MessageHandler(filters.TEXT & ~filters.COMMAND, language_choice)],
-            STEP_FUEL: [MessageHandler(filters.TEXT & ~filters.COMMAND, text_handler)],
-            STEP_SERVICE: [MessageHandler(filters.TEXT & ~filters.COMMAND, text_handler)],
-            STEP_RADIUS: [MessageHandler(filters.TEXT & ~filters.COMMAND, text_handler)],
-            STEP_FAV_NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, text_handler)],
-            STEP_FAV_LOC: [
-                MessageHandler(filters.LOCATION, handle_location),
-                MessageHandler(filters.TEXT & ~filters.COMMAND, handle_address)
+            STEP_FUEL: [MessageHandler(filters.TEXT & ~filters.COMMAND, fuel_choice)],
+            STEP_SERVICE: [MessageHandler(filters.TEXT & ~filters.COMMAND, service_choice)],
+        },
+        fallbacks=[],
+        block=True,
+    )
+    app.add_handler(start_conv)
+
+    # /find ─ search cheapest stations
+    find_conv = ConversationHandler(
+        entry_points=[CommandHandler(["find", "trova"], find_cmd)],
+        states={
+            STEP_FIND_LOC: [
+                MessageHandler(filters.LOCATION, find_receive_location),
+                MessageHandler(filters.TEXT & ~filters.COMMAND, find_receive_text),
             ],
-            STEP_LOC: [
-                MessageHandler(filters.LOCATION, handle_location),
-                MessageHandler(filters.TEXT & ~filters.COMMAND, handle_address)
+            STEP_FIND_RADIUS: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, find_radius_choice)
             ],
         },
         fallbacks=[],
-        block=True
+        block=True,
     )
-    app.add_handler(conv)
+    app.add_handler(find_conv)
 
-    # Inline callbacks for profile editing and favorites
-    app.add_handler(CallbackQueryHandler(profile_callback, pattern="^edit_"))
-    app.add_handler(CallbackQueryHandler(show_favorites, pattern="^show_favorites$"))
-    app.add_handler(CallbackQueryHandler(favorite_selected, pattern="^fav_"))
+    # /favorites ─ manage favourites
+    fav_conv = ConversationHandler(
+        entry_points=[CommandHandler("favorites", favorites_cmd)],
+        states={
+            STEP_FAV_ACTION: [CallbackQueryHandler(favorites_callback, pattern="^(fav_add|fav_edit)$")],
+            STEP_FAV_REMOVE: [CallbackQueryHandler(favorites_callback, pattern="^favdel_")],
+            STEP_FAV_NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, fav_name)],
+            STEP_FAV_LOC: [
+                MessageHandler(filters.LOCATION, fav_loc),
+                MessageHandler(filters.TEXT & ~filters.COMMAND, fav_loc),
+            ],
+        },
+        fallbacks=[],
+        block=True,
+    )
+    app.add_handler(fav_conv)
 
-    # Simple commands
-    app.add_handler(CommandHandler("profilo", profilo))
-    app.add_handler(CommandHandler("addfav", addfav))
+    # shared inline-callback handlers (edit profile / save favourite)
+    app.add_handler(CallbackQueryHandler(profile_callback, pattern="^(edit_|savefav:)"))
 
-    # Scheduler
+    # simple commands
+    app.add_handler(CommandHandler(["profile", "profilo"], profile_cmd))
+    app.add_handler(CommandHandler("help", help_cmd))
+
+    # scheduler (cache cleaning, monthly reports…)
     setup_scheduler(loop, app)
 
+    # ── webhook start ───────────────────────────────────────────────────────────
     log.info("Starting webhook")
     app.run_webhook(
         listen="0.0.0.0",
         port=int(os.getenv("PORT", "8080")),
         url_path="webhook",
-        webhook_url=f"{BASE_URL}/webhook"
+        webhook_url=f"{BASE_URL}/webhook",
     )
 
 

@@ -1,10 +1,10 @@
 from config import DEFAULT_LANGUAGE
 
-# Message keys
 MSG = {
+    # ─────────── /start ───────────
     "ask_language_choice": {
         "it": "Seleziona lingua 🌐️",
-        "en": "Choose language 🌐",
+        "en": "Choose language 🌐️",
     },
     "invalid_language": {
         "it": "⚠️ Lingua non valida",
@@ -27,29 +27,11 @@ MSG = {
         "en": "⚠️ Invalid service",
     },
     "profile_saved": {
-        "it": "✅ Profilo salvato con successo",
-        "en": "✅ Profile saved successfully",
+        "it": "✅ Profilo salvato correttamente",
+        "en": "✅ Profile saved correctly",
     },
-    "use_commands": {
-        "it": "⛔ Usa i comandi per favore",
-        "en": "⛔ Please use the commands",
-    },
-    "edit_fuel": {
-        "it": "Modifica carburante 🛢️",
-        "en": "Edit fuel 🛢️",
-    },
-    "edit_service": {
-        "it": "Modifica servizio ⛽",
-        "en": "Edit service ⛽",
-    },
-    "edit_language": {
-        "it": "Modifica lingua 🌐️",
-        "en": "Edit language 🌐",
-    },
-    "profile_info": {
-        "it": "Profilo:\nCarburante: {fuel}\nServizio: {service}\nLingua: {language}",
-        "en": "Profile:\nFuel: {fuel}\nService: {service}\nLanguage: {language}",
-    },
+
+    # ─────────── /find ───────────
     "select_radius": {
         "it": "Seleziona raggio di ricerca 📏",
         "en": "Select search radius 📏",
@@ -59,41 +41,23 @@ MSG = {
         "en": "⚠️ Invalid radius",
     },
     "send_location": {
-        "it": "Invia posizione 📍",
-        "en": "Send location 📍",
-    },
-    "favorites": {
-        "it": "Preferiti ⭐",
-        "en": "Favorites ⭐",
+        "it": "Invia posizione GPS 📍",
+        "en": "Send GPS location 📍",
     },
     "ask_location": {
-        "it": "➤ Invia posizione o scegli un preferito",
-        "en": "➤ Send location or choose a favorite",
-    },
-    "fav_saved": {
-        "it": "✅ Preferito salvato con successo",
-        "en": "✅ Favorite saved successfully",
+        "it": "➤ Invia la tua posizione o scegli un luogo preferito",
+        "en": "➤ Send your location or pick a favourite place",
     },
     "invalid_address": {
         "it": "⚠️ Indirizzo non valido",
         "en": "⚠️ Invalid address",
     },
-    "no_favorites": {
-        "it": "Nessun preferito",
-        "en": "No favorites"
+    "no_stations": {
+        "it": "❌ Nessun distributore trovato",
+        "en": "❌ No stations found",
     },
-    "choose_favorite": {
-        "it": "Seleziona preferito",
-        "en": "Choose favorites"
-    },
-    "ask_fav_name": {
-        "it": "Assegna un nome a questo preferito",
-        "en": "Give a name for this favorite",
-    },
-    "ask_fav_location": {
-        "it": "Invia posizione o indirizzo per il preferito",
-        "en": "Send location or address for the favorite",
-    },
+
+    # price notes
     "note_cheaper": {
         "it": "Risparmi {pct}%!",
         "en": "Save {pct}%!",
@@ -112,19 +76,95 @@ MSG = {
     },
     "lets_go": {
         "it": "Andiamo!",
-        "en": "Let's go!"
+        "en": "Let's go!",
     },
     "no_address": {
         "it": "Indirizzo non disponibile",
         "en": "Address not available",
     },
-    "no_stations": {
-        "it": "❌ Nessun distributore trovato",
-        "en": "❌ No station found"
-    }
+
+    # ─────────── /favorites ───────────
+    "favorites_title": {
+        "it": "Luoghi preferiti salvati:",
+        "en": "Saved favourite places:",
+    },
+    "add_favorite_btn": {
+        "it": "➕ Aggiungi preferito",
+        "en": "➕ Add favourite",
+    },
+    "edit_favorite_btn": {
+        "it": "🗑️ Modifica preferiti",
+        "en": "🗑️ Edit favourites",
+    },
+    "which_fav_remove": {
+        "it": "Quale preferito vuoi rimuovere?",
+        "en": "Which favourite do you want to remove?",
+    },
+    "fav_removed": {
+        "it": "Preferito eliminato",
+        "en": "Favourite removed",
+    },
+    "fav_saved": {
+        "it": "✅ Preferito salvato con successo",
+        "en": "✅ Favourite saved successfully",
+    },
+    "no_favorites": {
+        "it": "Nessun luogo preferito salvato",
+        "en": "No favourite places saved",
+    },
+    "ask_fav_name": {
+        "it": "Assegna un nome al luogo preferito",
+        "en": "Give a name to the favourite place",
+    },
+    "ask_fav_location": {
+        "it": "Invia posizione o indirizzo per il preferito",
+        "en": "Send location or address for the favourite",
+    },
+
+    # ─────────── /profile ───────────
+    "edit_language": {
+        "it": "Modifica lingua 🌐️",
+        "en": "Edit language 🌐️",
+    },
+    "edit_fuel": {
+        "it": "Modifica carburante 🛢️",
+        "en": "Edit fuel 🛢️",
+    },
+    "edit_service": {
+        "it": "Modifica servizio ⛽",
+        "en": "Edit service ⛽",
+    },
+    "profile_info": {
+        "it": "Profilo:\nCarburante: {fuel}\nServizio: {service}\nLingua: {language}",
+        "en": "Profile:\nFuel: {fuel}\nService: {service}\nLanguage: {language}",
+    },
+
+    # ─────────── /help ───────────
+    "help": {
+        "it": (
+            "/start – configura il profilo\n"
+            "/find – cerca i distributori più economici\n"
+            "/favorites – gestisci i preferiti\n"
+            "/profile – modifica profilo\n"
+            "/help – mostra questo messaggio"
+        ),
+        "en": (
+            "/start – set up your profile\n"
+            "/find – cheapest stations nearby\n"
+            "/favorites – manage favourites\n"
+            "/profile – edit profile\n"
+            "/help – show this message"
+        ),
+    },
+
+    # ─────────── generics ───────────
+    "use_commands": {
+        "it": "⛔ Usa i comandi, per favore",
+        "en": "⛔ Please use commands",
+    },
 }
 
 
 def t(key: str, lang: str) -> str:
     """Return translated message for `key` in `lang`."""
-    return MSG.get(key, {}).get(lang, MSG[key][DEFAULT_LANGUAGE])
+    return MSG.get(key, {}).get(lang, MSG.get(key, {}).get(DEFAULT_LANGUAGE, ""))
