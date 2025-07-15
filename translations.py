@@ -110,6 +110,10 @@ MSG = {
         "it": "(media: {avg:.3f} €/L)",
         "en": "(average: {avg:.3f} €/L)",
     },
+    "lets_go": {
+        "it": "Andiamo!",
+        "en": "Let's go!"
+    },
     "no_address": {
         "it": "Indirizzo non disponibile",
         "en": "Address not available",

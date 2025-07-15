@@ -1,4 +1,5 @@
 import logging
+from urllib.parse import quote_plus
 
 from telegram import (
     Update,
@@ -274,18 +275,21 @@ async def _process_search(update: Update, ctx: ContextTypes.DEFAULT_TYPE, lat: f
     if not results:
         return await update.message.reply_text(t("no_stations", lang))
 
-    # Calcola media
     fid = int(FUEL_MAP[fuel])
     prices = [f["price"] for r in results for f in r["fuels"] if f["fuelId"] == fid]
     avg = sum(prices) / len(prices)
 
-    # Ordina e prendi primi 3
     sorted_res = sorted(results, key=lambda r: next(f["price"] for f in r["fuels"] if f["fuelId"] == fid))
     medals = ["🥇", "🥈", "🥉"]
     Lines = []
     for i, station in enumerate(sorted_res[:3]):
         price = next(f["price"] for f in station["fuels"] if f["fuelId"] == fid)
         pct = int(round((avg - price) / avg * 100))
+        lat = station.get("location", {}).get("lat")
+        lng = station.get("location", {}).get("lng")
+        dest = f"{lat},{lng}" if lat and lng else quote_plus(station["address"])
+        link = f"https://www.google.com/maps/dir/?api=1&destination={dest}"
+
         if price < avg:
             note = t("note_cheaper", lang).format(pct=pct)
         elif price > avg:
@@ -296,13 +300,18 @@ async def _process_search(update: Update, ctx: ContextTypes.DEFAULT_TYPE, lat: f
             station["address"] = await fetch_address(station["id"]) or t("no_address", lang)
         Lines.append(
             f"{medals[i]} *Distributore*: {station['brand']} • {station['name']} • {station['address']}\n"
-            f"*Costo {fuel}*: {price:.3f} € al L, {note} {t('compared_to_avg', lang).format(avg=avg):s}\n"
-            f"*Andiamo!*"
+            f"*Costo {fuel}*: {price:.3f} € / L, {note} {t('compared_to_avg', lang).format(avg=avg)}\n"
+            f"[{t('lets_go', lang)}]({link})"
         )
 
     await log_search(uid, avg, prices[0])
+    kb = [["Cerca entro 2km", "Cerca entro 7km"]]
     await update.message.reply_text(
         "\n\n".join(Lines),
         parse_mode=ParseMode.MARKDOWN,
         disable_web_page_preview=True,
+        reply_markup=ReplyKeyboardMarkup(kb, one_time_keyboard=True, resize_keyboard=True)
     )
+
+    ctx.user_data["step"] = STEP_RADIUS
+    return STEP_RADIUS
