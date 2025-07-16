@@ -39,17 +39,21 @@ STEP_FIND_LOC, STEP_FIND_RADIUS = range(3, 5)
 STEP_FAV_ACTION, STEP_FAV_NAME, STEP_FAV_LOC, STEP_FAV_REMOVE = range(5, 9)
 
 
-def _inline_row(items: list[tuple[str, str]]) -> list[list[InlineKeyboardButton]]:
-    return [[InlineKeyboardButton(text, callback_data=data) for text, data in items]]
+def _inline_kb(items: list[tuple[str, str]], per_row: int = 2) -> list[list[InlineKeyboardButton]]:
+    """Return an InlineKeyboardMarkup layout with up to `per_row` buttons each row."""
+    return [
+        [InlineKeyboardButton(text, callback_data=data) for text, data in items[i: i + per_row]]
+        for i in range(0, len(items), per_row)
+    ]
 
 
 async def _reverse_geocode_or_blank(lat: float, lng: float) -> str:
-    return ""  # optional
+    return ""  # optional reverse-geocode
 
 
 # ── /start ──────────────────────────────────────────────────────────────────
 async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    kb = _inline_row([(f"{code} - {name}", f"lang_{code}") for code, name in LANGUAGES.items()])
+    kb = _inline_kb([(f"{code} - {name}", f"lang_{code}") for code, name in LANGUAGES.items()])
     await update.message.reply_text(
         t("ask_language_choice", DEFAULT_LANGUAGE),
         reply_markup=InlineKeyboardMarkup(kb),
@@ -64,7 +68,7 @@ async def language_selected(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     code = query.data.split("_", 1)[1]
     ctx.user_data["lang"] = code
 
-    kb = _inline_row([(fuel, f"fuel_{fuel}") for fuel in FUEL_MAP])
+    kb = _inline_kb([(fuel, f"fuel_{fuel}") for fuel in FUEL_MAP])
     await query.edit_message_text(t("ask_fuel", code), reply_markup=InlineKeyboardMarkup(kb))
     return STEP_FUEL
 
@@ -79,7 +83,7 @@ async def fuel_selected(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return await query.answer(t("invalid_fuel", lang), show_alert=True)
 
     ctx.user_data["fuel"] = fuel
-    kb = _inline_row([(s, f"serv_{s}") for s in SERVICE_MAP])
+    kb = _inline_kb([(s, f"serv_{s}") for s in SERVICE_MAP])
     await query.edit_message_text(t("ask_service", lang), reply_markup=InlineKeyboardMarkup(kb))
     return STEP_SERVICE
 
@@ -111,7 +115,7 @@ async def find_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     _, _, lang = await get_user(uid) or (None, None, DEFAULT_LANGUAGE)
 
     favs = await list_favorites(uid)
-    kb = [[InlineKeyboardButton(name, callback_data=f"favloc_{i}")] for i, (name, _, _) in enumerate(favs)]
+    kb = _inline_kb([(name, f"favloc_{i}") for i, (name, _, _) in enumerate(favs)])
     await update.message.reply_text(
         t("ask_location", lang),
         reply_markup=InlineKeyboardMarkup(kb) if kb else None,
@@ -157,7 +161,7 @@ async def favloc_clicked(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 async def _ask_radius(chat_id: int, ctx: ContextTypes.DEFAULT_TYPE, edit=None):
     _, _, lang = await get_user(chat_id) or (None, None, DEFAULT_LANGUAGE)
-    kb = _inline_row([("2 km", "rad_2"), ("7 km", "rad_7")])
+    kb = _inline_kb([("2 km", "rad_2"), ("7 km", "rad_7")])
     if edit:
         await edit.edit_message_text(t("select_radius", lang), reply_markup=InlineKeyboardMarkup(kb))
     else:
@@ -204,11 +208,9 @@ async def favorites_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         ]
         txt = f"{t('favorites_title', lang)}\n" + "\n".join(lines)
 
-    kb = [
-        [InlineKeyboardButton(t("add_favorite_btn", lang), callback_data="fav_add")],
-    ]
+    kb = _inline_kb([(t("add_favorite_btn", lang), "fav_add")], per_row=2)
     if favs:
-        kb.append([InlineKeyboardButton(t("edit_favorite_btn", lang), callback_data="fav_edit")])
+        kb += _inline_kb([(t("edit_favorite_btn", lang), "fav_edit")], per_row=2)
     await update.message.reply_text(txt, reply_markup=InlineKeyboardMarkup(kb))
     return STEP_FAV_ACTION
 
@@ -227,7 +229,7 @@ async def favorites_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         favs = await list_favorites(uid)
         if not favs:
             return await query.edit_message_text(t("no_favorites", lang))
-        kb = [[InlineKeyboardButton(name, callback_data=f"favdel_{name}")] for name, _, _ in favs]
+        kb = _inline_kb([(name, f"favdel_{name}") for name, _, _ in favs])
         await query.edit_message_text(t("which_fav_remove", lang), reply_markup=InlineKeyboardMarkup(kb))
         return STEP_FAV_REMOVE
 
@@ -274,17 +276,19 @@ async def fav_loc(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 # ── /profile ─────────────────────────────────────────────────────────────────
 async def profile_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     fuel, service, lang = await get_user(update.effective_user.id) or (None, None, DEFAULT_LANGUAGE)
-    kb = [
-        [InlineKeyboardButton(t("edit_language", lang), callback_data="edit_language")],
-        [InlineKeyboardButton(t("edit_fuel", lang), callback_data="edit_fuel")],
-        [InlineKeyboardButton(t("edit_service", lang), callback_data="edit_service")],
-        [InlineKeyboardButton(t("edit_favorite_btn", lang), callback_data="fav_edit")],
-    ]
+    kb = _inline_kb(
+        [
+            (t("edit_language", lang), "edit_language"),
+            (t("edit_fuel", lang), "edit_fuel"),
+            (t("edit_service", lang), "edit_service"),
+            (t("edit_favorite_btn", lang), "fav_edit"),
+        ]
+    )
     text = t("profile_info", lang).format(fuel=fuel, service=service, language=LANGUAGES[lang])
     await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb))
 
 
-profile_callback = favorites_callback  # reuse callbacks
+profile_callback = favorites_callback  # reuse handlers
 
 
 # ── /help ────────────────────────────────────────────────────────────────────
@@ -298,7 +302,7 @@ async def _process_search(origin, ctx, lat: float, lng: float):
     if hasattr(origin, "effective_user"):
         uid = origin.effective_user.id
         msg_target = origin.message
-    else:  # CallbackQuery
+    else:
         uid = origin.from_user.id
         msg_target = origin.message
 
@@ -327,8 +331,7 @@ async def _process_search(origin, ctx, lat: float, lng: float):
         if price < avg:
             note = t("note_cheaper", lang).format(pct=pct)
         elif price > avg:
-            note = t("note_more_expensive", lang).format(pct=abs(pct))
-            note = f"⚠️ {note}"
+            note = f"⚠️ {t('note_more_expensive', lang).format(pct=abs(pct))}"
         else:
             note = t("note_equal", lang)
 
@@ -337,7 +340,7 @@ async def _process_search(origin, ctx, lat: float, lng: float):
 
         lines.append(
             f"{medals[i]} *{station['brand']} • {station['name']} • {station['address']}*\n"
-            f"{price:.3f} €/L – {note} {t('compared_to_avg', lang).format(avg=avg):s}\n"
+            f"{price:.3f} €/L – {note} {t('compared_to_avg', lang).format(avg=avg)}\n"
             f"[{t('lets_go', lang)}]({link})"
         )
 
