@@ -140,7 +140,8 @@ async def find_receive_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     # altrimenti prova geocode
     coords = await geocode(text)
     if not coords:
-        return await update.message.reply_text(t("invalid_address", lang))
+        await update.message.reply_text(t("invalid_address", lang))
+        return STEP_FIND_LOC
     ctx.user_data["search_lat"], ctx.user_data["search_lng"] = coords
     return await _ask_radius(update, ctx)
 
