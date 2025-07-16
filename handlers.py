@@ -53,7 +53,7 @@ async def _reverse_geocode_or_blank(lat: float, lng: float) -> str:
 
 # ── /start ──────────────────────────────────────────────────────────────────
 async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    kb = _inline_kb([(f"{code} - {name}", f"lang_{code}") for code, name in LANGUAGES.items()])
+    kb = _inline_kb([(name, f"lang_{code}") for code, name in LANGUAGES.items()])
     await update.message.reply_text(
         t("ask_language_choice", DEFAULT_LANGUAGE),
         reply_markup=InlineKeyboardMarkup(kb),
