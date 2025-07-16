@@ -1,5 +1,4 @@
 import asyncio
-import logging
 import os
 
 from telegram.ext import (
@@ -42,8 +41,10 @@ from handlers import (
     help_cmd,
 )
 from scheduler import setup_scheduler
+from utils import setup_logging
 
-logging.basicConfig(level=logging.INFO)
+setup_logging()
+import logging  # noqa: E402  (dopo setup_logging)
 log = logging.getLogger(__name__)
 
 
