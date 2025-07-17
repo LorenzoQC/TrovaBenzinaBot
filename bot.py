@@ -27,6 +27,8 @@ from handlers import (
     language_selected,
     fuel_selected,
     service_selected,
+    back_to_lang,
+    back_to_fuel,
     find_cmd,
     find_receive_location,
     find_receive_text,
@@ -60,11 +62,18 @@ def main() -> None:
             entry_points=[CommandHandler("start", start)],
             states={
                 STEP_LANG: [CallbackQueryHandler(language_selected, pattern="^lang_")],
-                STEP_FUEL: [CallbackQueryHandler(fuel_selected, pattern="^fuel_")],
-                STEP_SERVICE: [CallbackQueryHandler(service_selected, pattern="^serv_")],
+                STEP_FUEL: [
+                    CallbackQueryHandler(fuel_selected, pattern="^fuel_"),
+                    CallbackQueryHandler(back_to_lang, pattern="^back_lang$"),
+                ],
+                STEP_SERVICE: [
+                    CallbackQueryHandler(service_selected, pattern="^serv_"),
+                    CallbackQueryHandler(back_to_fuel, pattern="^back_fuel$"),
+                ],
             },
             fallbacks=[],
             block=True,
+
         )
     )
 
