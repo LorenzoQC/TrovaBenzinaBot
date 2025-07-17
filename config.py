@@ -41,10 +41,13 @@ LOC_STATE = 1
 LANGUAGES = {
     "it": "Italiano",
     "en": "English",
-    "es": "Español",
-    "fr": "Français",
     "de": "Deutsch",
+    "fr": "Français",
+    "es": "Español",
+    "ru": "Русский",
     "zh": "中文",
+    "ja": "日本語",
+    "pt": "Português",
     "ar": "العربية",
 }
 
