@@ -4,7 +4,7 @@ import logging
 import aiosqlite
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-from config import (
+from trovabenzina.config import (
     DB_PATH as DB,
     ENABLE_DONATION,
     SCHEDULER_TIMEZONE,
