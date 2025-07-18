@@ -11,7 +11,7 @@ from telegram.ext import (
     filters,
 )
 
-from scheduler import setup_scheduler
+from trovabenzina.bot.scheduler import setup_scheduler
 from trovabenzina.config import BOT_TOKEN, BASE_URL
 from trovabenzina.core.db import init_db
 from trovabenzina.handlers.handlers import (
