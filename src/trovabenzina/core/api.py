@@ -4,7 +4,7 @@ import logging
 import aiohttp
 import aiosqlite
 
-from config import (
+from trovabenzina.config import (
     DB_PATH as DB,
     GEOCODE_HARD_CAP,
     GOOGLE_API_KEY,

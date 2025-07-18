@@ -1,4 +1,4 @@
-from config import DEFAULT_LANGUAGE
+from trovabenzina.config.__init__ import DEFAULT_LANGUAGE
 
 MSG = {
     # ─────────── /start ───────────

@@ -11,9 +11,10 @@ from telegram.ext import (
     filters,
 )
 
-from config import BOT_TOKEN, BASE_URL
-from db import init_db
-from handlers import (
+from scheduler import setup_scheduler
+from trovabenzina.config import BOT_TOKEN, BASE_URL
+from trovabenzina.core.db import init_db
+from trovabenzina.handlers.handlers import (
     STEP_LANG,
     STEP_FUEL,
     STEP_SERVICE,
@@ -41,8 +42,7 @@ from handlers import (
     profile_cmd,
     help_cmd,
 )
-from scheduler import setup_scheduler
-from utils import setup_logging
+from trovabenzina.utils.utils import setup_logging
 
 setup_logging()
 log = logging.getLogger(__name__)

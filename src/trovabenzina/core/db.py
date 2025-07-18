@@ -2,7 +2,7 @@ import datetime as dt
 
 import aiosqlite
 
-from config import DB_PATH as DB
+from trovabenzina.config import DB_PATH as DB
 
 
 async def init_db():

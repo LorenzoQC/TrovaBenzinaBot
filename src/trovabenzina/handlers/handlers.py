@@ -12,8 +12,7 @@ from telegram.ext import (
     ConversationHandler,
 )
 
-from api import geocode, call_api, fetch_address
-from config import (
+from trovabenzina.config import (
     FUEL_MAP,
     SERVICE_MAP,
     DEFAULT_RADIUS_NEAR,
@@ -21,7 +20,8 @@ from config import (
     LANGUAGES,
     DEFAULT_LANGUAGE,
 )
-from db import (
+from trovabenzina.core.api import geocode, call_api, fetch_address
+from trovabenzina.core.db import (
     upsert_user,
     get_user,
     log_search,
@@ -29,7 +29,7 @@ from db import (
     list_favorites,
     delete_favorite,
 )
-from translations import t
+from trovabenzina.i18n.translations import t
 
 log = logging.getLogger(__name__)
 
