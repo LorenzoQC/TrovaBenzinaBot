@@ -42,7 +42,7 @@ from trovabenzina.handlers.handlers import (
     profile_cmd,
     help_cmd,
 )
-from trovabenzina.utils.utils import setup_logging
+from trovabenzina.utils import setup_logging
 
 setup_logging()
 log = logging.getLogger(__name__)
