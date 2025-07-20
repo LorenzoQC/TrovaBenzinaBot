@@ -14,16 +14,7 @@ from telegram.ext import (
 from trovabenzina.bot.scheduler import setup_scheduler
 from trovabenzina.config import BOT_TOKEN, BASE_URL
 from trovabenzina.core.db import init_db
-from trovabenzina.handlers.handlers import (
-    STEP_LANG,
-    STEP_FUEL,
-    STEP_SERVICE,
-    STEP_FIND_LOC,
-    STEP_FIND_RADIUS,
-    STEP_FAV_ACTION,
-    STEP_FAV_NAME,
-    STEP_FAV_LOC,
-    STEP_FAV_REMOVE,
+from trovabenzina.handlers import (
     start,
     language_selected,
     fuel_selected,
@@ -42,7 +33,18 @@ from trovabenzina.handlers.handlers import (
     profile_cmd,
     help_cmd,
 )
-from trovabenzina.utils import setup_logging
+from trovabenzina.utils import (
+    setup_logging,
+    STEP_LANG,
+    STEP_FUEL,
+    STEP_SERVICE,
+    STEP_FIND_LOC,
+    STEP_FIND_RADIUS,
+    STEP_FAV_ACTION,
+    STEP_FAV_NAME,
+    STEP_FAV_LOC,
+    STEP_FAV_REMOVE,
+)
 
 setup_logging()
 log = logging.getLogger(__name__)
