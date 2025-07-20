@@ -1,6 +1,6 @@
 # TrovaBenzinaBot
 
-[![it](https://img.shields.io/badge/lang-italiano-green.svg)](https://github.com/LorenzoQC/TrovaBenzinaBot/blob/main/README.it.md)
+[![en](https://img.shields.io/badge/lang-english-blue.svg)](https://github.com/LorenzoQC/TrovaBenzinaBot/blob/main/README.md)
 
 Telegram bot that allows users to find the cheapest fuel stations nearby in Italy.
 
