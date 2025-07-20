@@ -2,35 +2,37 @@ import datetime as dt
 import logging
 
 import aiohttp
-import aiosqlite
 
 from trovabenzina.config import (
-    DB_PATH as DB,
     GEOCODE_HARD_CAP,
     GOOGLE_API_KEY,
     GEOCODE_URL,
     MISE_SEARCH_URL,
     MISE_DETAIL_URL,
 )
+from trovabenzina.core.db import fetchrow, execute
 
 log = logging.getLogger(__name__)
 
 
 async def geocode(addr: str):
     """Return (lat, lng) or None if not found or over quota."""
-    async with aiosqlite.connect(DB) as db:
-        row = await (await db.execute(
-            "SELECT lat,lng FROM geocache WHERE query=?", (addr,)
-        )).fetchone()
-        if row:
-            return row
-        month = dt.date.today().strftime("%Y-%m")
-        cnt_row = await (await db.execute(
-            "SELECT cnt FROM geostats WHERE month=?", (month,)
-        )).fetchone()
-        if cnt_row and cnt_row[0] >= GEOCODE_HARD_CAP:
-            return None
+    # check cache
+    row = await fetchrow(
+        "SELECT lat, lng FROM geocache WHERE query = $1", addr
+    )
+    if row:
+        return row['lat'], row['lng']
 
+    # rate limiting
+    month = dt.date.today().strftime("%Y-%m")
+    cnt_row = await fetchrow(
+        "SELECT cnt FROM geostats WHERE month = $1", month
+    )
+    if cnt_row and cnt_row['cnt'] >= GEOCODE_HARD_CAP:
+        return None
+
+    # call Google Geocoding API
     params = {
         "address": addr,
         "components": "country:IT",
@@ -54,16 +56,27 @@ async def geocode(addr: str):
         return None
 
     latlng = best["geometry"]["location"]
-    async with aiosqlite.connect(DB) as db:
-        await db.execute(
-            "INSERT OR REPLACE INTO geocache(query,lat,lng) VALUES(?,?,?)",
-            (addr, latlng["lat"], latlng["lng"]),
-        )
-        await db.execute(
-            "INSERT INTO geostats(month,cnt) VALUES(?,1) ON CONFLICT(month) DO UPDATE SET cnt=cnt+1",
-            (month,),
-        )
-        await db.commit()
+    # update cache and stats
+    await execute(
+        """
+        INSERT INTO geocache(query, lat, lng)
+        VALUES($1, $2, $3)
+        ON CONFLICT(query) DO UPDATE
+          SET lat = EXCLUDED.lat,
+              lng = EXCLUDED.lng,
+              ts  = CURRENT_TIMESTAMP
+        """,
+        addr, latlng["lat"], latlng["lng"]
+    )
+    await execute(
+        """
+        INSERT INTO geostats(month, cnt)
+        VALUES($1, 1)
+        ON CONFLICT(month) DO UPDATE
+          SET cnt = geostats.cnt + 1
+        """,
+        month
+    )
 
     return latlng["lat"], latlng["lng"]
 

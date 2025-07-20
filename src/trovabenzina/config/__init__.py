@@ -3,7 +3,7 @@ from .secrets import (
     GOOGLE_API_KEY,
 )
 from .settings import (
-    DB_PATH,
+    DATABASE_URL,
     GEOCODE_HARD_CAP,
     BASE_URL,
     SCHEDULER_TIMEZONE,
@@ -26,7 +26,7 @@ from .settings import (
 
 __all__ = [
     # settings
-    "DB_PATH", "GEOCODE_HARD_CAP", "BASE_URL",
+    "DATABASE_URL", "GEOCODE_HARD_CAP", "BASE_URL",
     "SCHEDULER_TIMEZONE", "CACHE_CLEAN_HOUR",
     "MONTHLY_REPORT_DAY", "MONTHLY_REPORT_HOUR",
     "ENABLE_DONATION", "PAYPAL_LINK",
