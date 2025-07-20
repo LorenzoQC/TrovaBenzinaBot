@@ -1,11 +1,9 @@
 import datetime as dt
 import logging
 
-import aiosqlite
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from trovabenzina.config import (
-    DB_PATH as DB,
     ENABLE_DONATION,
     SCHEDULER_TIMEZONE,
     CACHE_CLEAN_HOUR,
@@ -13,16 +11,14 @@ from trovabenzina.config import (
     MONTHLY_REPORT_HOUR,
     PAYPAL_LINK
 )
+from trovabenzina.core.db import fetch, execute
 
 log = logging.getLogger(__name__)
 
 
 async def clear_cache():
-    """Remove geocoding entries older than 90 days."""
-    async with aiosqlite.connect(DB) as db:
-        await db.execute("DELETE FROM geocache WHERE ts < date('now','-90 days')")
-        await db.commit()
-    log.info("Geocode cache cleared")
+    # remove entries older than 90 days
+    await execute("DELETE FROM geocache WHERE ts < NOW() - INTERVAL '90 days'")
 
 
 async def monthly_report(app):
@@ -33,26 +29,27 @@ async def monthly_report(app):
     start_prev = (today - dt.timedelta(days=1)).replace(day=1)
     end_prev = today - dt.timedelta(days=1)
 
-    async with aiosqlite.connect(DB) as db:
-        rows = await (await db.execute("SELECT DISTINCT user_id FROM searches")).fetchall()
-        for (uid,) in rows:
-            vals = await (await db.execute(
-                "SELECT price_avg,price_min FROM searches WHERE user_id=? AND ts BETWEEN ? AND ?",
-                (uid, start_prev, end_prev)
-            )).fetchall()
-            saving = sum((avg - mn) * 50 for avg, mn in vals)
-            if saving <= 0:
-                continue
-            msg = (
-                f"Thanks to TrovaBenzinaBot, last month you saved: {saving:.2f}€*.\n\n"
-                "Would you like to buy me a coffee?\n"
-                f"{PAYPAL_LINK}\n\n"
-                "*Calculation based on 50€ refuel per search."
-            )
-            try:
-                await app.bot.send_message(uid, msg)
-            except Exception as exc:
-                log.warning("Failed to send monthly report to %s: %s", uid, exc)
+    # fetch distinct users
+    rows = await fetch("SELECT DISTINCT user_id FROM searches")
+    for rec in rows:
+        uid = rec["user_id"]
+        vals = await fetch(
+            "SELECT price_avg,price_min FROM searches WHERE user_id=$1 AND ts BETWEEN $2 AND $3",
+            uid, start_prev, end_prev
+        )
+        saving = sum((r["price_avg"] - r["price_min"]) * 50 for r in vals)
+        if saving <= 0:
+            continue
+        msg = (
+            f"Thanks to TrovaBenzinaBot, last month you saved: {saving:.2f}€*.\n\n"
+            "Would you like to buy me a coffee?\n"
+            f"{PAYPAL_LINK}\n\n"
+            "*Calculation based on 50€ refuel per search."
+        )
+        try:
+            await app.bot.send_message(uid, msg)
+        except Exception as exc:
+            log.warning("Failed to send monthly report to %s: %s", uid, exc)
 
 
 def setup_scheduler(loop, app):

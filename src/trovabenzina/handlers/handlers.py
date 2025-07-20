@@ -29,7 +29,7 @@ from trovabenzina.core.db import (
     list_favorites,
     delete_favorite,
 )
-from trovabenzina.i18n.translations import t
+from trovabenzina.i18n import t
 
 log = logging.getLogger(__name__)
 

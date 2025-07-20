@@ -1,7 +1,7 @@
 import os
 
 # Database
-DB_PATH = os.getenv("DB_PATH", "/data/data.db")
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 # Geocoding
 GEOCODE_HARD_CAP = int(os.getenv("GEOCODE_HARD_CAP", "10000"))  # max monthly requests cached
