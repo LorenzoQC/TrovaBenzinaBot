@@ -2,27 +2,28 @@
 
 [![en](https://img.shields.io/badge/lang-english-blue.svg)](https://github.com/LorenzoQC/TrovaBenzinaBot/blob/main/README.md)
 
-Telegram bot that allows users to find the cheapest fuel stations nearby in Italy.
+Bot Telegram che permette agli utenti di trovare i distributori di carburante più economici in Italia.
 
-## 🚀 Features
+## 🚀 Funzionalità
 
-* **Fuel Station Search**: Finds fuel stations offering the lowest prices for the selected fuel type near the user's
-  location.
-* **Geolocation**: Uses Telegram's location sharing to quickly pinpoint nearby fuel stations.
-* **Personalization**: Users can select preferred language, fuel type, and service type.
-* **Intuitive Interface**: Simple commands and inline buttons for immediate navigation.
+* **Ricerca Distributori**: Individua i distributori con i prezzi più bassi per il tipo di carburante selezionato nelle
+  vicinanze dell'utente.
+* **Geolocalizzazione**: Utilizza la condivisione della posizione di Telegram per identificare rapidamente i
+  distributori più vicini.
+* **Personalizzazione**: Gli utenti possono selezionare lingua, tipo di carburante e tipo di servizio preferiti.
+* **Interfaccia Intuitiva**: Comandi semplici e pulsanti inline per una navigazione immediata.
 
-## 🛠️ Technologies Used
+## 🛠️ Tecnologie Utilizzate
 
 * Python 3.12
 * Telegram Bot API (`python-telegram-bot[webhooks] v22.2`)
-* Web framework: `aiohttp` for handling webhooks
-* PostgreSQL database (`asyncpg`)
-* APScheduler for periodic tasks
+* Web framework: `aiohttp` per la gestione dei webhook
+* Database PostgreSQL (`asyncpg`)
+* APScheduler per attività periodiche
 
-## 📦 Requirements
+## 📦 Requisiti
 
-Required packages are listed in the `requirements.txt` file. Install them using:
+I pacchetti necessari sono elencati nel file `requirements.txt`. Installali con:
 
 ```bash
 pip install -r requirements.txt
@@ -30,44 +31,45 @@ pip install -r requirements.txt
 
 ## 🚀 Deployment
 
-The bot is currently deployed on [Railway](https://railway.app) and is live on Telegram
-as [@trovabenzinabot](https://t.me/trovabenzinabot).
+Il bot è attualmente deployato su [Railway](https://railway.app) ed è disponibile su Telegram
+come [@trovabenzinabot](https://t.me/trovabenzinabot).
 
-## 🌐 Environment Variables Configuration
+## 🌐 Configurazione Variabili d'Ambiente
 
-Set the following environment variables:
+Imposta le seguenti variabili d'ambiente:
 
-* `TELEGRAM_TOKEN`: Telegram bot token
-* `DATABASE_URL`: PostgreSQL connection URL
-* `GOOGLE_MAPS_API_KEY`: API Key for Google Maps Geocoding
+* `TELEGRAM_TOKEN`: Token del bot Telegram
+* `DATABASE_URL`: URL di connessione a PostgreSQL
+* `GOOGLE_MAPS_API_KEY`: API Key per Google Maps Geocoding
 
-## 🔧 Project Structure
+## 🔧 Struttura del Progetto
 
 ```plaintext
 .
-├── assets/       # Images and media assets used by the bot
-├── src/          # Source code of the application
+├── assets/            # Immagini e risorse multimediali del bot
+├── src/               # Codice sorgente dell'applicazione
 │   └── trovabenzina/
-│       ├── bot/        # Bot initialization and scheduler setup
-│       ├── config/     # Configuration and secret management
-│       ├── core/       # Core modules: API and database interactions
-│       ├── handlers/   # Handlers for various bot commands
-│       ├── i18n/       # Translation files for supported languages
-│       └── utils/      # Utility functions and helpers
-├── requirements.txt  # Project dependencies
-└── Dockerfile        # Docker configuration for containerized deployment
+│       ├── bot/       # Inizializzazione del bot e configurazione scheduler
+│       ├── config/    # Gestione configurazioni e segreti
+│       ├── core/      # Moduli core: interazioni con API e database
+│       ├── handlers/  # Gestori dei comandi del bot
+│       ├── i18n/      # File di traduzione per le lingue supportate
+│       └── utils/     # Funzioni di utilità e helper
+├── requirements.txt   # Dipendenze del progetto
+├── Dockerfile         # Configurazione Docker per il deployment
+└── README.md          # Documentazione del progetto
 ```
 
-## 📌 Main Bot Commands
+## 📌 Comandi Principali del Bot
 
-* `/start`: Start user profile configuration.
-* `/find`: Find the cheapest fuel station based on current location.
-* `/preferences`: Edit language, fuel, and service preferences.
+* `/start`: Avvia la configurazione del profilo utente.
+* `/find`: Trova il distributore di carburante più economico in base alla posizione attuale.
+* `/preferences`: Modifica preferenze di lingua, carburante e tipo di servizio.
 
-## 🤝 Contributing
+## 🤝 Contribuire
 
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+Le pull request sono benvenute. Per modifiche importanti, apri prima un issue per discutere le modifiche.
 
-## 📄 License
+## 📄 Licenza
 
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+Questo progetto è rilasciato con licenza MIT. Consulta il file `LICENSE` per i dettagli.
