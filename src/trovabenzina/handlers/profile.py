@@ -20,7 +20,7 @@ async def profile_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             (t("edit_favorite_btn", lang), "fav_edit"),
         ]
     )
-    text = t("profile_info", lang).format(fuel=fuel, service=service, language=LANGUAGES[lang])
+    text = t("profile_info", lang, fuel=fuel, service=service, language=LANGUAGES[lang])
     await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb))
 
 
