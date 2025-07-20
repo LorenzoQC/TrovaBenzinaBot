@@ -1,4 +1,4 @@
-from telegram import Update, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ContextTypes, ConversationHandler
 
 from trovabenzina.config import FUEL_MAP, SERVICE_MAP, LANGUAGES, DEFAULT_LANGUAGE
@@ -32,7 +32,7 @@ async def language_selected(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     ctx.user_data["lang"] = code
 
     kb = inline_kb([(fuel, f"fuel_{fuel}") for fuel in FUEL_MAP])
-    kb.append([("↩", "back_lang")])
+    kb.append([InlineKeyboardButton("↩", callback_data="back_lang")])
     await query.edit_message_text(t("ask_fuel", code), reply_markup=InlineKeyboardMarkup(kb))
     return STEP_FUEL
 
@@ -48,7 +48,7 @@ async def fuel_selected(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     ctx.user_data["fuel"] = fuel
     kb = inline_kb([(s, f"serv_{s}") for s in SERVICE_MAP])
-    kb.append([("↩", "back_fuel")])
+    kb.append([InlineKeyboardButton("↩", callback_data="back_fuel")])
     await query.edit_message_text(t("ask_service", lang), reply_markup=InlineKeyboardMarkup(kb))
     return STEP_SERVICE
 
@@ -90,7 +90,7 @@ async def back_to_fuel(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await query.answer()
     lang = ctx.user_data.get("lang", DEFAULT_LANGUAGE)
     kb = inline_kb([(fuel, f"fuel_{fuel}") for fuel in FUEL_MAP])
-    kb.append([("↩", "back_lang")])
+    kb.append([InlineKeyboardButton("↩", callback_data="back_lang")])
     await query.edit_message_text(t("ask_fuel", lang), reply_markup=InlineKeyboardMarkup(kb))
     return STEP_FUEL
 
