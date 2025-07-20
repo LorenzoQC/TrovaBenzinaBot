@@ -140,9 +140,9 @@ async def _process_search(origin, ctx, lat: float, lng: float):
         link = f"https://www.google.com/maps/dir/?api=1&destination={quote_plus(dest)}"
 
         if price < avg:
-            note = t("note_cheaper", lang).format(pct=pct)
+            note = t("note_cheaper", lang, pct=pct)
         elif price > avg:
-            note = f"⚠️ {t('note_more_expensive', lang).format(pct=abs(pct))}"
+            note = f"⚠️ {t('note_more_expensive', lang, pct=abs(pct))}"
         else:
             note = t("note_equal", lang)
 
@@ -151,7 +151,7 @@ async def _process_search(origin, ctx, lat: float, lng: float):
 
         lines.append(
             f"{medals[i]} *{station['brand']} • {station['name']} • {station['address']}*\n"
-            f"{price:.3f} €/L – {note} {t('compared_to_avg', lang).format(avg=avg)}\n"
+            f"{price:.3f} €/L – {note} {t('compared_to_avg', lang, avg=avg)}\n"
             f"[{t('lets_go', lang)}]({link})"
         )
 
