@@ -16,14 +16,20 @@ def _load(lang: str):
     return _translations[lang]
 
 
-def t(key: str, lang: str = None, **kwargs) -> str:
+def t(key: str, lang: str | None = None, **kwargs) -> str:
     """
-    Restituisce la stringa tradotta per `key` in `lang`,
-    con fallback a DEFAULT_LANGUAGE e formattazione with **kwargs.
+    Return the translated string for `key` in `lang`.
+    Falls back to DEFAULT_LANGUAGE and, as a last resort, to the key itself.
     """
     lang = lang or DEFAULT_LANGUAGE
     trans = _load(lang).get(key)
-    if trans is None:
-        # fallback ultima risorsa
-        trans = _load(DEFAULT_LANGUAGE).get(key, "")
+
+    # first fallback: default language
+    if not trans:
+        trans = _load(DEFAULT_LANGUAGE).get(key)
+
+    # second fallback: use the key itself
+    if not trans:
+        trans = key
+
     return trans.format(**kwargs)
