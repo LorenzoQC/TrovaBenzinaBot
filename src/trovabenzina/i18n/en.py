@@ -8,6 +8,7 @@ TRANSLATIONS = {
     "choose_service": "Choose service ⛽",
     "invalid_service": "⚠️ Invalid service",
     "profile_saved": "✅ Profile saved correctly",
+    "searching": "⏳ I'm searching…",
 
     # ─────────── /find ───────────
     "select_radius": "Select search radius 📏",
