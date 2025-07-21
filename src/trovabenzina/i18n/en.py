@@ -1,11 +1,11 @@
 # EN - English
 TRANSLATIONS = {
     # ─────────── /start ───────────
-    "ask_language_choice": "Choose language 🌐️",
+    "choose_language": "Choose language 🌐️",
     "invalid_language": "⚠️ Invalid language",
-    "ask_fuel": "Choose fuel 🛢️",
+    "choose_fuel": "Choose fuel 🛢️",
     "invalid_fuel": "⚠️ Invalid fuel",
-    "ask_service": "Choose service ⛽",
+    "choose_service": "Choose service ⛽",
     "invalid_service": "⚠️ Invalid service",
     "profile_saved": "✅ Profile saved correctly",
 
@@ -40,7 +40,7 @@ TRANSLATIONS = {
     "edit_language": "Edit language 🌐️",
     "edit_fuel": "Edit fuel 🛢️",
     "edit_service": "Edit service ⛽",
-    "profile_info": "Profile:\nFuel: {fuel}\nService: {service}\nLanguage: {language}",
+    "profile_info": "🌐️ Language: {language}\n🛢️ Fuel: {fuel}\n⛽ Service: {service}",
 
     # ─────────── /help ───────────
     "help": (

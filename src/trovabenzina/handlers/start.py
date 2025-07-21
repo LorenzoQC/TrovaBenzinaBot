@@ -18,7 +18,7 @@ __all__ = ["start_conv"]  # exported to bot.main
 async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     kb = inline_kb([(name, f"lang_{code}") for code, name in LANGUAGES.items()])
     await update.message.reply_text(
-        t("ask_language_choice", DEFAULT_LANGUAGE),
+        t("choose_language", DEFAULT_LANGUAGE),
         reply_markup=InlineKeyboardMarkup(kb),
     )
     ctx.user_data.clear()
@@ -33,7 +33,7 @@ async def language_selected(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     kb = inline_kb([(fuel, f"fuel_{fuel}") for fuel in FUEL_MAP])
     kb.append([InlineKeyboardButton("↩", callback_data="back_lang")])
-    await query.edit_message_text(t("ask_fuel", code), reply_markup=InlineKeyboardMarkup(kb))
+    await query.edit_message_text(t("choose_fuel", code), reply_markup=InlineKeyboardMarkup(kb))
     return STEP_FUEL
 
 
@@ -49,7 +49,7 @@ async def fuel_selected(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     ctx.user_data["fuel"] = fuel
     kb = inline_kb([(s, f"serv_{s}") for s in SERVICE_MAP])
     kb.append([InlineKeyboardButton("↩", callback_data="back_fuel")])
-    await query.edit_message_text(t("ask_service", lang), reply_markup=InlineKeyboardMarkup(kb))
+    await query.edit_message_text(t("choose_service", lang), reply_markup=InlineKeyboardMarkup(kb))
     return STEP_SERVICE
 
 
@@ -79,7 +79,7 @@ async def back_to_lang(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await query.answer()
     kb = inline_kb([(name, f"lang_{code}") for code, name in LANGUAGES.items()])
     await query.edit_message_text(
-        t("ask_language_choice", DEFAULT_LANGUAGE),
+        t("choose_language", DEFAULT_LANGUAGE),
         reply_markup=InlineKeyboardMarkup(kb),
     )
     return STEP_LANG
@@ -91,7 +91,7 @@ async def back_to_fuel(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     lang = ctx.user_data.get("lang", DEFAULT_LANGUAGE)
     kb = inline_kb([(fuel, f"fuel_{fuel}") for fuel in FUEL_MAP])
     kb.append([InlineKeyboardButton("↩", callback_data="back_lang")])
-    await query.edit_message_text(t("ask_fuel", lang), reply_markup=InlineKeyboardMarkup(kb))
+    await query.edit_message_text(t("choose_fuel", lang), reply_markup=InlineKeyboardMarkup(kb))
     return STEP_FUEL
 
 
