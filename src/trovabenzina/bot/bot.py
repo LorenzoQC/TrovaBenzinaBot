@@ -63,19 +63,23 @@ def main() -> None:
         ConversationHandler(
             entry_points=[CommandHandler("start", start)],
             states={
-                STEP_LANG: [CallbackQueryHandler(language_selected, pattern="^lang_")],
+                STEP_LANG: [
+                    CallbackQueryHandler(language_selected, pattern="^lang_"),
+                    MessageHandler(filters.ALL, repeat_lang_prompt),
+                ],
                 STEP_FUEL: [
                     CallbackQueryHandler(fuel_selected, pattern="^fuel_"),
                     CallbackQueryHandler(back_to_lang, pattern="^back_lang$"),
+                    MessageHandler(filters.ALL, repeat_fuel_prompt),
                 ],
                 STEP_SERVICE: [
                     CallbackQueryHandler(service_selected, pattern="^serv_"),
                     CallbackQueryHandler(back_to_fuel, pattern="^back_fuel$"),
+                    MessageHandler(filters.ALL, repeat_service_prompt),
                 ],
             },
             fallbacks=[],
             block=True,
-
         )
     )
 
