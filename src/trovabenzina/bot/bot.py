@@ -32,6 +32,9 @@ from trovabenzina.handlers import (
     fav_loc,
     profile_cmd,
     help_cmd,
+    repeat_lang_prompt,
+    repeat_fuel_prompt,
+    repeat_service_prompt,
 )
 from trovabenzina.utils import (
     setup_logging,
