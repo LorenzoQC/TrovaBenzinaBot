@@ -8,7 +8,6 @@ TRANSLATIONS = {
     "choose_service": "Seleziona servizio ⛽",
     "invalid_service": "⚠️ Servizio non valido",
     "profile_saved": "✅ Profilo salvato correttamente",
-    "searching": "⏳ Sto cercando…",
 
     # ─────────── /find ───────────
     "select_radius": "Seleziona raggio di ricerca 📏",
