@@ -20,11 +20,11 @@ __all__ = [
 
 
 # ────────────────────── entry point ──────────────────────
-async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+async def start(update: Update):
     """/start entry point."""
     kb = inline_kb([(name, f"lang_{code}") for code, name in LANGUAGES.items()])
     await update.effective_message.reply_text(
-        t("choose_language", DEFAULT_LANGUAGE),
+        t("select_language", DEFAULT_LANGUAGE),
         reply_markup=InlineKeyboardMarkup(kb),
     )
     return STEP_LANG
@@ -42,7 +42,7 @@ async def language_selected(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     kb = inline_kb([(fuel, f"fuel_{fuel}") for fuel in FUEL_MAP])
     kb.append([InlineKeyboardButton("↩", callback_data="back_lang")])
     await query.edit_message_text(
-        t("choose_fuel", lang),
+        t("select_fuel", lang),
         reply_markup=InlineKeyboardMarkup(kb),
     )
     return STEP_FUEL
@@ -58,7 +58,7 @@ async def fuel_selected(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     kb = inline_kb([(s, f"serv_{s}") for s in SERVICE_MAP])
     kb.append([InlineKeyboardButton("↩", callback_data="back_fuel")])
     await query.edit_message_text(
-        t("choose_service", lang),
+        t("select_service", lang),
         reply_markup=InlineKeyboardMarkup(kb),
     )
     return STEP_SERVICE
@@ -82,13 +82,13 @@ async def service_selected(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 
 # ───────────── navigation “back” callbacks ──────────────
-async def back_to_lang(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+async def back_to_lang(update: Update):
     """Go back to language selection."""
     query = update.callback_query
     await query.answer()
     kb = inline_kb([(name, f"lang_{code}") for code, name in LANGUAGES.items()])
     await query.edit_message_text(
-        t("choose_language", DEFAULT_LANGUAGE),
+        t("select_language", DEFAULT_LANGUAGE),
         reply_markup=InlineKeyboardMarkup(kb),
     )
     return STEP_LANG
@@ -101,18 +101,18 @@ async def back_to_fuel(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     lang = ctx.user_data.get("lang", DEFAULT_LANGUAGE)
     kb = inline_kb([(fuel, f"fuel_{fuel}") for fuel in FUEL_MAP])
     await query.edit_message_text(
-        t("choose_fuel", lang),
+        t("select_fuel", lang),
         reply_markup=InlineKeyboardMarkup(kb),
     )
     return STEP_FUEL
 
 
 # ──────────── “repeat prompt” catch-all handlers ────────────
-async def repeat_lang_prompt(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+async def repeat_lang_prompt(update: Update):
     """Repeat language keyboard when user sends unrelated content."""
     kb = inline_kb([(name, f"lang_{code}") for code, name in LANGUAGES.items()])
     await update.effective_message.reply_text(
-        t("choose_language", DEFAULT_LANGUAGE),
+        t("select_language", DEFAULT_LANGUAGE),
         reply_markup=InlineKeyboardMarkup(kb),
     )
     return STEP_LANG
@@ -124,7 +124,7 @@ async def repeat_fuel_prompt(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     kb = inline_kb([(fuel, f"fuel_{fuel}") for fuel in FUEL_MAP])
     kb.append([InlineKeyboardButton("↩", callback_data="back_lang")])
     await update.effective_message.reply_text(
-        t("choose_fuel", lang),
+        t("select_fuel", lang),
         reply_markup=InlineKeyboardMarkup(kb),
     )
     return STEP_FUEL
@@ -136,7 +136,7 @@ async def repeat_service_prompt(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     kb = inline_kb([(s, f"serv_{s}") for s in SERVICE_MAP])
     kb.append([InlineKeyboardButton("↩", callback_data="back_fuel")])
     await update.effective_message.reply_text(
-        t("choose_service", lang),
+        t("select_service", lang),
         reply_markup=InlineKeyboardMarkup(kb),
     )
     return STEP_SERVICE

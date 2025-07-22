@@ -1,13 +1,19 @@
 # EN - English
 TRANSLATIONS = {
     # ─────────── /start ───────────
-    "choose_language": "Choose language 🌐️",
+    "select_language": "Select language 🌐️",
     "invalid_language": "⚠️ Invalid language",
-    "choose_fuel": "Choose fuel 🛢️",
+    "select_fuel": "Select fuel 🛢️",
     "invalid_fuel": "⚠️ Invalid fuel",
-    "choose_service": "Choose service ⛽",
+    "select_service": "Select service ⛽",
     "invalid_service": "⚠️ Invalid service",
     "profile_saved": "✅ Profile saved correctly",
+
+    # ─────────── /profile ───────────
+    "edit_language": "Edit language 🌐️",
+    "edit_fuel": "Edit fuel 🛢️",
+    "edit_service": "Edit service ⛽",
+    "profile_info": "🌐️ Language: {language}\n🛢️ Fuel: {fuel}\n⛽ Service: {service}",
 
     # ─────────── /find ───────────
     "select_radius": "Select search radius 📏",
@@ -35,12 +41,6 @@ TRANSLATIONS = {
     "no_favorites": "No favourite places saved",
     "ask_fav_name": "Give a name to the favourite place",
     "ask_fav_location": "Send location or address for the favourite",
-
-    # ─────────── /profile ───────────
-    "edit_language": "Edit language 🌐️",
-    "edit_fuel": "Edit fuel 🛢️",
-    "edit_service": "Edit service ⛽",
-    "profile_info": "🌐️ Language: {language}\n🛢️ Fuel: {fuel}\n⛽ Service: {service}",
 
     # ─────────── /help ───────────
     "help": (

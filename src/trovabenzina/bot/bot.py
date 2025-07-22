@@ -95,7 +95,7 @@ def main() -> None:
     app.add_handler(
         ConversationHandler(
             entry_points=[
-                CommandHandler(["profile"], profile_entry)
+                CommandHandler("profile", profile_entry)
             ],
             states={
                 LANG_SELECT: [
@@ -151,9 +151,6 @@ def main() -> None:
             block=True,
         )
     )
-
-    # shared inline callbacks (edit profile, delete favourite, save favourite)
-    app.add_handler(CallbackQueryHandler(favorites_callback, pattern="^(edit_|favdel_|savefav:)"))
 
     # simple commands
     app.add_handler(CommandHandler("help", help_cmd))
