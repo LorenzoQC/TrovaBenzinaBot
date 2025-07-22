@@ -43,6 +43,7 @@ from trovabenzina.handlers import (
 )
 from trovabenzina.utils import (
     setup_logging,
+    describe,
     STEP_LANG,
     STEP_FUEL,
     STEP_SERVICE,
@@ -157,6 +158,11 @@ def main() -> None:
 
     # background jobs
     setup_scheduler(loop, app)
+
+    log.debug("=== HANDLER REGISTRY ===")
+    for group, handler_list in app.handlers.items():
+        for h in handler_list:
+            log.debug("Group %s → %s", group, describe(h))
 
     log.info("Webhook up")
     app.run_webhook(

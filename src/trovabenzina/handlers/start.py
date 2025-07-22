@@ -20,7 +20,7 @@ __all__ = [
 
 
 # ────────────────────── entry point ──────────────────────
-async def start(update: Update):
+async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     """/start entry point."""
     kb = inline_kb([(name, f"lang_{code}") for code, name in LANGUAGES.items()])
     await update.effective_message.reply_text(
@@ -82,7 +82,7 @@ async def service_selected(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 
 # ───────────── navigation “back” callbacks ──────────────
-async def back_to_lang(update: Update):
+async def back_to_lang(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     """Go back to language selection."""
     query = update.callback_query
     await query.answer()
@@ -108,7 +108,7 @@ async def back_to_fuel(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 
 # ──────────── “repeat prompt” catch-all handlers ────────────
-async def repeat_lang_prompt(update: Update):
+async def repeat_lang_prompt(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     """Repeat language keyboard when user sends unrelated content."""
     kb = inline_kb([(name, f"lang_{code}") for code, name in LANGUAGES.items()])
     await update.effective_message.reply_text(
