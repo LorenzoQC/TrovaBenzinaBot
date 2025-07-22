@@ -71,16 +71,13 @@ async def service_selected(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     service = query.data.split("_", maxsplit=1)[1]
     ctx.user_data["service"] = service
-
     lang = ctx.user_data["lang"]
     fuel = ctx.user_data["fuel"]
     user_id = update.effective_user.id
 
-    # persist user preferences (await is mandatory)
     await upsert_user(user_id, fuel, service, lang)
 
     await query.edit_message_text(t("profile_saved", lang))
-    # … kick off search job …
     return ConversationHandler.END
 
 
