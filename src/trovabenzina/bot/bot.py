@@ -30,7 +30,12 @@ from trovabenzina.handlers import (
     favorites_callback,
     fav_name,
     fav_loc,
-    profile_cmd,
+    profile_entry,
+    save_language,
+    save_fuel,
+    save_service,
+    invalid_text,
+    LANG_SELECT, FUEL_SELECT, SERVICE_SELECT,
     help_cmd,
     repeat_lang_prompt,
     repeat_fuel_prompt,
@@ -86,6 +91,32 @@ def main() -> None:
         )
     )
 
+    # /profile
+    app.add_handler(
+        ConversationHandler(
+            entry_points=[
+                CommandHandler(["profile"], profile_entry)
+            ],
+            states={
+                LANG_SELECT: [
+                    CallbackQueryHandler(save_language, pattern="^set_lang:"),
+                    MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),
+                ],
+                FUEL_SELECT: [
+                    CallbackQueryHandler(save_fuel, pattern="^set_fuel:"),
+                    MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),
+                ],
+                SERVICE_SELECT: [
+                    CallbackQueryHandler(save_service, pattern="^set_service:"),
+                    MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),
+                ],
+            },
+            fallbacks=[],
+            block=False,
+            per_message=True,
+        )
+    )
+
     # /find
     app.add_handler(
         ConversationHandler(
@@ -125,7 +156,6 @@ def main() -> None:
     app.add_handler(CallbackQueryHandler(favorites_callback, pattern="^(edit_|favdel_|savefav:)"))
 
     # simple commands
-    app.add_handler(CommandHandler(["profile", "profilo"], profile_cmd))
     app.add_handler(CommandHandler("help", help_cmd))
 
     # background jobs
