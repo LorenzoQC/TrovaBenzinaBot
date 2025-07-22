@@ -21,7 +21,7 @@ class RailwayLogFormatter(logging.Formatter):
         return json.dumps(log_record, ensure_ascii=False)
 
 
-def setup_logging(level: int = logging.INFO) -> None:
+def setup_logging(level: int = logging.DEBUG) -> None:
     """Configure root logger for Railway (stdout  JSON)."""
     root = logging.getLogger()
     root.setLevel(level)
@@ -32,3 +32,29 @@ def setup_logging(level: int = logging.INFO) -> None:
     handler = logging.StreamHandler(sys.stdout)  # stdout ≠ error in Railway
     handler.setFormatter(RailwayLogFormatter())
     root.addHandler(handler)
+
+
+def describe(h):
+    """Returns a compact but useful string for any type of handler."""
+    from telegram.ext import CommandHandler, CallbackQueryHandler, ConversationHandler
+
+    if isinstance(h, CommandHandler):
+        return f"CommandHandler(commands={list(h.commands)})"
+
+    if isinstance(h, CallbackQueryHandler):
+        patt = h.pattern.pattern if h.pattern else None
+        return f"CallbackQueryHandler(pattern='{patt}')"
+
+    if isinstance(h, ConversationHandler):
+        ep = []
+        for e in h.entry_points:
+            if isinstance(e, CommandHandler):
+                ep.append("/" + ",".join(e.commands))
+            elif isinstance(e, CallbackQueryHandler):
+                ep.append(f"pattern:{e.pattern.pattern}")
+            else:
+                ep.append(e.__class__.__name__)
+        return f"ConversationHandler(entry_points={ep})"
+
+    attrs = {k: v for k, v in vars(h).items() if not k.startswith('_')}
+    return f"{h.__class__.__name__}({attrs})"

@@ -1,5 +1,5 @@
 from .geo import reverse_geocode_or_blank
-from .log import setup_logging
+from .log import setup_logging, describe
 from .pricing import analyse, fmt
 from .states import (
     STEP_LANG, STEP_FUEL, STEP_SERVICE,
@@ -12,7 +12,7 @@ __all__ = [
     # geo
     "reverse_geocode_or_blank",
     # log
-    "setup_logging",
+    "setup_logging", "describe",
     # pricing
     "analyse", "fmt",
     # states
