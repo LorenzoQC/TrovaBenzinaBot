@@ -1,13 +1,19 @@
 # IT - Italiano
 TRANSLATIONS = {
     # ─────────── /start ───────────
-    "choose_language": "Seleziona lingua 🌐️",
+    "select_language": "Seleziona lingua 🌐️",
     "invalid_language": "⚠️ Lingua non valida",
-    "choose_fuel": "Seleziona carburante 🛢️",
+    "select_fuel": "Seleziona carburante 🛢️",
     "invalid_fuel": "⚠️ Carburante non valido",
-    "choose_service": "Seleziona servizio ⛽",
+    "select_service": "Seleziona servizio ⛽",
     "invalid_service": "⚠️ Servizio non valido",
     "profile_saved": "✅ Profilo salvato correttamente",
+
+    # ─────────── /profile ───────────
+    "edit_language": "Modifica lingua 🌐️",
+    "edit_fuel": "Modifica carburante 🛢️",
+    "edit_service": "Modifica servizio ⛽",
+    "profile_info": "🌐️ Lingua: {language}\n🛢️ Carburante: {fuel}\n⛽ Servizio: {service}",
 
     # ─────────── /find ───────────
     "select_radius": "Seleziona raggio di ricerca 📏",
@@ -35,12 +41,6 @@ TRANSLATIONS = {
     "no_favorites": "Nessun luogo preferito salvato",
     "ask_fav_name": "Assegna un nome al luogo preferito",
     "ask_fav_location": "Invia posizione o indirizzo per il preferito",
-
-    # ─────────── /profile ───────────
-    "edit_language": "Modifica lingua 🌐️",
-    "edit_fuel": "Modifica carburante 🛢️",
-    "edit_service": "Modifica servizio ⛽",
-    "profile_info": "🌐️ Lingua: {language}\n🛢️ Carburante: {fuel}\n⛽ Servizio: {service}",
 
     # ─────────── /help ───────────
     "help": (
