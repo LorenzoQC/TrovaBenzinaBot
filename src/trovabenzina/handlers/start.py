@@ -40,6 +40,7 @@ async def language_selected(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     ctx.user_data["lang"] = lang
 
     kb = inline_kb([(fuel, f"fuel_{fuel}") for fuel in FUEL_MAP])
+    kb.append([InlineKeyboardButton("↩", callback_data="back_lang")])
     await query.edit_message_text(
         t("choose_fuel", lang),
         reply_markup=InlineKeyboardMarkup(kb),
@@ -55,7 +56,7 @@ async def fuel_selected(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     ctx.user_data["fuel"] = fuel
     lang = ctx.user_data.get("lang", DEFAULT_LANGUAGE)
     kb = inline_kb([(s, f"serv_{s}") for s in SERVICE_MAP])
-    kb.append([InlineKeyboardButton("↩", callback_data="back_lang")])
+    kb.append([InlineKeyboardButton("↩", callback_data="back_fuel")])
     await query.edit_message_text(
         t("choose_service", lang),
         reply_markup=InlineKeyboardMarkup(kb),
@@ -78,7 +79,7 @@ async def service_selected(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     # persist user preferences (await is mandatory)
     await upsert_user(user_id, fuel, service, lang)
 
-    await query.edit_message_text(t("searching", lang))
+    await query.edit_message_text(t("profile_saved", lang))
     # … kick off search job …
     return ConversationHandler.END
 
