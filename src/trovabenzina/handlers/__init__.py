@@ -15,8 +15,12 @@ from .find import (
 )
 from .help import help_cmd
 from .profile import (
-    profile_conv,
-    profile_cmd,
+    profile_entry,
+    ask_language, save_language,
+    ask_fuel, save_fuel,
+    ask_service, save_service,
+    invalid_text,
+    LANG_SELECT, FUEL_SELECT, SERVICE_SELECT,
 )
 from .start import (
     start,
@@ -38,7 +42,8 @@ __all__ = [
     # help
     "help_cmd",
     # profile
-    "profile_conv", "profile_cmd",
+    "profile_entry", "ask_language", "save_language", "ask_fuel", "save_fuel", "ask_service", "save_service",
+    "invalid_text", "LANG_SELECT", "FUEL_SELECT", "SERVICE_SELECT",
     # start
     "start", "language_selected", "fuel_selected", "service_selected", "back_to_lang", "back_to_fuel",
     "repeat_lang_prompt", "repeat_fuel_prompt", "repeat_service_prompt",
