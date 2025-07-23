@@ -1,5 +1,8 @@
 # IT - Italiano
 TRANSLATIONS = {
+    "language_code": "it",
+    "language_name": "Italiano",
+
     # ─────────── /start ───────────
     "select_language": "Seleziona lingua 🌐️",
     "invalid_language": "⚠️ Lingua non valida",
@@ -10,10 +13,12 @@ TRANSLATIONS = {
     "profile_saved": "✅ Profilo salvato correttamente",
 
     # ─────────── /profile ───────────
+    "language": "🌐️ Lingua",
+    "fuel": "🛢️ Carburante",
+    "service": "⛽ Servizio",
     "edit_language": "Modifica lingua 🌐️",
     "edit_fuel": "Modifica carburante 🛢️",
     "edit_service": "Modifica servizio ⛽",
-    "profile_info": "🌐️ Lingua: {language}\n🛢️ Carburante: {fuel}\n⛽ Servizio: {service}",
 
     # ─────────── /find ───────────
     "select_radius": "Seleziona raggio di ricerca 📏",
