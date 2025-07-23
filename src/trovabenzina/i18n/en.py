@@ -1,5 +1,8 @@
 # EN - English
 TRANSLATIONS = {
+    "language_code": "en",
+    "language_name": "English",
+
     # ─────────── /start ───────────
     "select_language": "Select language 🌐️",
     "invalid_language": "⚠️ Invalid language",
@@ -10,10 +13,12 @@ TRANSLATIONS = {
     "profile_saved": "✅ Profile saved correctly",
 
     # ─────────── /profile ───────────
+    "language": "🌐️ Language",
+    "fuel": "🛢️ Fuel",
+    "service": "⛽ Service",
     "edit_language": "Edit language 🌐️",
     "edit_fuel": "Edit fuel 🛢️",
     "edit_service": "Edit service ⛽",
-    "profile_info": "🌐️ Language: {language}\n🛢️ Fuel: {fuel}\n⛽ Service: {service}",
 
     # ─────────── /find ───────────
     "select_radius": "Select search radius 📏",

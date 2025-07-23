@@ -46,9 +46,9 @@ def _build_profile_keyboard(locale: str) -> InlineKeyboardMarkup:
     """
     return _keyboard_full_width(
         [
-            [InlineKeyboardButton(t("profile.change_language", locale), callback_data="profile_set_language")],
-            [InlineKeyboardButton(t("profile.change_fuel", locale), callback_data="profile_set_fuel")],
-            [InlineKeyboardButton(t("profile.change_service", locale), callback_data="profile_set_service")],
+            [InlineKeyboardButton(t("edit_language", locale), callback_data="profile_set_language")],
+            [InlineKeyboardButton(t("edit_fuel", locale), callback_data="profile_set_fuel")],
+            [InlineKeyboardButton(t("edit_service", locale), callback_data="profile_set_service")],
         ]
     )
 
@@ -94,10 +94,9 @@ async def profile_entry(update: Update, context: CallbackContext) -> None:
     context.user_data["lang"] = language
 
     summary = (
-        f"{t('profile.current', language)}\n\n"
-        f"• {t('profile.language', language)}: {LANG_LABELS.get(language, language)}\n"
-        f"• {t('profile.fuel', language)}: {FUEL_LABELS.get(fuel, fuel)}\n"
-        f"• {t('profile.service', language)}: {SERVICE_LABELS.get(service, service)}"
+        f"• {t('language', language)}: {LANG_LABELS.get(language, language)}\n"
+        f"• {t('fuel', language)}: {FUEL_LABELS.get(fuel, fuel)}\n"
+        f"• {t('service', language)}: {SERVICE_LABELS.get(service, service)}"
     )
 
     await update.message.reply_text(summary, reply_markup=_build_profile_keyboard(language))
