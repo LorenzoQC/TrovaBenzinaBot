@@ -114,7 +114,6 @@ def main() -> None:
             },
             fallbacks=[],
             block=False,
-            per_message=True,
         )
     )
 
