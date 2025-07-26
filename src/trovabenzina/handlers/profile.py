@@ -8,6 +8,7 @@ from telegram.ext import (
 
 from trovabenzina.core import db
 from trovabenzina.i18n import t
+from trovabenzina.utils import inline_kb
 
 # Conversation states
 LANG_SELECT, FUEL_SELECT, SERVICE_SELECT = range(3)
@@ -40,17 +41,13 @@ def _keyboard_full_width(rows: list[list[InlineKeyboardButton]]) -> InlineKeyboa
 
 
 def _build_profile_keyboard(locale: str) -> InlineKeyboardMarkup:
-    """Profile menu without the old “favourites” button.
-
-    Each of the three remaining buttons takes an entire row, as requested.
-    """
-    return _keyboard_full_width(
-        [
-            [InlineKeyboardButton(t("edit_language", locale), callback_data="profile_set_language")],
-            [InlineKeyboardButton(t("edit_fuel", locale), callback_data="profile_set_fuel")],
-            [InlineKeyboardButton(t("edit_service", locale), callback_data="profile_set_service")],
-        ]
-    )
+    """Return an inline keyboard where *each* button occupies one row."""
+    items = [
+        (t("profile.change_language", locale), "profile_set_language"),
+        (t("profile.change_fuel", locale), "profile_set_fuel"),
+        (t("profile.change_service", locale), "profile_set_service"),
+    ]
+    return InlineKeyboardMarkup(inline_kb(items, per_row=1))
 
 
 async def _repeat_last_prompt(update: Update, context: CallbackContext, prompt_key: str) -> int:
