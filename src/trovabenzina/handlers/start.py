@@ -84,7 +84,6 @@ def make_back_handler(choices_map, prompt_key, callback_prefix, state):
             reply_markup=InlineKeyboardMarkup(kb),
         )
         return state
-
     return handler
 
 
@@ -97,7 +96,6 @@ def make_repeat_handler(choices_map, prompt_key, callback_prefix, back_callback,
             reply_markup=InlineKeyboardMarkup(kb),
         )
         return state
-
     return handler
 
 
@@ -113,13 +111,13 @@ async def start_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 # ── Handlers created via factories ────────────────────────────
 language_selected = make_selection_handler(
-    LANGUAGES, "lang", "select_fuel", "fuel", STEP_FUEL, back_callback="back_lang"
+    FUEL_MAP, "lang", "select_fuel", "fuel", STEP_FUEL, back_callback="back_lang"
 )
 fuel_selected = make_selection_handler(
-    FUEL_MAP, "fuel", "select_service", "serv", STEP_SERVICE, back_callback="back_fuel"
+    SERVICE_MAP, "fuel", "select_service", "serv", STEP_SERVICE, back_callback="back_fuel"
 )
 service_selected = make_selection_handler(
-    SERVICE_MAP, "service", None, "serv", None
+    None, "service", None, None, None
 )
 
 back_to_lang = make_back_handler(
