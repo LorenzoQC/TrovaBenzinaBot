@@ -1,5 +1,6 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import ContextTypes, ConversationHandler
+from telegram.ext import ContextTypes, ConversationHandler, CommandHandler, CallbackQueryHandler, MessageHandler, \
+    filters
 
 from trovabenzina.config import DEFAULT_LANGUAGE, FUEL_MAP, LANGUAGES, SERVICE_MAP
 from trovabenzina.core.db import upsert_user
@@ -7,20 +8,12 @@ from trovabenzina.i18n import t
 from trovabenzina.utils import STEP_FUEL, STEP_LANG, STEP_SERVICE, inline_kb
 
 __all__ = [
-    "start",
-    "language_selected",
-    "fuel_selected",
-    "service_selected",
-    "back_to_lang",
-    "back_to_fuel",
-    "repeat_lang_prompt",
-    "repeat_fuel_prompt",
-    "repeat_service_prompt",
+    "start_conv",
 ]
 
 
 # ────────────────────── entry point ──────────────────────
-async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+async def start_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     """/start entry point."""
     kb = inline_kb([(name, f"lang_{code}") for code, name in LANGUAGES.items()])
     await update.effective_message.reply_text(
@@ -140,3 +133,27 @@ async def repeat_service_prompt(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         reply_markup=InlineKeyboardMarkup(kb),
     )
     return STEP_SERVICE
+
+
+# ── ConversationHandler object ───────────────────────────────────────────
+start_conv = ConversationHandler(
+    entry_points=[CommandHandler("start", start_ep)],
+    states={
+        STEP_LANG: [
+            CallbackQueryHandler(language_selected, pattern="^lang_"),
+            MessageHandler(filters.ALL, repeat_lang_prompt),
+        ],
+        STEP_FUEL: [
+            CallbackQueryHandler(fuel_selected, pattern="^fuel_"),
+            CallbackQueryHandler(back_to_lang, pattern="^back_lang$"),
+            MessageHandler(filters.ALL, repeat_fuel_prompt),
+        ],
+        STEP_SERVICE: [
+            CallbackQueryHandler(service_selected, pattern="^serv_"),
+            CallbackQueryHandler(back_to_fuel, pattern="^back_fuel$"),
+            MessageHandler(filters.ALL, repeat_service_prompt),
+        ],
+    },
+    fallbacks=[],
+    block=True,
+)
