@@ -115,13 +115,13 @@ async def start_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 # ── Handlers created via factories ────────────────────────────
 language_selected = make_selection_handler(
-    LANGUAGES, "lang", "select_fuel", "fuel", STEP_FUEL
+    FUEL_CHOICES_MAP, "lang", "select_fuel", "fuel", STEP_FUEL, back_callback="back_lang"
 )
 fuel_selected = make_selection_handler(
-    FUEL_CHOICES_MAP, "fuel", "select_service", "serv", STEP_SERVICE, back_callback="back_lang"
+    SERVICE_CHOICES_MAP, "fuel", "select_service", "serv", STEP_SERVICE, back_callback="back_fuel"
 )
 service_selected = make_selection_handler(
-    SERVICE_CHOICES_MAP, "service", None, "serv", None
+    None, "service", None, None, None
 )
 
 back_to_lang = make_back_handler(
