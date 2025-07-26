@@ -15,12 +15,7 @@ from trovabenzina.bot.scheduler import setup_scheduler
 from trovabenzina.config import BOT_TOKEN, BASE_URL
 from trovabenzina.core.db import init_db
 from trovabenzina.handlers import (
-    start,
-    language_selected,
-    fuel_selected,
-    service_selected,
-    back_to_lang,
-    back_to_fuel,
+    start_conv,
     find_cmd,
     find_receive_location,
     find_receive_text,
@@ -37,16 +32,10 @@ from trovabenzina.handlers import (
     invalid_text,
     LANG_SELECT, FUEL_SELECT, SERVICE_SELECT,
     help_cmd,
-    repeat_lang_prompt,
-    repeat_fuel_prompt,
-    repeat_service_prompt,
 )
 from trovabenzina.utils import (
     setup_logging,
     describe,
-    STEP_LANG,
-    STEP_FUEL,
-    STEP_SERVICE,
     STEP_FIND_LOC,
     STEP_FIND_RADIUS,
     STEP_FAV_ACTION,
@@ -68,29 +57,7 @@ def main() -> None:
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
     # /start
-    app.add_handler(
-        ConversationHandler(
-            entry_points=[CommandHandler("start", start)],
-            states={
-                STEP_LANG: [
-                    CallbackQueryHandler(language_selected, pattern="^lang_"),
-                    MessageHandler(filters.ALL, repeat_lang_prompt),
-                ],
-                STEP_FUEL: [
-                    CallbackQueryHandler(fuel_selected, pattern="^fuel_"),
-                    CallbackQueryHandler(back_to_lang, pattern="^back_lang$"),
-                    MessageHandler(filters.ALL, repeat_fuel_prompt),
-                ],
-                STEP_SERVICE: [
-                    CallbackQueryHandler(service_selected, pattern="^serv_"),
-                    CallbackQueryHandler(back_to_fuel, pattern="^back_fuel$"),
-                    MessageHandler(filters.ALL, repeat_service_prompt),
-                ],
-            },
-            fallbacks=[],
-            block=True,
-        )
-    )
+    app.add_handler(start_conv)
 
     # /profile
     app.add_handler(

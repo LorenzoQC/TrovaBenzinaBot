@@ -1,5 +1,12 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import ContextTypes, ConversationHandler
+from telegram.ext import (
+    ContextTypes,
+    ConversationHandler,
+    CommandHandler,
+    CallbackQueryHandler,
+    MessageHandler,
+    filters,
+)
 
 from trovabenzina.config import DEFAULT_LANGUAGE, FUEL_MAP, LANGUAGES, SERVICE_MAP
 from trovabenzina.core.db import upsert_user
@@ -7,22 +14,96 @@ from trovabenzina.i18n import t
 from trovabenzina.utils import STEP_FUEL, STEP_LANG, STEP_SERVICE, inline_kb
 
 __all__ = [
-    "start",
-    "language_selected",
-    "fuel_selected",
-    "service_selected",
-    "back_to_lang",
-    "back_to_fuel",
-    "repeat_lang_prompt",
-    "repeat_fuel_prompt",
-    "repeat_service_prompt",
+    "start_conv",
 ]
 
 
-# ────────────────────── entry point ──────────────────────
-async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """/start entry point."""
-    kb = inline_kb([(name, f"lang_{code}") for code, name in LANGUAGES.items()])
+# ── Generic keyboard builder ────────────────────────────────────
+def build_keyboard(choices, prefix, back_callback=None):
+    """
+    Build an InlineKeyboardMarkup from choices.
+    :param choices: iterable of (key, label)
+    :param prefix: callback_data prefix, e.g. 'lang', 'fuel', 'serv'
+    :param back_callback: callback_data for the back button (optional)
+    """
+    kb = inline_kb([(label, f"{prefix}_{key}") for key, label in choices])
+    if back_callback:
+        kb.append([InlineKeyboardButton("↩", callback_data=back_callback)])
+    return kb
+
+
+# ── Factory for selection handlers ─────────────────────────────
+def make_selection_handler(
+        choices_map,
+        data_key,
+        prompt_key,
+        callback_prefix,
+        next_state,
+        back_callback=None,
+):
+    async def handler(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+        query = update.callback_query
+        await query.answer()
+
+        # extract selected value
+        value = query.data.split("_", 1)[1]
+        ctx.user_data[data_key] = value
+
+        # if it's the final step, save profile and end
+        if data_key == "service":
+            await upsert_user(
+                update.effective_user.id,
+                ctx.user_data["fuel"],
+                ctx.user_data["service"],
+                ctx.user_data["lang"],
+            )
+            await query.edit_message_text(t("profile_saved", ctx.user_data["lang"]))
+            return ConversationHandler.END
+
+        # otherwise build next keyboard and prompt
+        lang = ctx.user_data.get("lang", DEFAULT_LANGUAGE)
+        kb = build_keyboard(choices_map.items(), callback_prefix, back_callback)
+        await query.edit_message_text(
+            t(prompt_key, lang),
+            reply_markup=InlineKeyboardMarkup(kb),
+        )
+        return next_state
+
+    return handler
+
+
+# ── Factory for “back” handlers ────────────────────────────────
+def make_back_handler(choices_map, prompt_key, callback_prefix, state):
+    async def handler(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+        query = update.callback_query
+        await query.answer()
+        lang = ctx.user_data.get("lang", DEFAULT_LANGUAGE)
+        kb = build_keyboard(choices_map.items(), callback_prefix)
+        await query.edit_message_text(
+            t(prompt_key, lang),
+            reply_markup=InlineKeyboardMarkup(kb),
+        )
+        return state
+
+    return handler
+
+
+# ── Factory for “repeat prompt” handlers ───────────────────────
+def make_repeat_handler(choices_map, prompt_key, callback_prefix, back_callback, state):
+    async def handler(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+        kb = build_keyboard(choices_map.items(), callback_prefix, back_callback)
+        await update.effective_message.reply_text(
+            t(prompt_key, ctx.user_data.get("lang", DEFAULT_LANGUAGE)),
+            reply_markup=InlineKeyboardMarkup(kb),
+        )
+        return state
+
+    return handler
+
+
+# ── Entry point ────────────────────────────────────────────────
+async def start_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    kb = build_keyboard(LANGUAGES.items(), "lang")
     await update.effective_message.reply_text(
         t("select_language", DEFAULT_LANGUAGE),
         reply_markup=InlineKeyboardMarkup(kb),
@@ -30,113 +111,53 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     return STEP_LANG
 
 
-# ─────────────────── callback handlers ───────────────────
-async def language_selected(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Handle chosen language."""
-    query = update.callback_query
-    await query.answer()
+# ── Handlers created via factories ────────────────────────────
+language_selected = make_selection_handler(
+    LANGUAGES, "lang", "select_fuel", "fuel", STEP_FUEL, back_callback="back_lang"
+)
+fuel_selected = make_selection_handler(
+    FUEL_MAP, "fuel", "select_service", "serv", STEP_SERVICE, back_callback="back_fuel"
+)
+service_selected = make_selection_handler(
+    SERVICE_MAP, "service", None, "serv", None
+)
 
-    lang = query.data.split("_", maxsplit=1)[1]
-    ctx.user_data["lang"] = lang
+back_to_lang = make_back_handler(
+    LANGUAGES, "select_language", "lang", STEP_LANG
+)
+back_to_fuel = make_back_handler(
+    FUEL_MAP, "select_fuel", "fuel", STEP_FUEL
+)
 
-    kb = inline_kb([(fuel, f"fuel_{fuel}") for fuel in FUEL_MAP])
-    kb.append([InlineKeyboardButton("↩", callback_data="back_lang")])
-    await query.edit_message_text(
-        t("select_fuel", lang),
-        reply_markup=InlineKeyboardMarkup(kb),
-    )
-    return STEP_FUEL
+repeat_lang_prompt = make_repeat_handler(
+    LANGUAGES, "select_language", "lang", None, STEP_LANG
+)
+repeat_fuel_prompt = make_repeat_handler(
+    FUEL_MAP, "select_fuel", "fuel", "back_lang", STEP_FUEL
+)
+repeat_service_prompt = make_repeat_handler(
+    SERVICE_MAP, "select_service", "serv", "back_fuel", STEP_SERVICE
+)
 
-
-async def fuel_selected(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Handle chosen fuel."""
-    query = update.callback_query
-    await query.answer()
-    fuel = query.data.split("_", maxsplit=1)[1]
-    ctx.user_data["fuel"] = fuel
-    lang = ctx.user_data.get("lang", DEFAULT_LANGUAGE)
-    kb = inline_kb([(s, f"serv_{s}") for s in SERVICE_MAP])
-    kb.append([InlineKeyboardButton("↩", callback_data="back_fuel")])
-    await query.edit_message_text(
-        t("select_service", lang),
-        reply_markup=InlineKeyboardMarkup(kb),
-    )
-    return STEP_SERVICE
-
-
-async def service_selected(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Handle chosen service (end of flow)."""
-    query = update.callback_query
-    await query.answer()
-
-    service = query.data.split("_", maxsplit=1)[1]
-    ctx.user_data["service"] = service
-    lang = ctx.user_data["lang"]
-    fuel = ctx.user_data["fuel"]
-    user_id = update.effective_user.id
-
-    await upsert_user(user_id, fuel, service, lang)
-
-    await query.edit_message_text(t("profile_saved", lang))
-    return ConversationHandler.END
-
-
-# ───────────── navigation “back” callbacks ──────────────
-async def back_to_lang(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Go back to language selection."""
-    query = update.callback_query
-    await query.answer()
-    kb = inline_kb([(name, f"lang_{code}") for code, name in LANGUAGES.items()])
-    await query.edit_message_text(
-        t("select_language", DEFAULT_LANGUAGE),
-        reply_markup=InlineKeyboardMarkup(kb),
-    )
-    return STEP_LANG
-
-
-async def back_to_fuel(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Go back to fuel selection."""
-    query = update.callback_query
-    await query.answer()
-    lang = ctx.user_data.get("lang", DEFAULT_LANGUAGE)
-    kb = inline_kb([(fuel, f"fuel_{fuel}") for fuel in FUEL_MAP])
-    await query.edit_message_text(
-        t("select_fuel", lang),
-        reply_markup=InlineKeyboardMarkup(kb),
-    )
-    return STEP_FUEL
-
-
-# ──────────── “repeat prompt” catch-all handlers ────────────
-async def repeat_lang_prompt(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Repeat language keyboard when user sends unrelated content."""
-    kb = inline_kb([(name, f"lang_{code}") for code, name in LANGUAGES.items()])
-    await update.effective_message.reply_text(
-        t("select_language", DEFAULT_LANGUAGE),
-        reply_markup=InlineKeyboardMarkup(kb),
-    )
-    return STEP_LANG
-
-
-async def repeat_fuel_prompt(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Repeat fuel keyboard when user sends unrelated content."""
-    lang = ctx.user_data.get("lang", DEFAULT_LANGUAGE)
-    kb = inline_kb([(fuel, f"fuel_{fuel}") for fuel in FUEL_MAP])
-    kb.append([InlineKeyboardButton("↩", callback_data="back_lang")])
-    await update.effective_message.reply_text(
-        t("select_fuel", lang),
-        reply_markup=InlineKeyboardMarkup(kb),
-    )
-    return STEP_FUEL
-
-
-async def repeat_service_prompt(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Repeat service keyboard when user sends unrelated content."""
-    lang = ctx.user_data.get("lang", DEFAULT_LANGUAGE)
-    kb = inline_kb([(s, f"serv_{s}") for s in SERVICE_MAP])
-    kb.append([InlineKeyboardButton("↩", callback_data="back_fuel")])
-    await update.effective_message.reply_text(
-        t("select_service", lang),
-        reply_markup=InlineKeyboardMarkup(kb),
-    )
-    return STEP_SERVICE
+# ── ConversationHandler setup ─────────────────────────────────
+start_conv = ConversationHandler(
+    entry_points=[CommandHandler("start", start_ep)],
+    states={
+        STEP_LANG: [
+            CallbackQueryHandler(language_selected, pattern="^lang_"),
+            MessageHandler(filters.ALL, repeat_lang_prompt),
+        ],
+        STEP_FUEL: [
+            CallbackQueryHandler(fuel_selected, pattern="^fuel_"),
+            CallbackQueryHandler(back_to_lang, pattern="^back_lang$"),
+            MessageHandler(filters.ALL, repeat_fuel_prompt),
+        ],
+        STEP_SERVICE: [
+            CallbackQueryHandler(service_selected, pattern="^serv_"),
+            CallbackQueryHandler(back_to_fuel, pattern="^back_fuel$"),
+            MessageHandler(filters.ALL, repeat_service_prompt),
+        ],
+    },
+    fallbacks=[],
+    block=True,
+)
