@@ -202,7 +202,7 @@ async def invalid_text(update: Update, context: CallbackContext) -> int:
 profile_handler = ConversationHandler(
     entry_points=[CommandHandler("profile", profile_ep)],
     states={
-        # handlers must be registered in bot.py via CommandHandler("profile", profile_entry),
+        # handlers must be registered in core.py via CommandHandler("profile", profile_entry),
         LANG_SELECT: [
             CallbackQueryHandler(ask_language, pattern="^profile_set_language$"),
             MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),

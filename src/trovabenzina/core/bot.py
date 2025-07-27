@@ -11,8 +11,8 @@ from telegram.ext import (
     filters,
 )
 
-from trovabenzina.bot.scheduler import setup_scheduler
 from trovabenzina.config import BOT_TOKEN, BASE_URL
+from trovabenzina.core.scheduler import setup_scheduler
 from trovabenzina.db.crud import (
     get_fuel_map,
     get_service_map,
@@ -44,7 +44,7 @@ log = logging.getLogger(__name__)
 def main() -> None:
     """
     Entry point: initialize database, sync config tables, load mapping data,
-    setup and run the Telegram bot.
+    setup and run the Telegram core.
     """
     # Create and set a new async event loop
     loop = asyncio.new_event_loop()
@@ -58,7 +58,7 @@ def main() -> None:
     loop.run_until_complete(sync_config_tables())
     log.info("Config tables synced from CSV files")
 
-    # Load mappings from database for bot use
+    # Load mappings from database for core use
     language_map = loop.run_until_complete(get_language_map())
     fuel_map = loop.run_until_complete(get_fuel_map())
     service_map = loop.run_until_complete(get_service_map())

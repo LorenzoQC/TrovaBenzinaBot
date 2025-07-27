@@ -11,6 +11,7 @@ from telegram.ext import (
     filters,
 )
 
+from trovabenzina.api.api import geocode, call_api, fetch_address
 from trovabenzina.config import (
     FUEL_MAP,
     SERVICE_MAP,
@@ -18,7 +19,6 @@ from trovabenzina.config import (
     DEFAULT_RADIUS_FAR,
     DEFAULT_LANGUAGE,
 )
-from trovabenzina.core.api import geocode, call_api, fetch_address
 from trovabenzina.db.crud import get_user, log_search
 from trovabenzina.i18n import t
 from trovabenzina.utils import (

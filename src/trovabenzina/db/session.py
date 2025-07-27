@@ -20,9 +20,11 @@ AsyncSession = async_sessionmaker(
 async def init_db() -> None:
     """
     Create all tables and the 'v_geostats' view if not already present.
-    This should be called at bot startup, before handling any requests.
+    This should be called at core startup, before handling any requests.
     """
     async with engine.begin() as conn:
+        # Force session timezone to Europe/Rome
+        await conn.execute(text("SET TIME ZONE 'Europe/Rome';"))
         # Create tables
         await conn.run_sync(Base.metadata.create_all)
         # Create or replace the view for geocache stats:

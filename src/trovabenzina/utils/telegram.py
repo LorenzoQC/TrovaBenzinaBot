@@ -1,5 +1,5 @@
 """
-Utilities tightly coupled to python-telegram-bot.
+Utilities tightly coupled to python-telegram-core.
 """
 from typing import List, Tuple
 
