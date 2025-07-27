@@ -46,7 +46,10 @@ async def _get_or_create_defaults(uid: int) -> tuple[str, str, str]:
     """Return user's current preferences or set defaults if none exist."""
     row = await get_user(uid)
     if row:
-        return row.fuel_code, row.service_code, row.lang_code
+        fuel_code, service_code, lang_code = row  # row is a 3‑tuple from SELECT
+        if lang_code is None:
+            lang_code = DEFAULT_LANGUAGE
+        return fuel_code, service_code, lang_code
 
     # If user hasn't configured preferences yet, fall back to defaults
     fuel_code = next(iter(FUEL_MAP.values()))
@@ -195,7 +198,6 @@ async def invalid_text(update: Update, context: CallbackContext) -> int:
         return await ask_fuel(update, context)
     else:
         return await ask_service(update, context)
-
 
 # ---------------------------------------------------------------------------
 # Conversation definition
