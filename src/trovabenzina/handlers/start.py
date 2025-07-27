@@ -141,18 +141,17 @@ async def start_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 # Handlers via factories, passing in getters directly
 language_selected = make_selection_handler(
-    lambda: dict(LANGUAGE_MAP),
+    lambda: dict(FUEL_MAP),
     "lang", "select_fuel", "fuel", STEP_FUEL,
     back_callback="back_lang"
 )
 fuel_selected = make_selection_handler(
-    lambda: dict(FUEL_MAP),
+    lambda: dict(SERVICE_MAP),
     "fuel", "select_service", "serv", STEP_SERVICE,
     back_callback="back_fuel"
 )
 service_selected = make_selection_handler(
-    lambda: dict(SERVICE_MAP),
-    "service", None, None, None
+    None, "service", None, None, None
 )
 
 back_to_lang = make_back_handler(
