@@ -9,37 +9,40 @@ from trovabenzina.config import (
     CACHE_CLEAN_HOUR,
     MONTHLY_REPORT_DAY,
     MONTHLY_REPORT_HOUR,
-    PAYPAL_LINK
+    PAYPAL_LINK,
 )
-from trovabenzina.core.db import fetch, execute
+from trovabenzina.db.crud import (
+    delete_old_geocache,
+    get_search_users,
+    calculate_monthly_savings,
+)
 
 log = logging.getLogger(__name__)
 
 
 async def clear_cache():
-    # remove entries older than 90 days
-    await execute("DELETE FROM geocache WHERE ts < NOW() - INTERVAL '90 days'")
+    """
+    Remove geocache entries older than 90 days.
+    """
+    await delete_old_geocache(90)
 
 
 async def monthly_report(app):
-    """Send monthly saving report if donations enabled."""
+    """Send monthly savings report if donations enabled."""
     if not ENABLE_DONATION:
         return
+
     today = dt.date.today().replace(day=1)
     start_prev = (today - dt.timedelta(days=1)).replace(day=1)
     end_prev = today - dt.timedelta(days=1)
 
-    # fetch distinct users
-    rows = await fetch("SELECT DISTINCT user_id FROM searches")
-    for rec in rows:
-        uid = rec["user_id"]
-        vals = await fetch(
-            "SELECT price_avg,price_min FROM searches WHERE user_id=$1 AND ts BETWEEN $2 AND $3",
-            uid, start_prev, end_prev
-        )
-        saving = sum((r["price_avg"] - r["price_min"]) * 50 for r in vals)
+    # get users who performed searches
+    users = await get_search_users()
+    for tg_id, user_id in users:
+        saving = await calculate_monthly_savings(user_id, start_prev, end_prev)
         if saving <= 0:
             continue
+
         msg = (
             f"Thanks to TrovaBenzinaBot, last month you saved: {saving:.2f}€*.\n\n"
             "Would you like to buy me a coffee?\n"
@@ -47,9 +50,9 @@ async def monthly_report(app):
             "*Calculation based on 50€ refuel per search."
         )
         try:
-            await app.bot.send_message(uid, msg)
+            await app.bot.send_message(tg_id, msg)
         except Exception as exc:
-            log.warning("Failed to send monthly report to %s: %s", uid, exc)
+            log.warning("Failed to send monthly report to %s: %s", tg_id, exc)
 
 
 def setup_scheduler(loop, app):

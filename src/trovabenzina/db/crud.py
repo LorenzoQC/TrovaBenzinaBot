@@ -1,48 +1,43 @@
 """
-CRUD operations for configuration, user management, and search logging.
+CRUD operations for configuration, user management, search logging, and geocode caching.
 """
-from typing import Optional, Dict, Tuple, Any
+from datetime import date
+from typing import Optional, Dict, Tuple, Any, List
 
-from sqlalchemy import text
+from sqlalchemy import text, delete, func
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.future import select
 
-from .models import Fuel, Service, Language, User
+from .models import Fuel, Service, Language, User, GeoCache, Search
 from .session import AsyncSession
 
 
 async def get_fuel_map() -> Dict[str, str]:
     """
     Return a mapping of fuel names to fuel codes.
-    Example: { "Benzina": "1", "Gasolio": "2", ... }
     """
     async with AsyncSession() as session:
         result = await session.execute(select(Fuel))
         fuels = result.scalars().all()
     return {f.name: f.code for f in fuels}
 
-
 async def get_service_map() -> Dict[str, str]:
     """
     Return a mapping of service names to service codes.
-    Example: { "Self-service": "1", "Servito": "0", ... }
     """
     async with AsyncSession() as session:
         result = await session.execute(select(Service))
         services = result.scalars().all()
     return {s.name: s.code for s in services}
 
-
 async def get_language_map() -> Dict[str, str]:
     """
     Return a mapping of language names to language codes.
-    Example: { "Italiano": "it", "English": "en", ... }
     """
     async with AsyncSession() as session:
         result = await session.execute(select(Language))
         languages = result.scalars().all()
     return {l.name: l.code for l in languages}
-
 
 async def upsert_user(
         tg_id: int,
@@ -52,10 +47,8 @@ async def upsert_user(
 ) -> None:
     """
     Insert or update a user record with preferences.
-    Inserts new if tg_id not present; updates fuel, service, and language otherwise.
     """
     async with AsyncSession() as session:
-        # Resolve foreign key IDs
         fuel_id = (await session.execute(
             select(Fuel.id).where(Fuel.code == fuel_code)
         )).scalar_one()
@@ -68,23 +61,21 @@ async def upsert_user(
                 select(Language.id).where(Language.code == language_code)
             )).scalar_one()
 
-        # Upsert using PostgreSQL ON CONFLICT
         stmt = insert(User).values(
             tg_id=tg_id,
             fuel_id=fuel_id,
             service_id=service_id,
             language_id=language_id,
         )
-        update_dict: Dict[str, Any] = {"fuel_id": fuel_id, "service_id": service_id}
+        update_vals: Dict[str, Any] = {"fuel_id": fuel_id, "service_id": service_id}
         if language_code is not None:
-            update_dict["language_id"] = language_id
+            update_vals["language_id"] = language_id
         stmt = stmt.on_conflict_do_update(
             index_elements=[User.tg_id],
-            set_=update_dict,
+            set_=update_vals,
         )
         await session.execute(stmt)
         await session.commit()
-
 
 async def get_user(
         tg_id: int
@@ -106,25 +97,22 @@ async def get_user(
             return None
         return row
 
-
 async def log_search(
         tg_id: int,
         price_avg: float,
         price_min: float,
 ) -> None:
     """
-    Record search analytics: inserts a row into searches with timestamp, price_avg, price_min.
+    Record search analytics: insert into searches.
     """
     async with AsyncSession() as session:
         await session.execute(
             text(
                 "INSERT INTO searches (user_id, ins_ts, price_avg, price_min) "
                 "VALUES (:uid, NOW(), :avg, :min)"
-            ),
-            {"uid": tg_id, "avg": price_avg, "min": price_min}
+            ), {"uid": tg_id, "avg": price_avg, "min": price_min}
         )
         await session.commit()
-
 
 async def get_cached_geocode(
         address: str
@@ -132,7 +120,6 @@ async def get_cached_geocode(
     """
     Return cached (lat, lng) for given address, or None.
     """
-    from .models import GeoCache
     async with AsyncSession() as session:
         result = await session.execute(
             select(GeoCache).where(
@@ -145,7 +132,6 @@ async def get_cached_geocode(
             return obj.lat, obj.lng
         return None
 
-
 async def upsert_geocode(
         address: str,
         lat: float,
@@ -154,12 +140,10 @@ async def upsert_geocode(
     """
     Insert or update a geocache record for an address.
     """
-    from .models import GeoCache
     async with AsyncSession() as session:
-        result = await session.execute(
+        obj = (await session.execute(
             select(GeoCache).where(GeoCache.address == address)
-        )
-        obj = result.scalar_one_or_none()
+        )).scalar_one_or_none()
         if obj:
             obj.lat = lat
             obj.lng = lng
@@ -168,13 +152,56 @@ async def upsert_geocode(
             session.add(obj)
         await session.commit()
 
-
 async def get_recent_geocache_count() -> int:
     """
     Return count of recent geocache entries via view v_geostats.
     """
-    from .models import VGeoStats
     async with AsyncSession() as session:
-        result = await session.execute(select(VGeoStats.count))
+        result = await session.execute(select(text("count")).select_from(text("v_geostats")))
         cnt = result.scalar_one_or_none()
         return cnt or 0
+
+
+async def delete_old_geocache(days: int = 90) -> None:
+    """
+    Delete geocache entries older than specified days.
+    """
+    async with AsyncSession() as session:
+        await session.execute(
+            delete(GeoCache).where(
+                GeoCache.ins_ts < func.now() - text(f"INTERVAL '{days} days'")
+            )
+        )
+        await session.commit()
+
+
+async def get_search_users() -> List[Tuple[int, int]]:
+    """
+    Return list of tuples (tg_id, user_id) for users who performed searches.
+    """
+    async with AsyncSession() as session:
+        result = await session.execute(
+            select(User.tg_id, User.id)
+            .join(Search, Search.user_id == User.id)
+            .distinct()
+        )
+        return result.all()
+
+
+async def calculate_monthly_savings(
+        user_id: int,
+        start_date: date,
+        end_date: date,
+) -> float:
+    """
+    Calculate total savings for given user_id between start_date and end_date.
+    Savings per search: (price_avg - price_min) * 50.
+    """
+    async with AsyncSession() as session:
+        result = await session.execute(
+            select(Search.price_avg, Search.price_min)
+            .where(Search.user_id == user_id)
+            .where(Search.ins_ts.between(start_date, end_date))
+        )
+        rows = result.all()
+    return sum((r.price_avg - r.price_min) * 50 for r in rows)
