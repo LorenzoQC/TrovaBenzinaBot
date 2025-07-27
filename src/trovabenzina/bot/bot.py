@@ -65,11 +65,11 @@ def main() -> None:
 
     # Populate module-level maps for handlers
     from trovabenzina.config.settings import FUEL_MAP, SERVICE_MAP, LANGUAGE_MAP
-    FUEL_MAP.clear();
+    FUEL_MAP.clear()
     FUEL_MAP.update(fuel_map)
-    SERVICE_MAP.clear();
+    SERVICE_MAP.clear()
     SERVICE_MAP.update(service_map)
-    LANGUAGE_MAP.clear();
+    LANGUAGE_MAP.clear()
     LANGUAGE_MAP.update(language_map)
 
     log.info(
