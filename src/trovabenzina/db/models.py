@@ -7,20 +7,14 @@ from sqlalchemy import (
     ForeignKey,
     BigInteger,
     DateTime,
-    func,
-    Table
+    func
 )
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
     mapped_column,
-    relationship,
-    registry
+    relationship
 )
-
-from .session import engine
-
-mapper_registry = registry(metadata=DeclarativeBase.metadata if hasattr(DeclarativeBase, 'metadata') else None)
 
 
 class TimestampMixin:
@@ -43,9 +37,7 @@ class TimestampMixin:
 
 class CodeNameMixin:
     """
-    Mixin that adds common 'code' and 'name' fields used by config tables.
-    - code: unique identifier string
-    - name: descriptive label
+    Mixin that adds 'code' and 'name' fields for config tables.
     """
     code: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -58,6 +50,7 @@ class Base(DeclarativeBase):
 
 class Fuel(TimestampMixin, CodeNameMixin, Base):
     __tablename__ = "fuels"
+
     id: Mapped[int] = mapped_column(primary_key=True)
 
     users: Mapped[List["User"]] = relationship(back_populates="fuel")
@@ -66,6 +59,7 @@ class Fuel(TimestampMixin, CodeNameMixin, Base):
 
 class Service(TimestampMixin, CodeNameMixin, Base):
     __tablename__ = "services"
+
     id: Mapped[int] = mapped_column(primary_key=True)
 
     users: Mapped[List["User"]] = relationship(back_populates="service")
@@ -74,6 +68,7 @@ class Service(TimestampMixin, CodeNameMixin, Base):
 
 class Language(TimestampMixin, CodeNameMixin, Base):
     __tablename__ = "languages"
+
     id: Mapped[int] = mapped_column(primary_key=True)
 
     users: Mapped[List["User"]] = relationship(back_populates="language")
@@ -88,7 +83,7 @@ class User(TimestampMixin, Base):
 
     fuel_id: Mapped[int] = mapped_column(ForeignKey("fuels.id"), nullable=False)
     service_id: Mapped[int] = mapped_column(ForeignKey("services.id"), nullable=False)
-    language_id: Mapped[int] = mapped_column(ForeignKey("languages.id"), nullable=False)
+    language_id: Mapped[int] = mapped_column(ForeignKey("languages.id"), nullable=True)
 
     fuel: Mapped[Fuel] = relationship(back_populates="users")
     service: Mapped[Service] = relationship(back_populates="users")
@@ -120,19 +115,3 @@ class GeoCache(TimestampMixin, Base):
     address: Mapped[str] = mapped_column(String(255), nullable=False)
     lat: Mapped[float] = mapped_column(nullable=False)
     lng: Mapped[float] = mapped_column(nullable=False)
-
-
-v_geostats_table = Table(
-    "v_geostats",
-    Base.metadata,
-    autoload_with=engine,
-    extend_existing=True,
-)
-
-
-@mapper_registry.mapped
-class VGeoStats:
-    __table__ = v_geostats_table
-    __mapper_args__ = {
-        "primary_key": [v_geostats_table.c.count]
-    }
