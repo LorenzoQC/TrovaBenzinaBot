@@ -1,4 +1,3 @@
-import datetime as dt
 import logging
 
 import aiohttp
@@ -10,29 +9,27 @@ from trovabenzina.config import (
     MISE_SEARCH_URL,
     MISE_DETAIL_URL,
 )
-from trovabenzina.core.db import fetchrow, execute
+from trovabenzina.db.crud import (
+    get_cached_geocode,
+    upsert_geocode,
+    get_recent_geocache_count,
+)
 
 log = logging.getLogger(__name__)
 
-
 async def geocode(addr: str):
     """Return (lat, lng) or None if not found or over quota."""
-    # check cache
-    row = await fetchrow(
-        "SELECT lat, lng FROM geocache WHERE query = $1", addr
-    )
-    if row:
-        return row['lat'], row['lng']
+    # Try cached coordinates
+    cached = await get_cached_geocode(addr)
+    if cached:
+        return cached
 
-    # rate limiting
-    month = dt.date.today().strftime("%Y-%m")
-    cnt_row = await fetchrow(
-        "SELECT cnt FROM geostats WHERE month = $1", month
-    )
-    if cnt_row and cnt_row['cnt'] >= GEOCODE_HARD_CAP:
+    # Rate limiting via view
+    count = await get_recent_geocache_count()
+    if count >= GEOCODE_HARD_CAP:
         return None
 
-    # call Google Geocoding API
+    # Call Google Geocoding API
     params = {
         "address": addr,
         "components": "country:IT",
@@ -56,30 +53,11 @@ async def geocode(addr: str):
         return None
 
     latlng = best["geometry"]["location"]
-    # update cache and stats
-    await execute(
-        """
-        INSERT INTO geocache(query, lat, lng)
-        VALUES($1, $2, $3)
-        ON CONFLICT(query) DO UPDATE
-          SET lat = EXCLUDED.lat,
-              lng = EXCLUDED.lng,
-              ts  = CURRENT_TIMESTAMP
-        """,
-        addr, latlng["lat"], latlng["lng"]
-    )
-    await execute(
-        """
-        INSERT INTO geostats(month, cnt)
-        VALUES($1, 1)
-        ON CONFLICT(month) DO UPDATE
-          SET cnt = geostats.cnt + 1
-        """,
-        month
-    )
+
+    # Update cache
+    await upsert_geocode(addr, latlng["lat"], latlng["lng"])
 
     return latlng["lat"], latlng["lng"]
-
 
 async def fetch_address(station_id: int):
     """Get full address from public station registry."""
@@ -93,7 +71,6 @@ async def fetch_address(station_id: int):
     except Exception as exc:
         log.warning("Error fetching address for station %s: %s", station_id, exc)
     return None
-
 
 async def call_api(lat: float, lng: float, radius: float, fuel_type: str):
     """Query fuel price API by location."""

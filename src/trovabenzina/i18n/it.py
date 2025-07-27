@@ -12,6 +12,15 @@ TRANSLATIONS = {
     "invalid_service": "⚠️ Servizio non valido",
     "profile_saved": "✅ Profilo salvato correttamente",
 
+    # ─────────── /help ───────────
+    "help": (
+        "/start – configura il profilo\n"
+        "/find – cerca i distributori più economici\n"
+        "/favorites – gestisci i preferiti\n"
+        "/profile – modifica profilo\n"
+        "/help – mostra questo messaggio"
+    ),
+
     # ─────────── /profile ───────────
     "language": "🌐️ Lingua",
     "fuel": "🛢️ Carburante",
@@ -35,26 +44,6 @@ TRANSLATIONS = {
     "compared_to_avg": "(media: {avg:.3f} €/L)",
     "lets_go": "Andiamo!",
     "no_address": "Indirizzo non disponibile",
-
-    # ─────────── /favorites ───────────
-    "favorites_title": "Luoghi preferiti salvati:",
-    "add_favorite_btn": "➕ Aggiungi preferito",
-    "edit_favorite_btn": "🗑️ Modifica preferiti",
-    "which_fav_remove": "Quale preferito vuoi rimuovere?",
-    "fav_removed": "Preferito eliminato",
-    "fav_saved": "✅ Preferito salvato con successo",
-    "no_favorites": "Nessun luogo preferito salvato",
-    "ask_fav_name": "Assegna un nome al luogo preferito",
-    "ask_fav_location": "Invia posizione o indirizzo per il preferito",
-
-    # ─────────── /help ───────────
-    "help": (
-        "/start – configura il profilo\n"
-        "/find – cerca i distributori più economici\n"
-        "/favorites – gestisci i preferiti\n"
-        "/profile – modifica profilo\n"
-        "/help – mostra questo messaggio"
-    ),
 
     # ─────────── generics ───────────
     "use_commands": "⛔ Usa i comandi, per favore",

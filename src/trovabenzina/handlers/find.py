@@ -1,8 +1,15 @@
 from urllib.parse import quote_plus
 
-from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
+from telegram import Update, InlineKeyboardMarkup
 from telegram.constants import ParseMode
-from telegram.ext import ContextTypes, ConversationHandler
+from telegram.ext import (
+    ContextTypes,
+    ConversationHandler,
+    CommandHandler,
+    MessageHandler,
+    CallbackQueryHandler,
+    filters,
+)
 
 from trovabenzina.config import (
     FUEL_MAP,
@@ -12,7 +19,7 @@ from trovabenzina.config import (
     DEFAULT_LANGUAGE,
 )
 from trovabenzina.core.api import geocode, call_api, fetch_address
-from trovabenzina.core.db import get_user, log_search, list_favorites
+from trovabenzina.db.crud import get_user, log_search
 from trovabenzina.i18n import t
 from trovabenzina.utils import (
     STEP_FIND_LOC,
@@ -23,116 +30,108 @@ from trovabenzina.utils import (
 __all__ = ["find_conv"]
 
 
-# ── entry /find ───────────────────────────────────────────────────────────
+# ── /find entry point ─────────────────────────────────────────────
 async def find_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Handle /find command: ask user for location or address."""
     uid = update.effective_user.id
+    # get user language or fallback
     _, _, lang = await get_user(uid) or (None, None, DEFAULT_LANGUAGE)
 
-    favs = await list_favorites(uid)
-    kb = inline_kb([(name, f"favloc_{i}") for i, (name, _, _) in enumerate(favs)])
-    await update.message.reply_text(
-        t("ask_location", lang),
-        reply_markup=InlineKeyboardMarkup(kb) if kb else None,
-    )
-    ctx.user_data["favs_cached"] = favs
+    # prompt for location or address text
+    await update.message.reply_text(t("ask_location", lang))
     return STEP_FIND_LOC
 
 
-async def _ask_radius(chat_id: int, ctx, edit=None):
-    _, _, lang = await get_user(chat_id) or (None, None, DEFAULT_LANGUAGE)
-    kb = inline_kb([("2 km", "rad_2"), ("7 km", "rad_7")])
+async def _ask_radius(ctx_target, ctx, edit=False):
+    """Send or edit a message asking for search radius."""
+    uid = ctx_target.effective_user.id if hasattr(ctx_target, 'effective_user') else ctx_target
+    _, _, lang = await get_user(uid)
+    kb = inline_kb([(f"2 km", "rad_2"), ("7 km", "rad_7")])
+
     if edit:
-        await edit.edit_message_text(t("select_radius", lang), reply_markup=InlineKeyboardMarkup(kb))
+        await ctx_target.edit_message_text(
+            t("select_radius", lang),
+            reply_markup=InlineKeyboardMarkup(kb)
+        )
     else:
-        await ctx.bot.send_message(chat_id, t("select_radius", lang), reply_markup=InlineKeyboardMarkup(kb))
+        chat_id = ctx_target.effective_chat.id if hasattr(ctx_target, 'effective_chat') else ctx_target
+        await ctx.bot.send_message(
+            chat_id,
+            t("select_radius", lang),
+            reply_markup=InlineKeyboardMarkup(kb)
+        )
     return STEP_FIND_RADIUS
 
 
 async def find_receive_location(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Receive a location object from user."""
     loc = update.message.location
-    ctx.user_data["search_lat"], ctx.user_data["search_lng"] = loc.latitude, loc.longitude
-    return await _ask_radius(update.effective_chat.id, ctx)
+    ctx.user_data["search_lat"] = loc.latitude
+    ctx.user_data["search_lng"] = loc.longitude
+    return await _ask_radius(update, ctx, edit=False)
 
 
 async def find_receive_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Receive an address text from user and geocode it."""
     uid = update.effective_user.id
     _, _, lang = await get_user(uid) or (None, None, DEFAULT_LANGUAGE)
-    text = update.message.text
+    address = update.message.text
 
-    fav = next((f for f in ctx.user_data.get("favs_cached", []) if f[0] == text), None)
-    if fav:
-        ctx.user_data["search_lat"], ctx.user_data["search_lng"] = fav[1], fav[2]
-        return await _ask_radius(update.effective_chat.id, ctx)
-
-    coords = await geocode(text)
+    coords = await geocode(address)
     if not coords:
         await update.message.reply_text(t("invalid_address", lang))
         return STEP_FIND_LOC
 
     ctx.user_data["search_lat"], ctx.user_data["search_lng"] = coords
-    return await _ask_radius(update.effective_chat.id, ctx)
-
-
-async def favloc_clicked(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    idx = int(query.data.split("_", 1)[1])
-    _, lat, lng = ctx.user_data["favs_cached"][idx]
-    ctx.user_data["search_lat"], ctx.user_data["search_lng"] = lat, lng
-    return await _ask_radius(query.message.chat_id, ctx, edit=query)
+    return await _ask_radius(update, ctx, edit=False)
 
 
 async def radius_selected(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Handle user selection of search radius and perform search."""
     query = update.callback_query
     await query.answer()
-    radius_id = query.data.split("_", 1)[1]
-    _, _, lang = await get_user(query.from_user.id)
+    uid = query.from_user.id
 
-    if radius_id == "2":
+    radius_key = query.data.split("_", 1)[1]
+    if radius_key == "2":
         ctx.user_data["radius"] = DEFAULT_RADIUS_NEAR
-    elif radius_id == "7":
-        ctx.user_data["radius"] = DEFAULT_RADIUS_FAR
     else:
-        return await query.answer(t("invalid_radius", lang), show_alert=True)
+        ctx.user_data["radius"] = DEFAULT_RADIUS_FAR
 
-    msg = await _process_search(query, ctx, ctx.user_data["search_lat"], ctx.user_data["search_lng"])
-
-    cb = f"savefav:{ctx.user_data['search_lat']}:{ctx.user_data['search_lng']}"
-    await msg.reply_text(
-        "⭐",
-        reply_markup=InlineKeyboardMarkup.from_button(
-            InlineKeyboardButton("⭐ Save as favourite", callback_data=cb)
-        ),
+    # perform the search
+    msg = await _process_search(query, ctx,
+                                ctx.user_data["search_lat"], ctx.user_data["search_lng"]
     )
-    ctx.user_data.clear()
     return ConversationHandler.END
 
 
-# ── search core ───────────────────────────────────────────────────────────
+# ── Core search and message formatting ─────────────────────────────
 async def _process_search(origin, ctx, lat: float, lng: float):
-    if hasattr(origin, "effective_user"):
-        uid = origin.effective_user.id
-        msg_target = origin.message
-    else:
-        uid = origin.from_user.id
-        msg_target = origin.message
-
-    fuel, service, lang = await get_user(uid)
+    """Fetch nearby stations, format results and log the search."""
+    uid = origin.from_user.id if hasattr(origin, 'from_user') else origin
+    fuel_code, service_code, lang = await get_user(uid)
     radius = ctx.user_data.get("radius", DEFAULT_RADIUS_NEAR)
-    ft = f"{FUEL_MAP[fuel]}-{SERVICE_MAP[service]}"
+    ft = f"{FUEL_MAP[fuel_code]}-{SERVICE_MAP[service_code]}"
 
+    # call external API
     res = await call_api(lat, lng, radius, ft)
     results = res.get("results", []) if res else []
     if not results:
-        return await msg_target.reply_text(t("no_stations", lang))
+        return await origin.message.reply_text(t("no_stations", lang))
 
-    fid = int(FUEL_MAP[fuel])
+    # compute statistics
+    fid = int(FUEL_MAP[fuel_code])
     prices = [f["price"] for r in results for f in r["fuels"] if f["fuelId"] == fid]
     avg = sum(prices) / len(prices)
 
-    sorted_res = sorted(results, key=lambda r: next(f["price"] for f in r["fuels"] if f["fuelId"] == fid))
-    medals = ["🥇", "🥈", "🥉"]
+    # sort and pick top 3
+    sorted_res = sorted(
+        results,
+        key=lambda r: next(f["price"] for f in r["fuels"] if f["fuelId"] == fid)
+    )
+
     lines = []
+    medals = ["🥇", "🥈", "🥉"]
     for i, station in enumerate(sorted_res[:3]):
         price = next(f["price"] for f in station["fuels"] if f["fuelId"] == fid)
         pct = int(round((avg - price) / avg * 100))
@@ -155,24 +154,26 @@ async def _process_search(origin, ctx, lat: float, lng: float):
             f"[{t('lets_go', lang)}]({link})"
         )
 
-    await log_search(uid, avg, prices[0])
-    return await msg_target.reply_text(
+    # log analytics
+    await log_search(uid, avg, min(prices))
+
+    return await origin.message.reply_text(
         "\n\n".join(lines),
         parse_mode=ParseMode.MARKDOWN,
         disable_web_page_preview=True,
     )
 
 
-# ── ConversationHandler object ───────────────────────────────────────────
+# ── ConversationHandler definition ────────────────────────────────────
 find_conv = ConversationHandler(
-    entry_points=[("command", "find", find_cmd)],
+    entry_points=[CommandHandler(["find", "trova"], find_cmd)],
     states={
         STEP_FIND_LOC: [
-            ("message_location", find_receive_location),
-            ("message_text", find_receive_text),
-            ("callback", favloc_clicked),
+            MessageHandler(filters.LOCATION, find_receive_location),
+            MessageHandler(filters.TEXT & ~filters.COMMAND, find_receive_text),
         ],
-        STEP_FIND_RADIUS: [("callback", radius_selected)],
+        STEP_FIND_RADIUS: [CallbackQueryHandler(radius_selected, pattern="^rad_")],
     },
     fallbacks=[],
+    block=True,
 )

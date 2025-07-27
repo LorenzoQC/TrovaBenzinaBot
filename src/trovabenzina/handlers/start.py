@@ -8,21 +8,21 @@ from telegram.ext import (
     filters,
 )
 
-from trovabenzina.config import DEFAULT_LANGUAGE, FUEL_MAP, LANGUAGES, SERVICE_MAP
-from trovabenzina.core.db import upsert_user
+from trovabenzina.config import DEFAULT_LANGUAGE, FUEL_MAP, SERVICE_MAP, LANGUAGE_MAP
+from trovabenzina.db.crud import upsert_user
 from trovabenzina.i18n import t
 from trovabenzina.utils import STEP_FUEL, STEP_LANG, STEP_SERVICE, inline_kb
 
-# Invert mappings if original maps labels to codes
+# Invert mappings: code -> label
 FUEL_CHOICES_MAP = {code: label for label, code in FUEL_MAP.items()}
 SERVICE_CHOICES_MAP = {code: label for label, code in SERVICE_MAP.items()}
+LANGUAGE_CHOICES_MAP = {code: label for label, code in LANGUAGE_MAP.items()}
 
 __all__ = [
-    "start_conv",
+    "start_handler",
 ]
 
 
-# ── Generic keyboard builder ────────────────────────────────────
 def build_keyboard(choices, prefix, back_callback=None):
     """
     Build an InlineKeyboardMarkup from choices.
@@ -36,7 +36,6 @@ def build_keyboard(choices, prefix, back_callback=None):
     return kb
 
 
-# ── Factory for selection handlers ─────────────────────────────
 def make_selection_handler(
         choices_map,
         data_key,
@@ -76,22 +75,21 @@ def make_selection_handler(
     return handler
 
 
-# ── Factory for “back” handlers ────────────────────────────────
-def make_back_handler(choices_map, prompt_key, callback_prefix, state, back_callback=None):
+def make_back_handler(choices_map, prompt_key, callback_prefix, state):
     async def handler(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         query = update.callback_query
         await query.answer()
         lang = ctx.user_data.get("lang", DEFAULT_LANGUAGE)
-        kb = build_keyboard(choices_map.items(), callback_prefix, back_callback)
+        kb = build_keyboard(choices_map.items(), callback_prefix)
         await query.edit_message_text(
             t(prompt_key, lang),
             reply_markup=InlineKeyboardMarkup(kb),
         )
         return state
+
     return handler
 
 
-# ── Factory for “repeat prompt” handlers ───────────────────────
 def make_repeat_handler(choices_map, prompt_key, callback_prefix, back_callback, state):
     async def handler(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         kb = build_keyboard(choices_map.items(), callback_prefix, back_callback)
@@ -100,12 +98,12 @@ def make_repeat_handler(choices_map, prompt_key, callback_prefix, back_callback,
             reply_markup=InlineKeyboardMarkup(kb),
         )
         return state
+
     return handler
 
 
-# ── Entry point ────────────────────────────────────────────────
 async def start_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    kb = build_keyboard(LANGUAGES.items(), "lang")
+    kb = build_keyboard(LANGUAGE_CHOICES_MAP.items(), "lang")
     await update.effective_message.reply_text(
         t("select_language", DEFAULT_LANGUAGE),
         reply_markup=InlineKeyboardMarkup(kb),
@@ -113,26 +111,26 @@ async def start_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     return STEP_LANG
 
 
-# ── Handlers created via factories ────────────────────────────
+# Handlers via factories
 language_selected = make_selection_handler(
-    FUEL_CHOICES_MAP, "lang", "select_fuel", "fuel", STEP_FUEL, back_callback="back_lang"
+    LANGUAGE_CHOICES_MAP, "lang", "select_fuel", "fuel", STEP_FUEL, back_callback="back_lang"
 )
 fuel_selected = make_selection_handler(
-    SERVICE_CHOICES_MAP, "fuel", "select_service", "serv", STEP_SERVICE, back_callback="back_fuel"
+    FUEL_CHOICES_MAP, "fuel", "select_service", "serv", STEP_SERVICE, back_callback="back_fuel"
 )
 service_selected = make_selection_handler(
-    None, "service", None, None, None
+    SERVICE_CHOICES_MAP, "service", None, None, None
 )
 
 back_to_lang = make_back_handler(
-    LANGUAGES, "select_language", "lang", STEP_LANG
+    LANGUAGE_CHOICES_MAP, "select_language", "lang", STEP_LANG
 )
 back_to_fuel = make_back_handler(
-    FUEL_CHOICES_MAP, "select_fuel", "fuel", STEP_FUEL, back_callback="back_lang"
+    FUEL_CHOICES_MAP, "select_fuel", "fuel", STEP_FUEL
 )
 
 repeat_lang_prompt = make_repeat_handler(
-    LANGUAGES, "select_language", "lang", None, STEP_LANG
+    LANGUAGE_CHOICES_MAP, "select_language", "lang", None, STEP_LANG
 )
 repeat_fuel_prompt = make_repeat_handler(
     FUEL_CHOICES_MAP, "select_fuel", "fuel", "back_lang", STEP_FUEL
@@ -141,8 +139,7 @@ repeat_service_prompt = make_repeat_handler(
     SERVICE_CHOICES_MAP, "select_service", "serv", "back_fuel", STEP_SERVICE
 )
 
-# ── ConversationHandler setup ─────────────────────────────────
-start_conv = ConversationHandler(
+start_handler = ConversationHandler(
     entry_points=[CommandHandler("start", start_ep)],
     states={
         STEP_LANG: [

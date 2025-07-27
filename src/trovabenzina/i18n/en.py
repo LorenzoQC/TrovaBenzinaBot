@@ -12,6 +12,15 @@ TRANSLATIONS = {
     "invalid_service": "⚠️ Invalid service",
     "profile_saved": "✅ Profile saved correctly",
 
+    # ─────────── /help ───────────
+    "help": (
+        "/start – set up your profile\n"
+        "/find – cheapest stations nearby\n"
+        "/favorites – manage favourites\n"
+        "/profile – edit profile\n"
+        "/help – show this message"
+    ),
+
     # ─────────── /profile ───────────
     "language": "🌐️ Language",
     "fuel": "🛢️ Fuel",
@@ -35,26 +44,6 @@ TRANSLATIONS = {
     "compared_to_avg": "(average: {avg:.3f} €/L)",
     "lets_go": "Let's go!",
     "no_address": "Address not available",
-
-    # ─────────── /favorites ───────────
-    "favorites_title": "Saved favourite places:",
-    "add_favorite_btn": "➕ Add favourite",
-    "edit_favorite_btn": "🗑️ Edit favourites",
-    "which_fav_remove": "Which favourite do you want to remove?",
-    "fav_removed": "Favourite removed",
-    "fav_saved": "✅ Favourite saved successfully",
-    "no_favorites": "No favourite places saved",
-    "ask_fav_name": "Give a name to the favourite place",
-    "ask_fav_location": "Send location or address for the favourite",
-
-    # ─────────── /help ───────────
-    "help": (
-        "/start – set up your profile\n"
-        "/find – cheapest stations nearby\n"
-        "/favorites – manage favourites\n"
-        "/profile – edit profile\n"
-        "/help – show this message"
-    ),
 
     # ─────────── generics ───────────
     "use_commands": "⛔ Please use commands",
