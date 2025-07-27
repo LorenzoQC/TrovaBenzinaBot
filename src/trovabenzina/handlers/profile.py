@@ -3,7 +3,11 @@ from __future__ import annotations
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     CallbackContext,
-    ConversationHandler, CallbackQueryHandler, MessageHandler, filters, CommandHandler,
+    ConversationHandler,
+    CallbackQueryHandler,
+    MessageHandler,
+    CommandHandler,
+    filters,
 )
 
 from trovabenzina.config import DEFAULT_LANGUAGE, FUEL_MAP, SERVICE_MAP, LANGUAGE_MAP
@@ -11,13 +15,12 @@ from trovabenzina.db.crud import get_user, upsert_user
 from trovabenzina.i18n import t
 from trovabenzina.utils import inline_kb
 
-__all__ = [
-    "profile_handler"
-]
+__all__ = ["profile_handler"]
 
-
+# ---------------------------------------------------------------------------
 # Conversation states
-LANG_SELECT, FUEL_SELECT, SERVICE_SELECT = range(3)
+# ---------------------------------------------------------------------------
+MENU, LANG_SELECT, FUEL_SELECT, SERVICE_SELECT = range(4)
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -40,32 +43,30 @@ def _build_profile_keyboard(locale: str) -> InlineKeyboardMarkup:
 
 
 async def _get_or_create_defaults(uid: int) -> tuple[str, str, str]:
-    """
-    Return user's current preferences or set defaults if none exist.
-    """
+    """Return user's current preferences or set defaults if none exist."""
     row = await get_user(uid)
     if row:
-        fuel_code, service_code, lang_code = row
-    else:
-        # defaults: first keys from maps
-        lang_code = DEFAULT_LANGUAGE
-        fuel_code = next(iter(FUEL_MAP.values()))
-        service_code = next(iter(SERVICE_MAP.values()))
-        await upsert_user(uid, fuel_code, service_code, lang_code)
-    return fuel_code, service_code, lang_code
+        return row.fuel_code, row.service_code, row.lang_code
+
+    # If user hasn't configured preferences yet, fall back to defaults
+    fuel_code = next(iter(FUEL_MAP.values()))
+    service_code = next(iter(SERVICE_MAP.values()))
+    await upsert_user(uid, fuel_code, service_code, DEFAULT_LANGUAGE)
+    return fuel_code, service_code, DEFAULT_LANGUAGE
 
 # ---------------------------------------------------------------------------
-# /profile entry point
+# /profile entry‑point
 # ---------------------------------------------------------------------------
 
 async def profile_ep(update: Update, context: CallbackContext) -> int:
+    """Show current profile summary with edit buttons."""
     uid = update.effective_user.id
     fuel_code, service_code, lang_code = await _get_or_create_defaults(uid)
 
-    # Cache language for prompts
+    # Cache language for subsequent prompts
     context.user_data["lang"] = lang_code
 
-    # Reverse-labels: code -> display name
+    # Convert stored codes back to labels
     fuel_name = next((name for name, code in FUEL_MAP.items() if code == fuel_code), fuel_code)
     service_name = next((name for name, code in SERVICE_MAP.items() if code == service_code), service_code)
     lang_name = LANGUAGE_MAP.get(lang_code, lang_code)
@@ -76,8 +77,9 @@ async def profile_ep(update: Update, context: CallbackContext) -> int:
         f"• {t('service', lang_code)}: {service_name}"
     )
 
-    await update.message.reply_text(summary, reply_markup=_build_profile_keyboard(lang_code))
-    return ConversationHandler.END
+    await update.effective_message.reply_text(summary, reply_markup=_build_profile_keyboard(lang_code))
+    context.chat_data["current_state"] = MENU
+    return MENU
 
 # ---------------------------------------------------------------------------
 # Language flow
@@ -112,8 +114,7 @@ async def save_language(update: Update, context: CallbackContext) -> int:
 
     await query.edit_message_text(t("profile.language_saved", new_code))
     # show updated summary
-    await profile_ep(update, context)
-    return ConversationHandler.END
+    return await profile_ep(update, context)
 
 # ---------------------------------------------------------------------------
 # Fuel flow
@@ -125,7 +126,6 @@ async def ask_fuel(update: Update, context: CallbackContext) -> int:
     context.chat_data["current_state"] = FUEL_SELECT
     lang = context.user_data.get("lang", DEFAULT_LANGUAGE)
 
-    # build buttons from FUEL_MAP
     kb = [[InlineKeyboardButton(name, callback_data=f"set_fuel:{code}")]
           for name, code in FUEL_MAP.items()]
     await query.edit_message_text(
@@ -145,8 +145,8 @@ async def save_fuel(update: Update, context: CallbackContext) -> int:
     await upsert_user(uid, new_fuel, service_code, lang_code)
 
     await query.edit_message_text(t("profile.fuel_saved", lang_code))
-    await profile_ep(update, context)
-    return ConversationHandler.END
+    # show updated summary
+    return await profile_ep(update, context)
 
 # ---------------------------------------------------------------------------
 # Service flow
@@ -158,13 +158,13 @@ async def ask_service(update: Update, context: CallbackContext) -> int:
     context.chat_data["current_state"] = SERVICE_SELECT
     lang = context.user_data.get("lang", DEFAULT_LANGUAGE)
 
-    # build buttons from SERVICE_MAP
     kb = [[InlineKeyboardButton(name, callback_data=f"set_service:{code}")]
           for name, code in SERVICE_MAP.items()]
     await query.edit_message_text(
         t("profile.select_service", lang), reply_markup=_keyboard_full_width(kb)
     )
     return SERVICE_SELECT
+
 
 async def save_service(update: Update, context: CallbackContext) -> int:
     query = update.callback_query
@@ -177,42 +177,49 @@ async def save_service(update: Update, context: CallbackContext) -> int:
     await upsert_user(uid, fuel_code, new_service, lang_code)
 
     await query.edit_message_text(t("profile.service_saved", lang_code))
-    await profile_ep(update, context)
-    return ConversationHandler.END
+    # show updated summary
+    return await profile_ep(update, context)
 
 # ---------------------------------------------------------------------------
 # Invalid text handler
 # ---------------------------------------------------------------------------
 
 async def invalid_text(update: Update, context: CallbackContext) -> int:
-    state = context.chat_data.get("current_state")
-    prompt_keys = {
-        LANG_SELECT: "profile.select_language",
-        FUEL_SELECT: "profile.select_fuel",
-        SERVICE_SELECT: "profile.select_service",
-    }
-    # repeat last prompt
-    return await ask_language(update, context) if state == LANG_SELECT else (
-        await ask_fuel(update, context) if state == FUEL_SELECT else (
-            await ask_service(update, context)
-        )
-    )
+    state = context.chat_data.get("current_state", MENU)
 
+    if state == MENU:
+        return await profile_ep(update, context)
+    elif state == LANG_SELECT:
+        return await ask_language(update, context)
+    elif state == FUEL_SELECT:
+        return await ask_fuel(update, context)
+    else:
+        return await ask_service(update, context)
+
+
+# ---------------------------------------------------------------------------
+# Conversation definition
+# ---------------------------------------------------------------------------
 
 profile_handler = ConversationHandler(
     entry_points=[CommandHandler("profile", profile_ep)],
     states={
-        # handlers must be registered in core.py via CommandHandler("profile", profile_entry),
-        LANG_SELECT: [
+        MENU: [
             CallbackQueryHandler(ask_language, pattern="^profile_set_language$"),
+            CallbackQueryHandler(ask_fuel, pattern="^profile_set_fuel$"),
+            CallbackQueryHandler(ask_service, pattern="^profile_set_service$"),
+            MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),
+        ],
+        LANG_SELECT: [
+            CallbackQueryHandler(save_language, pattern="^set_lang:"),
             MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),
         ],
         FUEL_SELECT: [
-            CallbackQueryHandler(ask_fuel, pattern="^profile_set_fuel$"),
+            CallbackQueryHandler(save_fuel, pattern="^set_fuel:"),
             MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),
         ],
         SERVICE_SELECT: [
-            CallbackQueryHandler(ask_service, pattern="^profile_set_service$"),
+            CallbackQueryHandler(save_service, pattern="^set_service:"),
             MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),
         ],
     },
