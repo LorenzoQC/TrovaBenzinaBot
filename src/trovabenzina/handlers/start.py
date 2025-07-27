@@ -45,9 +45,6 @@ def make_selection_handler(
         query = update.callback_query
         await query.answer()
 
-        # reconstruct the current choices
-        choices_map = choices_getter()
-
         # extract selected value
         value = query.data.split("_", 1)[1]
         ctx.user_data[data_key] = value
@@ -65,6 +62,8 @@ def make_selection_handler(
 
         # otherwise prompt next
         lang = ctx.user_data.get("lang", DEFAULT_LANGUAGE)
+        # reconstruct the current choices
+        choices_map = choices_getter()
         kb = build_keyboard(choices_map.items(), callback_prefix, back_callback)
         await query.edit_message_text(
             t(prompt_key, lang),

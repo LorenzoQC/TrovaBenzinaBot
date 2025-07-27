@@ -59,22 +59,22 @@ def main() -> None:
     log.info("Config tables synced from CSV files")
 
     # Load mappings from database for bot use
+    language_map = loop.run_until_complete(get_language_map())
     fuel_map = loop.run_until_complete(get_fuel_map())
     service_map = loop.run_until_complete(get_service_map())
-    language_map = loop.run_until_complete(get_language_map())
 
     # Populate module-level maps for handlers
-    from trovabenzina.config.settings import FUEL_MAP, SERVICE_MAP, LANGUAGE_MAP
+    from trovabenzina.config.settings import LANGUAGE_MAP, FUEL_MAP, SERVICE_MAP
+    LANGUAGE_MAP.clear()
+    LANGUAGE_MAP.update(language_map)
     FUEL_MAP.clear()
     FUEL_MAP.update(fuel_map)
     SERVICE_MAP.clear()
     SERVICE_MAP.update(service_map)
-    LANGUAGE_MAP.clear()
-    LANGUAGE_MAP.update(language_map)
 
     log.info(
-        "Loaded code maps: %d fuels, %d services, %d languages",
-        len(FUEL_MAP), len(SERVICE_MAP), len(LANGUAGE_MAP),
+        "Loaded code maps: %d languages, %d fuels, %d services",
+        len(LANGUAGE_MAP), len(FUEL_MAP), len(SERVICE_MAP),
     )
 
     # Build the Telegram application
