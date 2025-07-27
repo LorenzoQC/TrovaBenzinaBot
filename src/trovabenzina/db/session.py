@@ -1,8 +1,8 @@
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
-from models import Base
 from trovabenzina.config import DATABASE_URL
+from .models import Base
 
 # Create async engine and session factory
 engine = create_async_engine(DATABASE_URL, echo=False)
