@@ -11,7 +11,8 @@ from telegram.ext import (
     filters,
 )
 
-from trovabenzina.api.api import geocode, call_api, fetch_address
+from trovabenzina.api import fetch_address, call_api
+from trovabenzina.api import geocode
 from trovabenzina.config import (
     FUEL_MAP,
     SERVICE_MAP,
