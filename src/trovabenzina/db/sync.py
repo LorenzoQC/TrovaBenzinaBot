@@ -1,6 +1,7 @@
 import csv
 import os
 from datetime import datetime, timezone
+from pathlib import Path
 
 import aiofiles
 import aiofiles.os
@@ -10,9 +11,8 @@ from .models import Fuel, Service, Language
 from .session import AsyncSession
 
 # Path to CSV folder
-ASSETS_CONFIG_DIR = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "../../../../assets/config")
-)
+BASE_DIR = Path(__file__).resolve().parents[3]
+ASSETS_CONFIG_DIR = BASE_DIR / "assets" / "config"
 
 
 async def _sync_model_from_csv(model, csv_filename):
