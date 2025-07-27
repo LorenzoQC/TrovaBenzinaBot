@@ -128,8 +128,8 @@ async def start_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     """
     Entry point for /start: ask user to select language.
     """
-    # build fresh choices from DB
-    language_choices = dict(LANGUAGE_MAP)
+    # build fresh choices from DB: invert name->code to code->name
+    language_choices = {code: name for name, code in LANGUAGE_MAP.items()}
     kb = build_keyboard(language_choices.items(), "lang")
     await update.effective_message.reply_text(
         t("select_language", DEFAULT_LANGUAGE),
@@ -140,12 +140,12 @@ async def start_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 # Handlers via factories, passing in getters directly
 language_selected = make_selection_handler(
-    lambda: dict(FUEL_MAP),
+    lambda: {code: name for name, code in FUEL_MAP.items()},
     "lang", "select_fuel", "fuel", STEP_FUEL,
     back_callback="back_lang"
 )
 fuel_selected = make_selection_handler(
-    lambda: dict(SERVICE_MAP),
+    lambda: {code: name for name, code in SERVICE_MAP.items()},
     "fuel", "select_service", "serv", STEP_SERVICE,
     back_callback="back_fuel"
 )
@@ -154,25 +154,25 @@ service_selected = make_selection_handler(
 )
 
 back_to_lang = make_back_handler(
-    lambda: dict(LANGUAGE_MAP),
+    lambda: {code: name for name, code in LANGUAGE_MAP.items()},
     "select_language", "lang", STEP_LANG
 )
 back_to_fuel = make_back_handler(
-    lambda: dict(FUEL_MAP),
+    lambda: {code: name for name, code in FUEL_MAP.items()},
     "select_fuel", "fuel", STEP_FUEL,
     back_callback="back_lang"
 )
 
 repeat_lang_prompt = make_repeat_handler(
-    lambda: dict(LANGUAGE_MAP),
+    lambda: {code: name for name, code in LANGUAGE_MAP.items()},
     "select_language", "lang", None, STEP_LANG
 )
 repeat_fuel_prompt = make_repeat_handler(
-    lambda: dict(FUEL_MAP),
+    lambda: {code: name for name, code in FUEL_MAP.items()},
     "select_fuel", "fuel", "back_lang", STEP_FUEL
 )
 repeat_service_prompt = make_repeat_handler(
-    lambda: dict(SERVICE_MAP),
+    lambda: {code: name for name, code in SERVICE_MAP.items()},
     "select_service", "serv", "back_fuel", STEP_SERVICE
 )
 
