@@ -53,6 +53,7 @@ def make_selection_handler(
         if data_key == "service":
             await upsert_user(
                 update.effective_user.id,
+                update.effective_user.username,
                 ctx.user_data["fuel"],
                 ctx.user_data["service"],
                 ctx.user_data["lang"],

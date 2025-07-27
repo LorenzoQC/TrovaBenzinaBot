@@ -47,6 +47,7 @@ async def get_service_map() -> Dict[str, str]:
 
 async def upsert_user(
         tg_id: int,
+        tg_username: str,
         fuel_code: str,
         service_code: str,
         language_code: Optional[str] = None,
@@ -69,6 +70,7 @@ async def upsert_user(
 
         stmt = insert(User).values(
             tg_id=tg_id,
+            tg_username=tg_username,
             fuel_id=fuel_id,
             service_id=service_id,
             language_id=language_id,
