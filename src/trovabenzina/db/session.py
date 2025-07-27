@@ -1,11 +1,16 @@
 from sqlalchemy import text
+from sqlalchemy.engine.url import make_url
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
 from trovabenzina.config import DATABASE_URL
 from .models import Base
 
+_url = make_url(DATABASE_URL)
+if _url.drivername == "postgresql":
+    _url = _url.set(drivername="postgresql+asyncpg")
+
 # Create async engine and session factory
-engine = create_async_engine(DATABASE_URL, echo=False)
+engine = create_async_engine(_url, echo=False)
 AsyncSession = async_sessionmaker(
     engine,
     expire_on_commit=False,
