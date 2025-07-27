@@ -12,12 +12,25 @@ from .models import Fuel, Service, Language, User, GeoCache, Search
 from .session import AsyncSession
 
 
+async def get_language_map() -> Dict[str, str]:
+    """
+    Return a mapping of language names to language codes.
+    """
+    async with AsyncSession() as session:
+        result = await session.execute(
+            select(Language).where(Language.del_ts.is_(None))
+        )
+        languages = result.scalars().all()
+    return {l.name: l.code for l in languages}
+
 async def get_fuel_map() -> Dict[str, str]:
     """
     Return a mapping of fuel names to fuel codes.
     """
     async with AsyncSession() as session:
-        result = await session.execute(select(Fuel))
+        result = await session.execute(
+            select(Fuel).where(Fuel.del_ts.is_(None))
+        )
         fuels = result.scalars().all()
     return {f.name: f.code for f in fuels}
 
@@ -26,18 +39,11 @@ async def get_service_map() -> Dict[str, str]:
     Return a mapping of service names to service codes.
     """
     async with AsyncSession() as session:
-        result = await session.execute(select(Service))
+        result = await session.execute(
+            select(Service).where(Service.del_ts.is_(None))
+        )
         services = result.scalars().all()
     return {s.name: s.code for s in services}
-
-async def get_language_map() -> Dict[str, str]:
-    """
-    Return a mapping of language names to language codes.
-    """
-    async with AsyncSession() as session:
-        result = await session.execute(select(Language))
-        languages = result.scalars().all()
-    return {l.name: l.code for l in languages}
 
 async def upsert_user(
         tg_id: int,
