@@ -16,4 +16,4 @@ ENV PYTHONPATH=/app/src
 ENV PORT=8080
 
 # start the bot via its module path
-CMD ["python", "-m", "trovabenzina.bot.bot"]
+CMD ["python", "-m", "trovabenzina.core.bot"]
