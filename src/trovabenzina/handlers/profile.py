@@ -70,9 +70,9 @@ async def profile_ep(update: Update, context: CallbackContext) -> int:
     context.user_data["lang"] = lang_code
 
     # Convert stored codes back to labels
+    lang_name = next((name for name, code in LANGUAGE_MAP.items() if code == lang_code), lang_code)
     fuel_name = next((name for name, code in FUEL_MAP.items() if code == fuel_code), fuel_code)
     service_name = next((name for name, code in SERVICE_MAP.items() if code == service_code), service_code)
-    lang_name = LANGUAGE_MAP.get(lang_code, lang_code)
 
     summary = (
         f"• {t('language', lang_code)}: {lang_name}\n"
