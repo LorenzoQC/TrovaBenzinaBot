@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from collections.abc import Mapping
+
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import (
     CallbackContext,
-    ConversationHandler,
     CallbackQueryHandler,
-    MessageHandler,
     CommandHandler,
+    ConversationHandler,
+    MessageHandler,
     filters,
 )
 
@@ -23,15 +25,17 @@ __all__ = ["profile_handler"]
 MENU, LANG_SELECT, FUEL_SELECT, SERVICE_SELECT = range(4)
 
 # ---------------------------------------------------------------------------
-# Helpers
+# Helper utilities
 # ---------------------------------------------------------------------------
-def _keyboard_full_width(rows: list[list[InlineKeyboardButton]]) -> InlineKeyboardMarkup:
+
+def _keyboard_full_width(
+        rows: list[list[InlineKeyboardButton]]) -> InlineKeyboardMarkup:  # noqa: D401 – short description ok
     """Return an inline keyboard where each button occupies its own row."""
     return InlineKeyboardMarkup(rows)
 
 
 def _build_profile_keyboard(locale: str) -> InlineKeyboardMarkup:
-    """Return inline keyboard for editing profile."""
+    """Inline keyboard with the three *edit* actions."""
     items = [
         (t("edit_language", locale), "profile_set_language"),
         (t("edit_fuel", locale), "profile_set_fuel"),
@@ -41,17 +45,26 @@ def _build_profile_keyboard(locale: str) -> InlineKeyboardMarkup:
 
 
 async def _get_or_create_defaults(uid: int) -> tuple[str, str, str]:
-    """Fetch user prefs or create defaults. Safe against missing columns attributes."""
+    """Return the user's (fuel, service, language) or create defaults if none exist.
+
+    Works with whatever shape the row comes in (SQLAlchemy RowMapping or a plain
+    tuple of length 3/4).
+    """
     row = await get_user(uid)
     if row is not None:
-        try:
+        if isinstance(row, Mapping) or hasattr(row, "keys"):
             fuel_code = row["fuel_code"]
             service_code = row["service_code"]
             lang_code = row["lang_code"]
-        except (KeyError, TypeError):
-            _, fuel_code, service_code, lang_code = row
-        lang_code = lang_code or DEFAULT_LANGUAGE
-        return fuel_code, service_code, lang_code
+        else:
+            seq = list(row)
+            if len(seq) == 3:
+                fuel_code, service_code, lang_code = seq
+            elif len(seq) == 4:
+                _, fuel_code, service_code, lang_code = seq
+            else:
+                raise ValueError("Unexpected user row format")
+        return fuel_code, service_code, lang_code or DEFAULT_LANGUAGE
 
     # no record yet – bootstrap with sensible defaults
     fuel_code = next(iter(FUEL_MAP.values()))
@@ -63,17 +76,18 @@ async def _get_or_create_defaults(uid: int) -> tuple[str, str, str]:
 # ---------------------------------------------------------------------------
 # /profile entry-point
 # ---------------------------------------------------------------------------
-async def profile_ep(update: Update, context: CallbackContext) -> int:
-    """Show current profile summary with edit buttons."""
+async def profile_ep(update: Update, context: CallbackContext) -> int:  # noqa: D401 – imperative mood
+    """Send profile summary + edit buttons; enter MENU state."""
     uid = update.effective_user.id
     fuel_code, service_code, lang_code = await _get_or_create_defaults(uid)
 
-    context.user_data["lang"] = lang_code  # cache language for subsequent prompts
+    # cache language for subsequent prompts
+    context.user_data["lang"] = lang_code
 
     # human-readable labels
     if lang_code in LANGUAGE_MAP:
         lang_name = LANGUAGE_MAP[lang_code]
-    else:
+    else:  # LANGUAGE_MAP could be name→code
         lang_name = next((n for n, c in LANGUAGE_MAP.items() if c == lang_code), lang_code)
 
     fuel_name = next((n for n, c in FUEL_MAP.items() if c == fuel_code), fuel_code)
@@ -101,15 +115,14 @@ async def ask_language(update: Update, context: CallbackContext) -> int:
 
     rows: list[list[InlineKeyboardButton]] = []
     for key, value in LANGUAGE_MAP.items():
-        if len(key) <= 3 and key.isalpha():  # map code → name
+        # Support both code→name and name→code maps
+        if len(key) <= 3 and key.isalpha():  # typical ISO code
             code, name = key, value
-        else:  # map name → code
+        else:
             name, code = key, value
         rows.append([InlineKeyboardButton(name, callback_data=f"set_lang:{code}")])
 
-    await query.edit_message_text(
-        t("profile.select_language", lang), reply_markup=_keyboard_full_width(rows)
-    )
+    await query.edit_message_text(t("profile.select_language", lang), reply_markup=_keyboard_full_width(rows))
     return LANG_SELECT
 
 
@@ -138,9 +151,7 @@ async def ask_fuel(update: Update, context: CallbackContext) -> int:
 
     kb = [[InlineKeyboardButton(name, callback_data=f"set_fuel:{code}")]
           for name, code in FUEL_MAP.items()]
-    await query.edit_message_text(
-        t("profile.select_fuel", lang), reply_markup=_keyboard_full_width(kb)
-    )
+    await query.edit_message_text(t("profile.select_fuel", lang), reply_markup=_keyboard_full_width(kb))
     return FUEL_SELECT
 
 
@@ -168,9 +179,7 @@ async def ask_service(update: Update, context: CallbackContext) -> int:
 
     kb = [[InlineKeyboardButton(name, callback_data=f"set_service:{code}")]
           for name, code in SERVICE_MAP.items()]
-    await query.edit_message_text(
-        t("profile.select_service", lang), reply_markup=_keyboard_full_width(kb)
-    )
+    await query.edit_message_text(t("profile.select_service", lang), reply_markup=_keyboard_full_width(kb))
     return SERVICE_SELECT
 
 
@@ -188,23 +197,22 @@ async def save_service(update: Update, context: CallbackContext) -> int:
 
 
 # ---------------------------------------------------------------------------
-# Invalid text handler
+# Invalid text handler (keeps UX bullet‑proof)
 # ---------------------------------------------------------------------------
 async def invalid_text(update: Update, context: CallbackContext) -> int:
     state = context.chat_data.get("current_state", MENU)
-
     if state == MENU:
         return await profile_ep(update, context)
-    elif state == LANG_SELECT:
+    if state == LANG_SELECT:
         return await ask_language(update, context)
-    elif state == FUEL_SELECT:
+    if state == FUEL_SELECT:
         return await ask_fuel(update, context)
-    else:
-        return await ask_service(update, context)
+    # SERVICE_SELECT fallback
+    return await ask_service(update, context)
 
 
 # ---------------------------------------------------------------------------
-# Conversation definition
+# Conversation definition – plug into the application
 # ---------------------------------------------------------------------------
 profile_handler = ConversationHandler(
     entry_points=[CommandHandler("profile", profile_ep)],
