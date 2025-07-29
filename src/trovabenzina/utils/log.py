@@ -21,7 +21,7 @@ class RailwayLogFormatter(logging.Formatter):
         return json.dumps(log_record, ensure_ascii=False)
 
 
-def setup_logging(level: int = logging.INFO) -> None:
+def setup_logging(level: int = logging.DEBUG) -> None:
     """Configure root logger for Railway (stdout  JSON)."""
     root = logging.getLogger()
     root.setLevel(level)

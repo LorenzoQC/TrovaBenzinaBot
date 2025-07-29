@@ -1,6 +1,7 @@
 """
 CRUD operations for configuration, user management, search logging, and geocode caching.
 """
+import logging
 from datetime import date
 from typing import Optional, Dict, Tuple, Any, List
 
@@ -10,6 +11,8 @@ from sqlalchemy.future import select
 
 from .models import Fuel, Service, Language, User, GeoCache, Search
 from .session import AsyncSession
+
+logger = logging.getLogger(__name__)
 
 
 async def get_language_map() -> Dict[str, str]:
@@ -56,12 +59,15 @@ async def upsert_user(
     Insert or update a user record with preferences.
     """
     async with AsyncSession() as session:
+        logger.debug("Querying Fuel.id where code=%s", fuel_code)
         fuel_id = (await session.execute(
             select(Fuel.id).where(Fuel.code == fuel_code)
         )).scalar_one()
+        logger.debug("Querying Service.id where code=%s", service_code)
         service_id = (await session.execute(
             select(Service.id).where(Service.code == service_code)
         )).scalar_one()
+        logger.debug("Querying Language.id where code=%s", language_code)
         language_id = None
         if language_code:
             language_id = (await session.execute(
