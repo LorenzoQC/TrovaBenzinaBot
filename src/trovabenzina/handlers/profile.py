@@ -44,7 +44,7 @@ def _build_profile_keyboard(locale: str) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_kb(items, per_row=1))
 
 
-async def _get_or_create_defaults(uid: int) -> tuple[str, str, str]:
+async def _get_or_create_defaults(uid: int, username: str) -> tuple[str, str, str]:
     """Return the user's (fuel, service, language) or create defaults if none exist.
 
     Works with whatever shape the row comes in (SQLAlchemy RowMapping or a plain
@@ -69,7 +69,7 @@ async def _get_or_create_defaults(uid: int) -> tuple[str, str, str]:
     # no record yet – bootstrap with sensible defaults
     fuel_code = next(iter(FUEL_MAP.values()))
     service_code = next(iter(SERVICE_MAP.values()))
-    await upsert_user(uid, fuel_code, service_code, DEFAULT_LANGUAGE)
+    await upsert_user(uid, username, fuel_code, service_code, DEFAULT_LANGUAGE)
     return fuel_code, service_code, DEFAULT_LANGUAGE
 
 
@@ -79,7 +79,8 @@ async def _get_or_create_defaults(uid: int) -> tuple[str, str, str]:
 async def profile_ep(update: Update, context: CallbackContext) -> int:  # noqa: D401 – imperative mood
     """Send profile summary + edit buttons; enter MENU state."""
     uid = update.effective_user.id
-    fuel_code, service_code, lang_code = await _get_or_create_defaults(uid)
+    username = update.effective_user.username
+    fuel_code, service_code, lang_code = await _get_or_create_defaults(uid, username)
 
     # cache language for subsequent prompts
     context.user_data["lang"] = lang_code
@@ -130,10 +131,11 @@ async def save_language(update: Update, context: CallbackContext) -> int:
     query = update.callback_query
     await query.answer()
     uid = update.effective_user.id
+    username = update.effective_user.username
     new_code = query.data.split(":", 1)[1]
 
-    fuel_code, service_code, _ = await _get_or_create_defaults(uid)
-    await upsert_user(uid, fuel_code, service_code, new_code)
+    fuel_code, service_code, _ = await _get_or_create_defaults(uid, username)
+    await upsert_user(uid, username, fuel_code, service_code, new_code)
     context.user_data["lang"] = new_code
 
     await query.edit_message_text(t("profile.language_saved", new_code))
@@ -159,10 +161,11 @@ async def save_fuel(update: Update, context: CallbackContext) -> int:
     query = update.callback_query
     await query.answer()
     uid = update.effective_user.id
+    username = update.effective_user.username
     new_fuel = query.data.split(":", 1)[1]
 
-    _, service_code, lang_code = await _get_or_create_defaults(uid)
-    await upsert_user(uid, new_fuel, service_code, lang_code)
+    _, service_code, lang_code = await _get_or_create_defaults(uid, username)
+    await upsert_user(uid, username, new_fuel, service_code, lang_code)
 
     await query.edit_message_text(t("profile.fuel_saved", lang_code))
     return await profile_ep(update, context)
@@ -187,10 +190,11 @@ async def save_service(update: Update, context: CallbackContext) -> int:
     query = update.callback_query
     await query.answer()
     uid = update.effective_user.id
+    username = update.effective_user.username
     new_service = query.data.split(":", 1)[1]
 
-    fuel_code, _, lang_code = await _get_or_create_defaults(uid)
-    await upsert_user(uid, fuel_code, new_service, lang_code)
+    fuel_code, _, lang_code = await _get_or_create_defaults(uid, username)
+    await upsert_user(uid, username, fuel_code, new_service, lang_code)
 
     await query.edit_message_text(t("profile.service_saved", lang_code))
     return await profile_ep(update, context)
