@@ -148,18 +148,35 @@ async def ask_language(update: Update, context: CallbackContext) -> int:
     return LANG_SELECT
 
 async def save_language(update: Update, context: CallbackContext) -> int:
+    """Save new language and show confirmation + profile menu in one message."""
     query = update.callback_query
     await query.answer()
     uid = update.effective_user.id
     username = update.effective_user.username
     new_code = query.data.split(":", 1)[1]
 
+    # persist new language
     fuel_code, service_code, _ = await _get_or_create_defaults(uid, username)
     await upsert_user(uid, username, fuel_code, service_code, new_code)
     context.user_data["lang"] = new_code
 
-    await query.edit_message_text(t("language_updated", new_code))
-    return await profile_ep(update, context)
+    # rebuild profile summary
+    lang_name = LANGUAGE_MAP.get(new_code, next((n for n, c in LANGUAGE_MAP.items() if c == new_code), new_code))
+    fuel_name = next((n for n, c in FUEL_MAP.items() if c == fuel_code), fuel_code)
+    service_name = next((n for n, c in SERVICE_MAP.items() if c == service_code), service_code)
+    summary = (
+        f"{t('language', new_code)}: {lang_name}\n"
+        f"{t('fuel', new_code)}: {fuel_name}\n"
+        f"{t('service', new_code)}: {service_name}"
+    )
+
+    # send single edited message: confirmation + menu
+    await query.edit_message_text(
+        f"{t('language_updated', new_code)}\n\n{summary}",
+        reply_markup=_build_profile_keyboard(new_code),
+    )
+    context.chat_data["current_state"] = MENU
+    return MENU
 
 # ---------------------------------------------------------------------------
 # Fuel flow
@@ -181,17 +198,34 @@ async def ask_fuel(update: Update, context: CallbackContext) -> int:
     return FUEL_SELECT
 
 async def save_fuel(update: Update, context: CallbackContext) -> int:
+    """Save new fuel and show confirmation + profile menu in one message."""
     query = update.callback_query
     await query.answer()
     uid = update.effective_user.id
     username = update.effective_user.username
     new_fuel = query.data.split(":", 1)[1]
 
+    # persist new fuel
     _, service_code, lang_code = await _get_or_create_defaults(uid, username)
     await upsert_user(uid, username, new_fuel, service_code, lang_code)
 
-    await query.edit_message_text(t("fuel_updated", lang_code))
-    return await profile_ep(update, context)
+    # rebuild profile summary
+    lang_name = LANGUAGE_MAP.get(lang_code, next((n for n, c in LANGUAGE_MAP.items() if c == lang_code), lang_code))
+    fuel_name = next((n for n, c in FUEL_MAP.items() if c == new_fuel), new_fuel)
+    service_name = next((n for n, c in SERVICE_MAP.items() if c == service_code), service_code)
+    summary = (
+        f"{t('language', lang_code)}: {lang_name}\n"
+        f"{t('fuel', lang_code)}: {fuel_name}\n"
+        f"{t('service', lang_code)}: {service_name}"
+    )
+
+    # send single edited message: confirmation + menu
+    await query.edit_message_text(
+        f"{t('fuel_updated', lang_code)}\n\n{summary}",
+        reply_markup=_build_profile_keyboard(lang_code),
+    )
+    context.chat_data["current_state"] = MENU
+    return MENU
 
 # ---------------------------------------------------------------------------
 # Service flow
@@ -213,17 +247,34 @@ async def ask_service(update: Update, context: CallbackContext) -> int:
     return SERVICE_SELECT
 
 async def save_service(update: Update, context: CallbackContext) -> int:
+    """Save new service and show confirmation + profile menu in one message."""
     query = update.callback_query
     await query.answer()
     uid = update.effective_user.id
     username = update.effective_user.username
     new_service = query.data.split(":", 1)[1]
 
+    # persist new service
     fuel_code, _, lang_code = await _get_or_create_defaults(uid, username)
     await upsert_user(uid, username, fuel_code, new_service, lang_code)
 
-    await query.edit_message_text(t("service_updated", lang_code))
-    return await profile_ep(update, context)
+    # rebuild profile summary
+    lang_name = LANGUAGE_MAP.get(lang_code, next((n for n, c in LANGUAGE_MAP.items() if c == lang_code), lang_code))
+    fuel_name = next((n for n, c in FUEL_MAP.items() if c == fuel_code), fuel_code)
+    service_name = next((n for n, c in SERVICE_MAP.items() if c == new_service), new_service)
+    summary = (
+        f"{t('language', lang_code)}: {lang_name}\n"
+        f"{t('fuel', lang_code)}: {fuel_name}\n"
+        f"{t('service', lang_code)}: {service_name}"
+    )
+
+    # send single edited message: confirmation + menu
+    await query.edit_message_text(
+        f"{t('service_updated', lang_code)}\n\n{summary}",
+        reply_markup=_build_profile_keyboard(lang_code),
+    )
+    context.chat_data["current_state"] = MENU
+    return MENU
 
 # ---------------------------------------------------------------------------
 # Invalid text handler
