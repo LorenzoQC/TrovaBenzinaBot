@@ -59,6 +59,43 @@ async def _get_or_create_defaults(uid: int, username: str) -> tuple[str, str, st
     await upsert_user(uid, username, fuel_code, service_code, DEFAULT_LANGUAGE)
     return fuel_code, service_code, DEFAULT_LANGUAGE
 
+
+# ---------------------------------------------------------------------------
+# BACK BUTTON HANDLER
+# ---------------------------------------------------------------------------
+
+async def back_to_menu(update: Update, context: CallbackContext) -> int:
+    """Handle '↩' callback by returning to the main profile menu."""
+    query = update.callback_query
+    await query.answer()
+
+    # retrieve current settings from DB or defaults
+    uid = update.effective_user.id
+    username = update.effective_user.username
+    fuel_code, service_code, lang_code = await _get_or_create_defaults(uid, username)
+
+    # prepare human-readable labels
+    lang_name = LANGUAGE_MAP.get(
+        lang_code,
+        next((n for n, c in LANGUAGE_MAP.items() if c == lang_code), lang_code)
+    )
+    fuel_name = next((n for n, c in FUEL_MAP.items() if c == fuel_code), fuel_code)
+    service_name = next((n for n, c in SERVICE_MAP.items() if c == service_code), service_code)
+
+    summary = (
+        f"{t('language', lang_code)}: {lang_name}\n"
+        f"{t('fuel', lang_code)}: {fuel_name}\n"
+        f"{t('service', lang_code)}: {service_name}"
+    )
+
+    # edit the message to show the main menu again
+    await query.edit_message_text(
+        summary,
+        reply_markup=_build_profile_keyboard(lang_code),
+    )
+    context.chat_data["current_state"] = MENU
+    return MENU
+
 # ---------------------------------------------------------------------------
 # /profile entry-point
 # ---------------------------------------------------------------------------
@@ -214,14 +251,17 @@ profile_handler = ConversationHandler(
             MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),
         ],
         LANG_SELECT: [
+            CallbackQueryHandler(back_to_menu, pattern="^profile$"),
             CallbackQueryHandler(save_language, pattern="^set_lang:"),
             MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),
         ],
         FUEL_SELECT: [
+            CallbackQueryHandler(back_to_menu, pattern="^profile$"),
             CallbackQueryHandler(save_fuel, pattern="^set_fuel:"),
             MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),
         ],
         SERVICE_SELECT: [
+            CallbackQueryHandler(back_to_menu, pattern="^profile$"),
             CallbackQueryHandler(save_service, pattern="^set_service:"),
             MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),
         ],
