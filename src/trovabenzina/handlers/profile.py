@@ -121,7 +121,7 @@ async def save_language(update: Update, context: CallbackContext) -> int:
     await upsert_user(uid, username, fuel_code, service_code, new_code)
     context.user_data["lang"] = new_code
 
-    await query.edit_message_text(t("profile.language_saved", new_code))
+    await query.edit_message_text(t("language_updated", new_code))
     return await profile_ep(update, context)
 
 # ---------------------------------------------------------------------------
@@ -153,7 +153,7 @@ async def save_fuel(update: Update, context: CallbackContext) -> int:
     _, service_code, lang_code = await _get_or_create_defaults(uid, username)
     await upsert_user(uid, username, new_fuel, service_code, lang_code)
 
-    await query.edit_message_text(t("profile.fuel_saved", lang_code))
+    await query.edit_message_text(t("fuel_updated", lang_code))
     return await profile_ep(update, context)
 
 # ---------------------------------------------------------------------------
@@ -185,7 +185,7 @@ async def save_service(update: Update, context: CallbackContext) -> int:
     fuel_code, _, lang_code = await _get_or_create_defaults(uid, username)
     await upsert_user(uid, username, fuel_code, new_service, lang_code)
 
-    await query.edit_message_text(t("profile.service_saved", lang_code))
+    await query.edit_message_text(t("service_updated", lang_code))
     return await profile_ep(update, context)
 
 # ---------------------------------------------------------------------------

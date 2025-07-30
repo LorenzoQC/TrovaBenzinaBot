@@ -28,6 +28,9 @@ TRANSLATIONS = {
     "edit_language": "Modifica lingua 🌐️",
     "edit_fuel": "Modifica carburante 🛢️",
     "edit_service": "Modifica servizio ⛽",
+    "language_updated": "✅ Lingua aggiornata correttamente",
+    "fuel_updated": "✅ Carburante aggiornato correttamente",
+    "service_updated": "✅ Servizio aggiornato correttamente",
 
     # ─────────── /find ───────────
     "select_radius": "Seleziona raggio di ricerca 📏",
