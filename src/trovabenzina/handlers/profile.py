@@ -102,7 +102,7 @@ async def ask_language(update: Update, context: CallbackContext) -> int:
         for code, name in ((key, value) if len(key) <= 3 and key.isalpha() else (value, key),)
     ]
     rows = inline_kb(items, per_row=2)
-    rows.append([InlineKeyboardButton("↩ Indietro", callback_data="profile")])
+    rows.append([InlineKeyboardButton("↩", callback_data="profile")])
 
     await query.edit_message_text(
         t("select_language", lang),
@@ -135,7 +135,7 @@ async def ask_fuel(update: Update, context: CallbackContext) -> int:
 
     items = [(name, f"set_fuel:{code}") for name, code in FUEL_MAP.items()]
     rows = inline_kb(items, per_row=2)
-    rows.append([InlineKeyboardButton("↩ Indietro", callback_data="profile")])
+    rows.append([InlineKeyboardButton("↩", callback_data="profile")])
 
     await query.edit_message_text(
         t("select_fuel", lang),
@@ -167,7 +167,7 @@ async def ask_service(update: Update, context: CallbackContext) -> int:
 
     items = [(name, f"set_service:{code}") for name, code in SERVICE_MAP.items()]
     rows = inline_kb(items, per_row=2)
-    rows.append([InlineKeyboardButton("↩ Indietro", callback_data="profile")])
+    rows.append([InlineKeyboardButton("↩", callback_data="profile")])
 
     await query.edit_message_text(
         t("select_service", lang),
