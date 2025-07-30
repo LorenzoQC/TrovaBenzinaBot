@@ -75,9 +75,9 @@ async def profile_ep(update: Update, context: CallbackContext) -> int:
     service_name = next((n for n, c in SERVICE_MAP.items() if c == service_code), service_code)
 
     summary = (
-        f"• {t('language', lang_code)}: {lang_name}\n"
-        f"• {t('fuel', lang_code)}: {fuel_name}\n"
-        f"• {t('service', lang_code)}: {service_name}"
+        f"{t('language', lang_code)}: {lang_name}\n"
+        f"{t('fuel', lang_code)}: {fuel_name}\n"
+        f"{t('service', lang_code)}: {service_name}"
     )
 
     await update.effective_message.reply_text(
@@ -105,7 +105,7 @@ async def ask_language(update: Update, context: CallbackContext) -> int:
     rows.append([InlineKeyboardButton("↩ Indietro", callback_data="profile")])
 
     await query.edit_message_text(
-        t("profile.select_language", lang),
+        t("select_language", lang),
         reply_markup=InlineKeyboardMarkup(rows),
     )
     return LANG_SELECT
@@ -138,7 +138,7 @@ async def ask_fuel(update: Update, context: CallbackContext) -> int:
     rows.append([InlineKeyboardButton("↩ Indietro", callback_data="profile")])
 
     await query.edit_message_text(
-        t("profile.select_fuel", lang),
+        t("select_fuel", lang),
         reply_markup=InlineKeyboardMarkup(rows),
     )
     return FUEL_SELECT
@@ -170,7 +170,7 @@ async def ask_service(update: Update, context: CallbackContext) -> int:
     rows.append([InlineKeyboardButton("↩ Indietro", callback_data="profile")])
 
     await query.edit_message_text(
-        t("profile.select_service", lang),
+        t("select_service", lang),
         reply_markup=InlineKeyboardMarkup(rows),
     )
     return SERVICE_SELECT
