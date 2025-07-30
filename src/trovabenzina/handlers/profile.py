@@ -134,9 +134,8 @@ async def ask_language(update: Update, context: CallbackContext) -> int:
     lang = context.user_data.get("lang", DEFAULT_LANGUAGE)
 
     items = [
-        (name if len(key) > 3 or not key.isalpha() else value, f"set_lang:{code}")
-        for key, value in LANGUAGE_MAP.items()
-        for code, name in ((key, value) if len(key) <= 3 and key.isalpha() else (value, key),)
+        (name, f"set_lang:{code}")
+        for name, code in LANGUAGE_MAP.items()
     ]
     rows = inline_kb(items, per_row=2)
     rows.append([InlineKeyboardButton("↩", callback_data="profile")])
