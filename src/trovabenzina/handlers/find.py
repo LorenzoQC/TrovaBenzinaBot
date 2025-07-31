@@ -144,7 +144,7 @@ async def run_search(origin: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 
 find_handler = ConversationHandler(
-    entry_points=[CommandHandler(["find", "trova"], find_ep)],
+    entry_points=[CommandHandler("find", find_ep)],
     states={
         STEP_FIND_LOC: [
             MessageHandler(filters.LOCATION, find_receive_location),
