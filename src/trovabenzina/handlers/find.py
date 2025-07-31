@@ -12,8 +12,6 @@ from telegram.ext import (
 
 from trovabenzina.api import fetch_address, call_api, geocode
 from trovabenzina.config import (
-    FUEL_MAP,
-    SERVICE_MAP,
     DEFAULT_RADIUS_NEAR,
     DEFAULT_RADIUS_FAR,
     DEFAULT_LANGUAGE,
@@ -79,18 +77,25 @@ async def find_receive_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     return ConversationHandler.END
 
 
-async def run_search(origin: Update, ctx: ContextTypes.DEFAULT_TYPE):
+async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
     """Perform two radius searches and send top 3 results for each."""
     uid = origin.effective_user.id
     fuel_code, service_code, lang = await get_user(uid)
-    ft = f"{FUEL_MAP[fuel_code]}-{SERVICE_MAP[service_code]}"
+    ft = f"{fuel_code}-{service_code}"
     lat = ctx.user_data.get("search_lat")
     lng = ctx.user_data.get("search_lng")
 
-    for radius, label in [(DEFAULT_RADIUS_NEAR, t("near_label", lang)),
-                          (DEFAULT_RADIUS_FAR, t("far_label", lang))]:
+    all_prices = []
+
+    for radius, label in [
+        (DEFAULT_RADIUS_NEAR, t("near_label", lang)),
+        (DEFAULT_RADIUS_FAR, t("far_label", lang))
+    ]:
         # header message
-        await origin.message.reply_text(f"*{label}*", {ParseMode.MARKDOWN})
+        await origin.message.reply_text(
+            f"*{label}*",
+            parse_mode=ParseMode.MARKDOWN
+        )
 
         res = await call_api(lat, lng, radius, ft)
         results = res.get("results", []) if res else []
@@ -98,10 +103,16 @@ async def run_search(origin: Update, ctx: ContextTypes.DEFAULT_TYPE):
             await origin.message.reply_text(t("no_stations", lang))
             continue
 
-        # compute stats
-        fid = int(FUEL_MAP[fuel_code])
-        prices = [f["price"] for r in results for f in r["fuels"] if f["fuelId"] == fid]
+        # compute statistics
+        fid = int(fuel_code)
+        prices = [
+            f["price"]
+            for r in results
+            for f in r["fuels"]
+            if f["fuelId"] == fid
+        ]
         avg = sum(prices) / len(prices)
+        all_prices.extend(prices)
 
         sorted_res = sorted(
             results,
@@ -138,9 +149,10 @@ async def run_search(origin: Update, ctx: ContextTypes.DEFAULT_TYPE):
             disable_web_page_preview=True,
         )
 
-    # log once after both searches
-    lowest = min(prices) if prices else None
-    await log_search(uid, avg, lowest)
+    # log analytics once after both searches
+    lowest = min(all_prices) if all_prices else None
+    avg_overall = sum(all_prices) / len(all_prices) if all_prices else 0
+    await log_search(uid, avg_overall, lowest)
 
 
 find_handler = ConversationHandler(
