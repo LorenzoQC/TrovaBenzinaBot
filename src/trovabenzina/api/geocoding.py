@@ -1,22 +1,21 @@
 import aiohttp
 
 from trovabenzina.config import GEOCODE_HARD_CAP, GOOGLE_API_KEY, GEOCODE_URL
-from trovabenzina.db.crud import get_cached_geocode, get_recent_geocache_count, upsert_geocode
+from trovabenzina.db.crud import get_geocache, count_geostats, save_geocache
 
 __all__ = [
     "geocode",
 ]
 
-
 async def geocode(addr: str):
     """Return (lat, lng) or None if not found or over quota."""
     # Try cached coordinates
-    cached = await get_cached_geocode(addr)
-    if cached:
-        return cached
+    record = await get_geocache(addr)
+    if record:
+        return record.lat, record.lng
 
     # Rate limiting via view
-    count = await get_recent_geocache_count()
+    count = await count_geostats()
     if count >= GEOCODE_HARD_CAP:
         return None
 
@@ -46,6 +45,6 @@ async def geocode(addr: str):
     latlng = best["geometry"]["location"]
 
     # Update cache
-    await upsert_geocode(addr, latlng["lat"], latlng["lng"])
+    await save_geocache(addr, latlng["lat"], latlng["lng"])
 
     return latlng["lat"], latlng["lng"]
