@@ -4,11 +4,6 @@ import os
 
 from telegram.ext import (
     ApplicationBuilder,
-    CommandHandler,
-    MessageHandler,
-    ConversationHandler,
-    CallbackQueryHandler,
-    filters,
 )
 
 from trovabenzina.config import BOT_TOKEN, BASE_URL
@@ -24,16 +19,11 @@ from trovabenzina.handlers import (
     start_handler,
     help_handler,
     profile_handler,
-    find_cmd,
-    find_receive_location,
-    find_receive_text,
-    radius_selected,
+    find_handler,
 )
 from trovabenzina.utils import (
     setup_logging,
     describe,
-    STEP_FIND_LOC,
-    STEP_FIND_RADIUS,
 )
 
 # Configure logging
@@ -84,24 +74,7 @@ def main() -> None:
     app.add_handler(start_handler)  # /start
     app.add_handler(help_handler)  # /help
     app.add_handler(profile_handler)  # /profile
-
-    # /find conversation
-    app.add_handler(
-        ConversationHandler(
-            entry_points=[CommandHandler(["find", "trova"], find_cmd)],
-            states={
-                STEP_FIND_LOC: [
-                    MessageHandler(filters.LOCATION, find_receive_location),
-                    MessageHandler(filters.TEXT & ~filters.COMMAND, find_receive_text),
-                ],
-                STEP_FIND_RADIUS: [
-                    CallbackQueryHandler(radius_selected, pattern="^rad_"),
-                ],
-            },
-            fallbacks=[],
-            block=True,
-        )
-    )
+    app.add_handler(find_handler)  # /find
 
     # Background scheduler setup
     setup_scheduler(loop, app)

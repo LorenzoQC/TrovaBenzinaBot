@@ -33,18 +33,17 @@ TRANSLATIONS = {
     "service_updated": "✅ Servizio aggiornato correttamente",
 
     # ─────────── /find ───────────
-    "select_radius": "Seleziona raggio di ricerca 📏",
-    "invalid_radius": "⚠️ Raggio non valido",
+    "ask_location": "➤ Digita un indirizzo oppure invia la tua posizione",
     "send_location": "Invia posizione GPS 📍",
-    "ask_location": "➤ Invia la tua posizione o scegli un luogo preferito",
+    "geocode_cap_reached": "Per favore riprova più tardi, oppure invia la tua posizione",
     "invalid_address": "⚠️ Indirizzo non valido",
     "no_stations": "❌ Nessun distributore trovato",
-
-    # price notes
-    "note_cheaper": "Risparmi {pct}%!",
-    "note_equal": "In linea con la media",
-    "note_more_expensive": "Costa {pct}% in più",
-    "compared_to_avg": "(media: {avg:.3f} €/L)",
+    "near_label": "Distributori entro 2 km:",
+    "far_label": "Distributori entro 7 km:",
+    "note_cheaper": "{pct}% più economico",
+    "note_equal": "Prezzo in linea con la media",
+    "note_more_expensive": "{pct}% più caro",
+    "compared_to_avg": "rispetto alla media di {avg:.3f} €/L)",
     "lets_go": "Andiamo!",
     "no_address": "Indirizzo non disponibile",
 

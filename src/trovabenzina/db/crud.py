@@ -16,9 +16,6 @@ logger = logging.getLogger(__name__)
 
 
 async def get_language_map() -> Dict[str, str]:
-    """
-    Return a mapping of language names to language codes.
-    """
     async with AsyncSession() as session:
         result = await session.execute(
             select(Language).where(Language.del_ts.is_(None))
@@ -26,10 +23,8 @@ async def get_language_map() -> Dict[str, str]:
         languages = result.scalars().all()
     return {l.name: l.code for l in languages}
 
+
 async def get_fuel_map() -> Dict[str, str]:
-    """
-    Return a mapping of fuel names to fuel codes.
-    """
     async with AsyncSession() as session:
         result = await session.execute(
             select(Fuel).where(Fuel.del_ts.is_(None))
@@ -37,16 +32,15 @@ async def get_fuel_map() -> Dict[str, str]:
         fuels = result.scalars().all()
     return {f.name: f.code for f in fuels}
 
+
 async def get_service_map() -> Dict[str, str]:
-    """
-    Return a mapping of service names to service codes.
-    """
     async with AsyncSession() as session:
         result = await session.execute(
             select(Service).where(Service.del_ts.is_(None))
         )
         services = result.scalars().all()
     return {s.name: s.code for s in services}
+
 
 async def upsert_user(
         tg_id: int,
@@ -55,19 +49,13 @@ async def upsert_user(
         service_code: str,
         language_code: Optional[str] = None,
 ) -> None:
-    """
-    Insert or update a user record with preferences.
-    """
     async with AsyncSession() as session:
-        logger.debug("Querying Fuel.id where code=%s", fuel_code)
         fuel_id = (await session.execute(
             select(Fuel.id).where(Fuel.code == fuel_code)
         )).scalar_one()
-        logger.debug("Querying Service.id where code=%s", service_code)
         service_id = (await session.execute(
             select(Service.id).where(Service.code == service_code)
         )).scalar_one()
-        logger.debug("Querying Language.id where code=%s", language_code)
         language_id = None
         if language_code:
             language_id = (await session.execute(
@@ -91,12 +79,10 @@ async def upsert_user(
         await session.execute(stmt)
         await session.commit()
 
+
 async def get_user(
         tg_id: int
 ) -> Optional[Tuple[str, str, Optional[str]]]:
-    """
-    Return (fuel_code, service_code, language_code) or None.
-    """
     async with AsyncSession() as session:
         result = await session.execute(
             select(Fuel.code, Service.code, Language.code)
@@ -111,14 +97,12 @@ async def get_user(
             return None
         return row
 
+
 async def log_search(
         tg_id: int,
         price_avg: float,
         price_min: float,
 ) -> None:
-    """
-    Record search analytics: insert into searches.
-    """
     async with AsyncSession() as session:
         await session.execute(
             text(
@@ -128,12 +112,10 @@ async def log_search(
         )
         await session.commit()
 
-async def get_cached_geocode(
+
+async def get_geocache(
         address: str
-) -> Optional[Tuple[float, float]]:
-    """
-    Return cached (lat, lng) for given address, or None.
-    """
+) -> Optional[GeoCache]:
     async with AsyncSession() as session:
         result = await session.execute(
             select(GeoCache).where(
@@ -141,45 +123,37 @@ async def get_cached_geocode(
                 GeoCache.del_ts.is_(None)
             )
         )
-        obj = result.scalar_one_or_none()
-        if obj:
-            return obj.lat, obj.lng
-        return None
+        return result.scalar_one_or_none()
 
-async def upsert_geocode(
+
+async def save_geocache(
         address: str,
         lat: float,
         lng: float,
 ) -> None:
-    """
-    Insert or update a geocache record for an address.
-    """
     async with AsyncSession() as session:
-        obj = (await session.execute(
+        existing = (await session.execute(
             select(GeoCache).where(GeoCache.address == address)
         )).scalar_one_or_none()
-        if obj:
-            obj.lat = lat
-            obj.lng = lng
+        if existing:
+            existing.lat = lat
+            existing.lng = lng
         else:
-            obj = GeoCache(address=address, lat=lat, lng=lng)
-            session.add(obj)
+            new_entry = GeoCache(address=address, lat=lat, lng=lng)
+            session.add(new_entry)
         await session.commit()
 
-async def get_recent_geocache_count() -> int:
-    """
-    Return count of recent geocache entries via view v_geostats.
-    """
+
+async def count_geostats() -> int:
     async with AsyncSession() as session:
-        result = await session.execute(select(text("count")).select_from(text("v_geostats")))
+        result = await session.execute(
+            select(text("count")).select_from(text("v_geostats"))
+        )
         cnt = result.scalar_one_or_none()
         return cnt or 0
 
 
 async def delete_old_geocache(days: int = 90) -> None:
-    """
-    Delete geocache entries older than specified days.
-    """
     async with AsyncSession() as session:
         await session.execute(
             delete(GeoCache).where(
@@ -190,9 +164,6 @@ async def delete_old_geocache(days: int = 90) -> None:
 
 
 async def get_search_users() -> List[Tuple[int, int]]:
-    """
-    Return list of tuples (tg_id, user_id) for users who performed searches.
-    """
     async with AsyncSession() as session:
         result = await session.execute(
             select(User.tg_id, User.id)
@@ -207,10 +178,6 @@ async def calculate_monthly_savings(
         start_date: date,
         end_date: date,
 ) -> float:
-    """
-    Calculate total savings for given user_id between start_date and end_date.
-    Savings per search: (price_avg - price_min) * 50.
-    """
     async with AsyncSession() as session:
         result = await session.execute(
             select(Search.price_avg, Search.price_min)
