@@ -23,7 +23,6 @@ from trovabenzina.utils import STEP_FIND_LOC
 
 __all__ = ["find_handler"]
 
-
 async def find_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     """Handle /find command: ask user for address or location."""
     uid = update.effective_user.id
@@ -94,14 +93,12 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
         res = await call_api(lat, lng, radius, ft)
         results = res.get("results", []) if res else []
         if not results:
-            # send header + no stations text
             await origin.message.reply_text(
                 f"<b>{t(label_key, lang)}</b>\n\n{t('no_stations', lang)}",
                 parse_mode=ParseMode.HTML
             )
             continue
 
-        # compute statistics
         fid = int(fuel_code)
         prices = [
             f["price"]
@@ -128,15 +125,15 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
             if not station.get("address"):
                 station["address"] = await fetch_address(station["id"]) or t("no_address", lang)
 
+            # formatted station info
             lines.append(
-                f"{medals[i]} <u>{station['brand']} • {station['name']} </u>\n"
-                f"<b>{t('address', lang)}</b> :{station['address']}\n"
+                f"{medals[i]} <u>{station['brand']} • {station['name']}</u>\n"
+                f"<b>{t('address', lang)}</b>: {station['address']}\n"
                 f"<b>{t('price', lang)}</b>: {price:.3f} €xL\n"
-                f"<b>{t('saving', lang)}</b>: {abs(pct)}% ({t('average', lang)}: {avg} €xL)\n"
-                f"<b>[{t('lets_go', lang)}]({link})</b>"
+                f"<b>{t('saving', lang)}</b>: {abs(pct)}% ({t('average', lang)}: {avg:.3f} €xL)\n"
+                f"<b><a href=\"{link}\">{t('lets_go', lang)}</a></b>"
             )
 
-        # send combined message: header + lines
         await origin.message.reply_text(
             f"{t(label_key, lang)}\n\n\n" + "\n\n".join(lines),
             parse_mode=ParseMode.HTML,
@@ -147,7 +144,6 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
     lowest = min(all_prices) if all_prices else None
     avg_overall = sum(all_prices) / len(all_prices) if all_prices else 0
     await log_search(uid, avg_overall, lowest)
-
 
 find_handler = ConversationHandler(
     entry_points=[CommandHandler("find", find_ep)],
