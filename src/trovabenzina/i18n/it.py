@@ -51,7 +51,4 @@ TRANSLATIONS = {
     "compared_to_avg": "rispetto alla media di {avg:.3f} €xL",
     "lets_go": "Andiamo!",
     "no_address": "Indirizzo non disponibile",
-
-    # ─────────── generics ───────────
-    "use_commands": "⛔ Usa i comandi, per favore",
 }
