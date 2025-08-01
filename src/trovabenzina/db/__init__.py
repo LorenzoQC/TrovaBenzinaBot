@@ -4,7 +4,7 @@ from .crud import (
     get_language_map,
     upsert_user,
     get_user,
-    log_search,
+    save_search,
 )
 from .models import (
     Base,

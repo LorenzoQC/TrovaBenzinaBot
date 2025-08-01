@@ -17,7 +17,7 @@ from trovabenzina.config import (
     DEFAULT_LANGUAGE,
     GEOCODE_HARD_CAP,
 )
-from trovabenzina.db.crud import get_user, log_search, get_geocache, save_geocache, count_geostats
+from trovabenzina.db.crud import get_user, save_search, get_geocache, save_geocache, count_geostats
 from trovabenzina.i18n import t
 from trovabenzina.utils import STEP_FIND_LOC
 
@@ -143,7 +143,7 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
     # log analytics once after both searches
     lowest = min(all_prices) if all_prices else None
     avg_overall = sum(all_prices) / len(all_prices) if all_prices else 0
-    await log_search(uid, avg_overall, lowest)
+    await save_search(uid, fuel_code, service_code, round(avg_overall, 3), lowest)
 
 find_handler = ConversationHandler(
     entry_points=[CommandHandler("find", find_ep)],

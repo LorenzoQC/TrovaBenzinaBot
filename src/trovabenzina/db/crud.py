@@ -98,18 +98,37 @@ async def get_user(
         return row
 
 
-async def log_search(
+async def save_search(
         tg_id: int,
+        fuel_code: str,
+        service_code: str,
         price_avg: float,
         price_min: float,
 ) -> None:
+    """
+    Record search analytics: insert into searches with correct foreign keys.
+    """
     async with AsyncSession() as session:
-        await session.execute(
-            text(
-                "INSERT INTO searches (user_id, ins_ts, price_avg, price_min) "
-                "VALUES (:uid, NOW(), :avg, :min)"
-            ), {"uid": tg_id, "avg": price_avg, "min": price_min}
+        # get internal user id
+        user_id = (await session.execute(
+            select(User.id).where(User.tg_id == tg_id)
+        )).scalar_one()
+        # get fuel and service ids
+        fuel_id = (await session.execute(
+            select(Fuel.id).where(Fuel.code == fuel_code)
+        )).scalar_one()
+        service_id = (await session.execute(
+            select(Service.id).where(Service.code == service_code)
+        )).scalar_one()
+        # insert Search record
+        new_search = Search(
+            user_id=user_id,
+            fuel_id=fuel_id,
+            service_id=service_id,
+            price_avg=price_avg,
+            price_min=price_min,
         )
+        session.add(new_search)
         await session.commit()
 
 
