@@ -83,8 +83,6 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
     lat = ctx.user_data.get("search_lat")
     lng = ctx.user_data.get("search_lng")
 
-    all_prices = []
-
     for radius, label_key in [
         (DEFAULT_RADIUS_NEAR, "near_label"),
         (DEFAULT_RADIUS_FAR, "far_label")
@@ -97,6 +95,7 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
                 f"<b>{t(label_key, lang)}</b>\n\n{t('no_stations', lang)}",
                 parse_mode=ParseMode.HTML
             )
+            await save_search(uid, fuel_code, service_code, 0.0, 0.0)
             continue
 
         fid = int(fuel_code)
@@ -107,7 +106,7 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
             if f["fuelId"] == fid
         ]
         avg = sum(prices) / len(prices)
-        all_prices.extend(prices)
+        lowest = min(prices)
 
         sorted_res = sorted(
             results,
@@ -140,10 +139,8 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
             disable_web_page_preview=True,
         )
 
-    # log analytics once after both searches
-    lowest = min(all_prices) if all_prices else None
-    avg_overall = sum(all_prices) / len(all_prices) if all_prices else 0
-    await save_search(uid, fuel_code, service_code, round(avg_overall, 3), lowest)
+        await save_search(uid, fuel_code, service_code, round(avg, 3), round(lowest, 3))
+
 
 find_handler = ConversationHandler(
     entry_points=[CommandHandler("find", find_ep)],
