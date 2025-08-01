@@ -129,7 +129,7 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
                 f"{medals[i]} <b><a href=\"{link}\">{station['brand']} • {station['name']}</a></b>\n"
                 f"<b>{t('address', lang)}</b>: {station['address']}\n"
                 f"<b>{t('price', lang)}</b>: {price:.3f} €xL\n"
-                f"<b>{t('saving', lang)}</b>: {abs(pct)}% ({t('average', lang)}: {avg:.3f} €xL)\n"
+                f"<b>{t('saving', lang)}</b>: {abs(pct)}% ({t('average', lang)}: {avg:.3f} €xL)"
             )
 
         await origin.message.reply_text(
