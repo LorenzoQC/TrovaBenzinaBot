@@ -96,8 +96,8 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
         if not results:
             # send header + no stations text
             await origin.message.reply_text(
-                f"*{t(label_key, lang)}*\n\n{t('no_stations', lang)}",
-                parse_mode=ParseMode.MARKDOWN
+                f"<b>{t(label_key, lang)}</b>\n\n{t('no_stations', lang)}",
+                parse_mode=ParseMode.HTML
             )
             continue
 
@@ -125,28 +125,21 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
             dest = f"{station['location']['lat']},{station['location']['lng']}"
             link = f"https://www.google.com/maps/dir/?api=1&destination={quote_plus(dest)}"
 
-            if price < avg:
-                note = t("note_cheaper", lang, pct=pct)
-            elif price > avg:
-                note = f"⚠️ {t('note_more_expensive', lang, pct=abs(pct))}"
-            else:
-                note = t("note_equal", lang)
-
             if not station.get("address"):
                 station["address"] = await fetch_address(station["id"]) or t("no_address", lang)
 
             lines.append(
-                f"{medals[i]} *{t('station', lang)}*: {station['brand']} • {station['name']}\n"
-                f"*{t('address', lang)}*:{station['address']}\n"
-                f"*{t('price', lang)}*: {price:.3f} €xL\n"
-                f"*{t('saving', lang)}*: {abs(pct)}% ({t('average', lang)}: {avg} €xL)\n"
-                f"*[{t('lets_go', lang)}]({link})*"
+                f"{medals[i]} <u>{station['brand']} • {station['name']} </u>\n"
+                f"<b>{t('address', lang)}</b> :{station['address']}\n"
+                f"<b>{t('price', lang)}</b>: {price:.3f} €xL\n"
+                f"<b>{t('saving', lang)}</b>: {abs(pct)}% ({t('average', lang)}: {avg} €xL)\n"
+                f"<b>[{t('lets_go', lang)}]({link})</b>"
             )
 
         # send combined message: header + lines
         await origin.message.reply_text(
-            f"<u>{t(label_key, lang)}</u>\n\n" + "\n\n".join(lines),
-            parse_mode=ParseMode.MARKDOWN,
+            f"{t(label_key, lang)}\n\n\n" + "\n\n".join(lines),
+            parse_mode=ParseMode.HTML,
             disable_web_page_preview=True,
         )
 
