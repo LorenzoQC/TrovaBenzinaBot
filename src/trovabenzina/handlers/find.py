@@ -126,15 +126,14 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
 
             # formatted station info
             lines.append(
-                f"{medals[i]} <u>{station['brand']} • {station['name']}</u>\n"
+                f"{medals[i]} <b><a href=\"{link}\">{station['brand']} • {station['name']}</a></b>\n"
                 f"<b>{t('address', lang)}</b>: {station['address']}\n"
                 f"<b>{t('price', lang)}</b>: {price:.3f} €xL\n"
                 f"<b>{t('saving', lang)}</b>: {abs(pct)}% ({t('average', lang)}: {avg:.3f} €xL)\n"
-                f"<b><a href=\"{link}\">{t('lets_go', lang)}</a></b>"
             )
 
         await origin.message.reply_text(
-            f"{t(label_key, lang)}\n\n\n" + "\n\n".join(lines),
+            f"<u>{t(label_key, lang)}</u>\n\n\n" + "\n\n".join(lines),
             parse_mode=ParseMode.HTML,
             disable_web_page_preview=True,
         )
