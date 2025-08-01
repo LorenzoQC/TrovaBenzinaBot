@@ -76,7 +76,6 @@ async def find_receive_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await run_search(update, ctx)
     return ConversationHandler.END
 
-
 async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
     """Perform two radius searches and send top 3 results for each."""
     uid = origin.effective_user.id
@@ -87,20 +86,19 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
 
     all_prices = []
 
-    for radius, label in [
-        (DEFAULT_RADIUS_NEAR, t("near_label", lang)),
-        (DEFAULT_RADIUS_FAR, t("far_label", lang))
+    for radius, label_key in [
+        (DEFAULT_RADIUS_NEAR, "near_label"),
+        (DEFAULT_RADIUS_FAR, "far_label")
     ]:
-        # header message
-        await origin.message.reply_text(
-            f"*{label}*",
-            parse_mode=ParseMode.MARKDOWN
-        )
-
+        # perform API call
         res = await call_api(lat, lng, radius, ft)
         results = res.get("results", []) if res else []
         if not results:
-            await origin.message.reply_text(t("no_stations", lang))
+            # send header + no stations text
+            await origin.message.reply_text(
+                f"*{t(label_key, lang)}*\n\n{t('no_stations', lang)}",
+                parse_mode=ParseMode.MARKDOWN
+            )
             continue
 
         # compute statistics
@@ -143,8 +141,9 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
                 f"[{t('lets_go', lang)}]({link})"
             )
 
+        # send combined message: header + lines
         await origin.message.reply_text(
-            "\n\n".join(lines),
+            f"*{t(label_key, lang)}*\n\n" + "\n\n".join(lines),
             parse_mode=ParseMode.MARKDOWN,
             disable_web_page_preview=True,
         )
