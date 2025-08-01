@@ -136,14 +136,16 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
                 station["address"] = await fetch_address(station["id"]) or t("no_address", lang)
 
             lines.append(
-                f"{medals[i]} *{station['brand']} • {station['name']} • {station['address']}*\n"
-                f"{price:.3f} €/L – {note} {t('compared_to_avg', lang, avg=avg)}\n"
-                f"[{t('lets_go', lang)}]({link})"
+                f"{medals[i]} *{t('station', lang)}*: {station['brand']} • {station['name']}\n"
+                f"*{t('address', lang)}*:{station['address']}\n"
+                f"*{t('price', lang)}*: {price:.3f} €xL\n"
+                f"*{t('saving', lang)}*: {abs(pct)}% ({t('average', lang)}: {avg} €xL)\n"
+                f"*[{t('lets_go', lang)}]({link})*"
             )
 
         # send combined message: header + lines
         await origin.message.reply_text(
-            f"*{t(label_key, lang)}*\n\n" + "\n\n".join(lines),
+            f"<u>{t(label_key, lang)}</u>\n\n" + "\n\n".join(lines),
             parse_mode=ParseMode.MARKDOWN,
             disable_web_page_preview=True,
         )
