@@ -139,7 +139,7 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
 
         # send combined message
         await origin.message.reply_text(
-            f"<u>{t(label_key, lang)}</u>\n\n\n" + "\n\n".join(lines),
+            f"<u>{t(label_key, lang)}</u> 📍\n\n\n" + "\n\n".join(lines),
             parse_mode=ParseMode.HTML,
             disable_web_page_preview=True,
         )
