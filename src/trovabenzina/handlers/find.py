@@ -56,7 +56,6 @@ async def find_receive_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if record:
         lat, lng = record.lat, record.lng
     else:
-        # ensure we haven't hit hard cap
         stats = await count_geostats()
         if stats >= GEOCODE_HARD_CAP:
             await update.message.reply_text(t("geocode_cap_reached", lang))
@@ -76,21 +75,33 @@ async def find_receive_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     return ConversationHandler.END
 
 async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
-    """Perform two radius searches and send top 3 results for each."""
+    """Perform two radius searches, filter by fuel/service, send top 3 and log each."""
     uid = origin.effective_user.id
     fuel_code, service_code, lang = await get_user(uid)
-    ft = f"{fuel_code}-{service_code}"
     lat = ctx.user_data.get("search_lat")
     lng = ctx.user_data.get("search_lng")
+
+    # determine self-service flag
+    is_self = service_code == "1"
+    fid = int(fuel_code)
+    ft = f"{fuel_code}-{service_code}"
 
     for radius, label_key in [
         (DEFAULT_RADIUS_NEAR, "near_label"),
         (DEFAULT_RADIUS_FAR, "far_label")
     ]:
-        # perform API call
         res = await call_api(lat, lng, radius, ft)
-        results = res.get("results", []) if res else []
-        if not results:
+        stations = res.get("results", []) if res else []
+        # filter stations by fuelId and isSelf
+        filtered = []
+        for st in stations:
+            fuels = [f for f in st.get("fuels", [])
+                     if f.get("fuelId") == fid and f.get("isSelf") == is_self]
+            if fuels:
+                st["_filtered_fuels"] = fuels
+                filtered.append(st)
+
+        if not filtered:
             await origin.message.reply_text(
                 f"<b>{t(label_key, lang)}</b>\n\n{t('no_stations', lang)}",
                 parse_mode=ParseMode.HTML
@@ -98,25 +109,20 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
             await save_search(uid, fuel_code, service_code, 0.0, 0.0)
             continue
 
-        fid = int(fuel_code)
-        prices = [
-            f["price"]
-            for r in results
-            for f in r["fuels"]
-            if f["fuelId"] == fid
-        ]
+        # compute prices and stats
+        prices = [f["price"] for st in filtered for f in st["_filtered_fuels"]]
         avg = sum(prices) / len(prices)
         lowest = min(prices)
 
-        sorted_res = sorted(
-            results,
-            key=lambda r: next(f["price"] for f in r["fuels"] if f["fuelId"] == fid)
-        )
+        # sort by filtered price
+        sorted_res = sorted(filtered, key=lambda r: r["_filtered_fuels"][0]["price"])
 
+        # build message lines
         lines = []
         medals = ["🥇", "🥈", "🥉"]
         for i, station in enumerate(sorted_res[:3]):
-            price = next(f["price"] for f in station["fuels"] if f["fuelId"] == fid)
+            f0 = station["_filtered_fuels"][0]
+            price = f0["price"]
             pct = int(round((avg - price) / avg * 100))
             dest = f"{station['location']['lat']},{station['location']['lng']}"
             link = f"https://www.google.com/maps/dir/?api=1&destination={quote_plus(dest)}"
@@ -124,7 +130,6 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
             if not station.get("address"):
                 station["address"] = await fetch_address(station["id"]) or t("no_address", lang)
 
-            # formatted station info
             lines.append(
                 f"{medals[i]} <b><a href=\"{link}\">{station['brand']} • {station['name']}</a></b>\n"
                 f"<b>{t('address', lang)}</b>: {station['address']}\n"
@@ -132,12 +137,14 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
                 f"<b>{t('saving', lang)}</b>: {abs(pct)}% ({t('average', lang)}: {avg:.3f} €xL)"
             )
 
+        # send combined message
         await origin.message.reply_text(
             f"<u>{t(label_key, lang)}</u>\n\n\n" + "\n\n".join(lines),
             parse_mode=ParseMode.HTML,
             disable_web_page_preview=True,
         )
 
+        # log each search
         await save_search(uid, fuel_code, service_code, round(avg, 3), round(lowest, 3))
 
 
