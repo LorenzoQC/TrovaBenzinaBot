@@ -48,7 +48,7 @@ class Base(DeclarativeBase):
     pass
 
 
-class Fuel(TimestampMixin, CodeNameMixin, Base):
+class Fuel(CodeNameMixin, TimestampMixin, Base):
     __tablename__ = "fuels"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -57,7 +57,7 @@ class Fuel(TimestampMixin, CodeNameMixin, Base):
     searches: Mapped[List["Search"]] = relationship(back_populates="fuel")
 
 
-class Service(TimestampMixin, CodeNameMixin, Base):
+class Service(CodeNameMixin, TimestampMixin, Base):
     __tablename__ = "services"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -66,7 +66,7 @@ class Service(TimestampMixin, CodeNameMixin, Base):
     searches: Mapped[List["Search"]] = relationship(back_populates="service")
 
 
-class Language(TimestampMixin, CodeNameMixin, Base):
+class Language(CodeNameMixin, TimestampMixin, Base):
     __tablename__ = "languages"
 
     id: Mapped[int] = mapped_column(primary_key=True)
