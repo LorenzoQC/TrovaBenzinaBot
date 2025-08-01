@@ -37,7 +37,7 @@ async def geocode(addr: str):
         return None
     best = next((x for x in results if not x.get("partial_match")), results[0])
     comps = {c["types"][0]: c for c in best.get("address_components", [])}
-    if "locality" not in comps:
+    if not any(key in comps for key in ("locality", "administrative_area_level_3")):
         return None
     if best["geometry"]["location_type"] not in {"ROOFTOP", "RANGE_INTERPOLATED", "GEOMETRIC_CENTER"}:
         return None
