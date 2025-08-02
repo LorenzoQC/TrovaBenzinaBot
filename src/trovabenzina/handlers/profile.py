@@ -322,8 +322,5 @@ profile_handler = ConversationHandler(
             MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),
         ],
     },
-    fallbacks=[
-        CommandHandler("find", exit_profile),
-    ],
     block=False,
 )
