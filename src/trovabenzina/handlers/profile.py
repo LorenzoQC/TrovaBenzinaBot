@@ -322,5 +322,6 @@ profile_handler = ConversationHandler(
             MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),
         ],
     },
+    fallbacks=[],
     block=False,
 )
