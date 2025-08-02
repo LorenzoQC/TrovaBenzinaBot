@@ -9,7 +9,7 @@ from telegram.ext import (
 )
 
 from trovabenzina.config import DEFAULT_LANGUAGE, FUEL_MAP, SERVICE_MAP, LANGUAGE_MAP
-from trovabenzina.db.crud import upsert_user
+from trovabenzina.db.crud import upsert_user, get_user
 from trovabenzina.i18n import t
 from trovabenzina.utils import STEP_FUEL, STEP_LANG, STEP_SERVICE, inline_kb
 
@@ -63,7 +63,6 @@ def make_selection_handler(
 
         # otherwise prompt next
         lang = ctx.user_data.get("lang", DEFAULT_LANGUAGE)
-        # reconstruct the current choices
         choices_map = choices_getter()
         kb = build_keyboard(choices_map.items(), callback_prefix, back_callback)
         await query.edit_message_text(
@@ -114,7 +113,6 @@ def make_repeat_handler(
     """
     async def handler(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         chat_id = update.effective_chat.id
-        # delete previous prompt if exists
         old_id = ctx.user_data.get('prev_prompt_id')
         if old_id:
             try:
@@ -129,7 +127,6 @@ def make_repeat_handler(
             t(prompt_key, lang),
             reply_markup=InlineKeyboardMarkup(kb),
         )
-        # store new prompt id
         ctx.user_data['prev_prompt_id'] = sent.message_id
         return state
 
@@ -138,16 +135,26 @@ def make_repeat_handler(
 
 async def start_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     """
-    Entry point for /start: ask user to select language.
+    Entry point for /start: ask user to select language or notify if already registered.
     """
-    # build fresh choices from DB: invert name->code to code->name
+    # check if user already exists
+    existing = await get_user(update.effective_user.id)
+    if existing:
+        # existing is a tuple (fuel_code, service_code, language_code)
+        _, _, lang_code = existing
+        lang = lang_code or DEFAULT_LANGUAGE
+        await update.effective_message.reply_text(
+            t("user_already_registered", lang)
+        )
+        return ConversationHandler.END
+
+    # new user flow
     language_choices = {code: name for name, code in LANGUAGE_MAP.items()}
     kb = build_keyboard(language_choices.items(), "lang")
     sent = await update.effective_message.reply_text(
         t("select_language", DEFAULT_LANGUAGE),
         reply_markup=InlineKeyboardMarkup(kb),
     )
-    # store prompt message id for potential deletion
     ctx.user_data['prev_prompt_id'] = sent.message_id
     return STEP_LANG
 

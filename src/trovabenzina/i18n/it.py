@@ -11,6 +11,7 @@ TRANSLATIONS = {
     "select_service": "Seleziona servizio ⛽",
     "invalid_service": "⚠️ Servizio non valido",
     "profile_saved": "✅ Profilo salvato correttamente",
+    "user_already_registered": "Utente già registrato.\n\nUtilizza il comando /profile per modificare le preferenze",
 
     # ─────────── /help ───────────
     "help": (
