@@ -113,13 +113,24 @@ def make_repeat_handler(
     choices_getter: callable returning dict code->label
     """
     async def handler(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+        chat_id = update.effective_chat.id
+        # delete previous prompt if exists
+        old_id = ctx.user_data.get('prev_prompt_id')
+        if old_id:
+            try:
+                await ctx.bot.delete_message(chat_id=chat_id, message_id=old_id)
+            except Exception:
+                pass
+
         lang = ctx.user_data.get("lang", DEFAULT_LANGUAGE)
         choices_map = choices_getter()
         kb = build_keyboard(choices_map.items(), callback_prefix, back_callback)
-        await update.effective_message.reply_text(
+        sent = await update.effective_message.reply_text(
             t(prompt_key, lang),
             reply_markup=InlineKeyboardMarkup(kb),
         )
+        # store new prompt id
+        ctx.user_data['prev_prompt_id'] = sent.message_id
         return state
 
     return handler
@@ -132,12 +143,13 @@ async def start_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     # build fresh choices from DB: invert name->code to code->name
     language_choices = {code: name for name, code in LANGUAGE_MAP.items()}
     kb = build_keyboard(language_choices.items(), "lang")
-    await update.effective_message.reply_text(
+    sent = await update.effective_message.reply_text(
         t("select_language", DEFAULT_LANGUAGE),
         reply_markup=InlineKeyboardMarkup(kb),
     )
+    # store prompt message id for potential deletion
+    ctx.user_data['prev_prompt_id'] = sent.message_id
     return STEP_LANG
-
 
 # Handlers via factories, passing in getters directly
 language_selected = make_selection_handler(
