@@ -303,7 +303,6 @@ profile_handler = ConversationHandler(
             CallbackQueryHandler(ask_language, pattern="^profile_set_language$"),
             CallbackQueryHandler(ask_fuel, pattern="^profile_set_fuel$"),
             CallbackQueryHandler(ask_service, pattern="^profile_set_service$"),
-            CommandHandler("find", exit_profile),
             MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),
         ],
         LANG_SELECT: [
@@ -322,6 +321,8 @@ profile_handler = ConversationHandler(
             MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),
         ],
     },
-    fallbacks=[],
+    fallbacks=[
+        CommandHandler("find", exit_profile),
+    ],
     block=False,
 )
