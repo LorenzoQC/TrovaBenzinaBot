@@ -173,14 +173,13 @@ async def save_language(update: Update, context: CallbackContext) -> int:
     fuel_name = next((n for n, c in FUEL_MAP.items() if c == fuel_code), fuel_code)
     service_name = next((n for n, c in SERVICE_MAP.items() if c == service_code), service_code)
     summary = (
+        f"{t('language_updated', new_code)}\n\n"
         f"{t('language', new_code)}: {lang_name}\n"
         f"{t('fuel', new_code)}: {fuel_name}\n"
         f"{t('service', new_code)}: {service_name}"
     )
-
-    # send single edited message: confirmation + menu
     await query.edit_message_text(
-        f"{t('language_updated', new_code)}\n\n{summary}",
+        summary,
         reply_markup=_build_profile_keyboard(new_code),
     )
     context.chat_data["current_state"] = MENU
@@ -222,14 +221,13 @@ async def save_fuel(update: Update, context: CallbackContext) -> int:
     fuel_name = next((n for n, c in FUEL_MAP.items() if c == new_fuel), new_fuel)
     service_name = next((n for n, c in SERVICE_MAP.items() if c == service_code), service_code)
     summary = (
+        f"{t('fuel_updated', lang_code)}\n\n"
         f"{t('language', lang_code)}: {lang_name}\n"
         f"{t('fuel', lang_code)}: {fuel_name}\n"
         f"{t('service', lang_code)}: {service_name}"
     )
-
-    # send single edited message: confirmation + menu
     await query.edit_message_text(
-        f"{t('fuel_updated', lang_code)}\n\n{summary}",
+        summary,
         reply_markup=_build_profile_keyboard(lang_code),
     )
     context.chat_data["current_state"] = MENU
@@ -271,14 +269,13 @@ async def save_service(update: Update, context: CallbackContext) -> int:
     fuel_name = next((n for n, c in FUEL_MAP.items() if c == fuel_code), fuel_code)
     service_name = next((n for n, c in SERVICE_MAP.items() if c == new_service), new_service)
     summary = (
+        f"{t('service_updated', lang_code)}\n\n"
         f"{t('language', lang_code)}: {lang_name}\n"
         f"{t('fuel', lang_code)}: {fuel_name}\n"
         f"{t('service', lang_code)}: {service_name}"
     )
-
-    # send single edited message: confirmation + menu
     await query.edit_message_text(
-        f"{t('service_updated', lang_code)}\n\n{summary}",
+        summary,
         reply_markup=_build_profile_keyboard(lang_code),
     )
     context.chat_data["current_state"] = MENU
@@ -287,7 +284,11 @@ async def save_service(update: Update, context: CallbackContext) -> int:
 # ---------------------------------------------------------------------------
 # Invalid text handler
 # ---------------------------------------------------------------------------
-async def invalid_text(update: Update, context: CallbackContext) -> int:
+async def invalid_input(update: Update, context: CallbackContext) -> int:
+    # if user types any command, end this conversation
+    text = update.effective_message.text or ""
+    if text.startswith("/"):
+        return ConversationHandler.END
     state = context.chat_data.get("current_state", MENU)
     if state == MENU:
         return await profile_ep(update, context)
@@ -307,26 +308,27 @@ profile_handler = ConversationHandler(
             CallbackQueryHandler(ask_language, pattern="^profile_set_language$"),
             CallbackQueryHandler(ask_fuel, pattern="^profile_set_fuel$"),
             CallbackQueryHandler(ask_service, pattern="^profile_set_service$"),
-            MessageHandler(filters.COMMAND, exit_profile),
-            MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),
+            # capture any command to exit, but allow propagation further
+            MessageHandler(filters.COMMAND, lambda u, c: ConversationHandler.END, block=False),
+            MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_input),
         ],
         LANG_SELECT: [
             CallbackQueryHandler(back_to_menu, pattern="^profile$"),
             CallbackQueryHandler(save_language, pattern="^set_lang:"),
-            MessageHandler(filters.COMMAND, exit_profile),
-            MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),
+            MessageHandler(filters.COMMAND, lambda u, c: ConversationHandler.END, block=False),
+            MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_input),
         ],
         FUEL_SELECT: [
             CallbackQueryHandler(back_to_menu, pattern="^profile$"),
             CallbackQueryHandler(save_fuel, pattern="^set_fuel:"),
-            MessageHandler(filters.COMMAND, exit_profile),
-            MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),
+            MessageHandler(filters.COMMAND, lambda u, c: ConversationHandler.END, block=False),
+            MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_input),
         ],
         SERVICE_SELECT: [
             CallbackQueryHandler(back_to_menu, pattern="^profile$"),
             CallbackQueryHandler(save_service, pattern="^set_service:"),
-            MessageHandler(filters.COMMAND, exit_profile),
-            MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),
+            MessageHandler(filters.COMMAND, lambda u, c: ConversationHandler.END, block=False),
+            MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_input),
         ],
     },
     fallbacks=[],
