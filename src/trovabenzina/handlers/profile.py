@@ -20,6 +20,15 @@ from trovabenzina.utils import inline_kb
 __all__ = ["profile_handler"]
 
 # ---------------------------------------------------------------------------
+# Exit helper: catch any command to exit profile flow
+# ---------------------------------------------------------------------------
+async def exit_profile(update: Update, context: CallbackContext) -> int:
+    """Terminate the /profile conversation on any command."""
+    context.chat_data.pop("current_state", None)
+    return ConversationHandler.END
+
+
+# ---------------------------------------------------------------------------
 # Conversation states
 # ---------------------------------------------------------------------------
 MENU, LANG_SELECT, FUEL_SELECT, SERVICE_SELECT = range(4)
@@ -288,12 +297,6 @@ async def invalid_text(update: Update, context: CallbackContext) -> int:
         return await ask_fuel(update, context)
     return await ask_service(update, context)
 
-
-async def exit_profile(update: Update, context: CallbackContext) -> int:
-    # end the /profile conversation
-    context.chat_data.pop("current_state", None)
-    return ConversationHandler.END
-
 # ---------------------------------------------------------------------------
 # Conversation definition
 # ---------------------------------------------------------------------------
@@ -304,22 +307,26 @@ profile_handler = ConversationHandler(
             CallbackQueryHandler(ask_language, pattern="^profile_set_language$"),
             CallbackQueryHandler(ask_fuel, pattern="^profile_set_fuel$"),
             CallbackQueryHandler(ask_service, pattern="^profile_set_service$"),
-            MessageHandler(filters.TEXT, invalid_text),
+            MessageHandler(filters.COMMAND, exit_profile),
+            MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),
         ],
         LANG_SELECT: [
             CallbackQueryHandler(back_to_menu, pattern="^profile$"),
             CallbackQueryHandler(save_language, pattern="^set_lang:"),
-            MessageHandler(filters.TEXT, invalid_text),
+            MessageHandler(filters.COMMAND, exit_profile),
+            MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),
         ],
         FUEL_SELECT: [
             CallbackQueryHandler(back_to_menu, pattern="^profile$"),
             CallbackQueryHandler(save_fuel, pattern="^set_fuel:"),
-            MessageHandler(filters.TEXT, invalid_text),
+            MessageHandler(filters.COMMAND, exit_profile),
+            MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),
         ],
         SERVICE_SELECT: [
             CallbackQueryHandler(back_to_menu, pattern="^profile$"),
             CallbackQueryHandler(save_service, pattern="^set_service:"),
-            MessageHandler(filters.TEXT, invalid_text),
+            MessageHandler(filters.COMMAND, exit_profile),
+            MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),
         ],
     },
     fallbacks=[],
