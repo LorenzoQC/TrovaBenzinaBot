@@ -11,7 +11,7 @@ from telegram.ext import (
 from trovabenzina.config import DEFAULT_LANGUAGE, FUEL_MAP, SERVICE_MAP, LANGUAGE_MAP
 from trovabenzina.db.crud import upsert_user, get_user
 from trovabenzina.i18n import t
-from trovabenzina.utils import STEP_FUEL, STEP_LANG, STEP_SERVICE, inline_kb
+from trovabenzina.utils import STEP_START_FUEL, STEP_START_LANGUAGE, STEP_START_SERVICE, inline_kb
 
 __all__ = ["start_handler"]
 
@@ -156,17 +156,17 @@ async def start_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         reply_markup=InlineKeyboardMarkup(kb),
     )
     ctx.user_data['prev_prompt_id'] = sent.message_id
-    return STEP_LANG
+    return STEP_START_LANGUAGE
 
 # Handlers via factories, passing in getters directly
 language_selected = make_selection_handler(
     lambda: {code: name for name, code in FUEL_MAP.items()},
-    "lang", "select_fuel", "fuel", STEP_FUEL,
+    "lang", "select_fuel", "fuel", STEP_START_FUEL,
     back_callback="back_lang"
 )
 fuel_selected = make_selection_handler(
     lambda: {code: name for name, code in SERVICE_MAP.items()},
-    "fuel", "select_service", "serv", STEP_SERVICE,
+    "fuel", "select_service", "serv", STEP_START_SERVICE,
     back_callback="back_fuel"
 )
 service_selected = make_selection_handler(
@@ -175,40 +175,40 @@ service_selected = make_selection_handler(
 
 back_to_lang = make_back_handler(
     lambda: {code: name for name, code in LANGUAGE_MAP.items()},
-    "select_language", "lang", STEP_LANG
+    "select_language", "lang", STEP_START_LANGUAGE
 )
 back_to_fuel = make_back_handler(
     lambda: {code: name for name, code in FUEL_MAP.items()},
-    "select_fuel", "fuel", STEP_FUEL,
+    "select_fuel", "fuel", STEP_START_FUEL,
     back_callback="back_lang"
 )
 
 repeat_lang_prompt = make_repeat_handler(
     lambda: {code: name for name, code in LANGUAGE_MAP.items()},
-    "select_language", "lang", None, STEP_LANG
+    "select_language", "lang", None, STEP_START_LANGUAGE
 )
 repeat_fuel_prompt = make_repeat_handler(
     lambda: {code: name for name, code in FUEL_MAP.items()},
-    "select_fuel", "fuel", "back_lang", STEP_FUEL
+    "select_fuel", "fuel", "back_lang", STEP_START_FUEL
 )
 repeat_service_prompt = make_repeat_handler(
     lambda: {code: name for name, code in SERVICE_MAP.items()},
-    "select_service", "serv", "back_fuel", STEP_SERVICE
+    "select_service", "serv", "back_fuel", STEP_START_SERVICE
 )
 
 start_handler = ConversationHandler(
     entry_points=[CommandHandler("start", start_ep)],
     states={
-        STEP_LANG: [
+        STEP_START_LANGUAGE: [
             CallbackQueryHandler(language_selected, pattern="^lang_"),
             MessageHandler(filters.ALL, repeat_lang_prompt),
         ],
-        STEP_FUEL: [
+        STEP_START_FUEL: [
             CallbackQueryHandler(fuel_selected, pattern="^fuel_"),
             CallbackQueryHandler(back_to_lang, pattern="^back_lang$"),
             MessageHandler(filters.ALL, repeat_fuel_prompt),
         ],
-        STEP_SERVICE: [
+        STEP_START_SERVICE: [
             CallbackQueryHandler(service_selected, pattern="^serv_"),
             CallbackQueryHandler(back_to_fuel, pattern="^back_fuel$"),
             MessageHandler(filters.ALL, repeat_service_prompt),

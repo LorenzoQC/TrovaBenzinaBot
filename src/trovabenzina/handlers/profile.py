@@ -15,14 +15,11 @@ from telegram.ext import (
 from trovabenzina.config import DEFAULT_LANGUAGE, FUEL_MAP, SERVICE_MAP, LANGUAGE_MAP
 from trovabenzina.db.crud import get_user, upsert_user
 from trovabenzina.i18n import t
-from trovabenzina.utils import inline_kb
+from trovabenzina.utils import inline_kb, STEP_PROFILE_MENU, STEP_PROFILE_LANGUAGE, STEP_PROFILE_FUEL, \
+    STEP_PROFILE_SERVICE
 
 __all__ = ["profile_handler"]
 
-# ---------------------------------------------------------------------------
-# Conversation states
-# ---------------------------------------------------------------------------
-MENU, LANG_SELECT, FUEL_SELECT, SERVICE_SELECT = range(4)
 
 # ---------------------------------------------------------------------------
 # Helper utilities
@@ -93,8 +90,8 @@ async def back_to_menu(update: Update, context: CallbackContext) -> int:
         summary,
         reply_markup=_build_profile_keyboard(lang_code),
     )
-    context.chat_data["current_state"] = MENU
-    return MENU
+    context.chat_data["current_state"] = STEP_PROFILE_MENU
+    return STEP_PROFILE_MENU
 
 # ---------------------------------------------------------------------------
 # /profile entry-point
@@ -121,8 +118,8 @@ async def profile_ep(update: Update, context: CallbackContext) -> int:
         summary,
         reply_markup=_build_profile_keyboard(lang_code),
     )
-    context.chat_data["current_state"] = MENU
-    return MENU
+    context.chat_data["current_state"] = STEP_PROFILE_MENU
+    return STEP_PROFILE_MENU
 
 # ---------------------------------------------------------------------------
 # Language flow
@@ -130,7 +127,7 @@ async def profile_ep(update: Update, context: CallbackContext) -> int:
 async def ask_language(update: Update, context: CallbackContext) -> int:
     query = update.callback_query
     await query.answer()
-    context.chat_data["current_state"] = LANG_SELECT
+    context.chat_data["current_state"] = STEP_PROFILE_LANGUAGE
     lang = context.user_data.get("lang", DEFAULT_LANGUAGE)
 
     items = [
@@ -144,7 +141,7 @@ async def ask_language(update: Update, context: CallbackContext) -> int:
         t("select_language", lang),
         reply_markup=InlineKeyboardMarkup(rows),
     )
-    return LANG_SELECT
+    return STEP_PROFILE_LANGUAGE
 
 async def save_language(update: Update, context: CallbackContext) -> int:
     """Save new language and show confirmation + profile menu in one message."""
@@ -173,8 +170,8 @@ async def save_language(update: Update, context: CallbackContext) -> int:
         summary,
         reply_markup=_build_profile_keyboard(new_code),
     )
-    context.chat_data["current_state"] = MENU
-    return MENU
+    context.chat_data["current_state"] = STEP_PROFILE_MENU
+    return STEP_PROFILE_MENU
 
 # ---------------------------------------------------------------------------
 # Fuel flow
@@ -182,7 +179,7 @@ async def save_language(update: Update, context: CallbackContext) -> int:
 async def ask_fuel(update: Update, context: CallbackContext) -> int:
     query = update.callback_query
     await query.answer()
-    context.chat_data["current_state"] = FUEL_SELECT
+    context.chat_data["current_state"] = STEP_PROFILE_FUEL
     lang = context.user_data.get("lang", DEFAULT_LANGUAGE)
 
     items = [(name, f"set_fuel:{code}") for name, code in FUEL_MAP.items()]
@@ -193,7 +190,7 @@ async def ask_fuel(update: Update, context: CallbackContext) -> int:
         t("select_fuel", lang),
         reply_markup=InlineKeyboardMarkup(rows),
     )
-    return FUEL_SELECT
+    return STEP_PROFILE_FUEL
 
 async def save_fuel(update: Update, context: CallbackContext) -> int:
     """Save new fuel and show confirmation + profile menu in one message."""
@@ -221,8 +218,8 @@ async def save_fuel(update: Update, context: CallbackContext) -> int:
         summary,
         reply_markup=_build_profile_keyboard(lang_code),
     )
-    context.chat_data["current_state"] = MENU
-    return MENU
+    context.chat_data["current_state"] = STEP_PROFILE_MENU
+    return STEP_PROFILE_MENU
 
 # ---------------------------------------------------------------------------
 # Service flow
@@ -230,7 +227,7 @@ async def save_fuel(update: Update, context: CallbackContext) -> int:
 async def ask_service(update: Update, context: CallbackContext) -> int:
     query = update.callback_query
     await query.answer()
-    context.chat_data["current_state"] = SERVICE_SELECT
+    context.chat_data["current_state"] = STEP_PROFILE_SERVICE
     lang = context.user_data.get("lang", DEFAULT_LANGUAGE)
 
     items = [(name, f"set_service:{code}") for name, code in SERVICE_MAP.items()]
@@ -241,7 +238,7 @@ async def ask_service(update: Update, context: CallbackContext) -> int:
         t("select_service", lang),
         reply_markup=InlineKeyboardMarkup(rows),
     )
-    return SERVICE_SELECT
+    return STEP_PROFILE_SERVICE
 
 async def save_service(update: Update, context: CallbackContext) -> int:
     """Save new service and show confirmation + profile menu in one message."""
@@ -269,19 +266,19 @@ async def save_service(update: Update, context: CallbackContext) -> int:
         summary,
         reply_markup=_build_profile_keyboard(lang_code),
     )
-    context.chat_data["current_state"] = MENU
-    return MENU
+    context.chat_data["current_state"] = STEP_PROFILE_MENU
+    return STEP_PROFILE_MENU
 
 # ---------------------------------------------------------------------------
 # Invalid text handler
 # ---------------------------------------------------------------------------
 async def invalid_text(update: Update, context: CallbackContext) -> int:
-    state = context.chat_data.get("current_state", MENU)
-    if state == MENU:
+    state = context.chat_data.get("current_state", STEP_PROFILE_MENU)
+    if state == STEP_PROFILE_MENU:
         return ConversationHandler.END
-    if state == LANG_SELECT:
+    if state == STEP_PROFILE_LANGUAGE:
         return await ask_language(update, context)
-    if state == FUEL_SELECT:
+    if state == STEP_PROFILE_FUEL:
         return await ask_fuel(update, context)
     return await ask_service(update, context)
 
@@ -291,23 +288,23 @@ async def invalid_text(update: Update, context: CallbackContext) -> int:
 profile_handler = ConversationHandler(
     entry_points=[CommandHandler("profile", profile_ep)],
     states={
-        MENU: [
+        STEP_PROFILE_MENU: [
             CallbackQueryHandler(ask_language, pattern="^profile_set_language$"),
             CallbackQueryHandler(ask_fuel, pattern="^profile_set_fuel$"),
             CallbackQueryHandler(ask_service, pattern="^profile_set_service$"),
             MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),
         ],
-        LANG_SELECT: [
+        STEP_PROFILE_LANGUAGE: [
             CallbackQueryHandler(back_to_menu, pattern="^profile$"),
             CallbackQueryHandler(save_language, pattern="^set_lang:"),
             MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),
         ],
-        FUEL_SELECT: [
+        STEP_PROFILE_FUEL: [
             CallbackQueryHandler(back_to_menu, pattern="^profile$"),
             CallbackQueryHandler(save_fuel, pattern="^set_fuel:"),
             MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),
         ],
-        SERVICE_SELECT: [
+        STEP_PROFILE_SERVICE: [
             CallbackQueryHandler(back_to_menu, pattern="^profile$"),
             CallbackQueryHandler(save_service, pattern="^set_service:"),
             MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),

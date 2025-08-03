@@ -19,7 +19,7 @@ from trovabenzina.config import (
 )
 from trovabenzina.db.crud import get_user, save_search, get_geocache, save_geocache, count_geostats
 from trovabenzina.i18n import t
-from trovabenzina.utils import STEP_FIND_LOC
+from trovabenzina.utils import STEP_FIND_LOCATION
 
 __all__ = ["find_handler"]
 
@@ -35,7 +35,7 @@ async def find_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         t("ask_location", lang),
         reply_markup=kb,
     )
-    return STEP_FIND_LOC
+    return STEP_FIND_LOCATION
 
 async def find_receive_location(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     """Receive a location and perform the search."""
@@ -59,12 +59,12 @@ async def find_receive_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         stats = await count_geostats()
         if stats >= GEOCODE_HARD_CAP:
             await update.message.reply_text(t("geocode_cap_reached", lang))
-            return STEP_FIND_LOC
+            return STEP_FIND_LOCATION
 
         coords = await geocode(address)
         if not coords:
             await update.message.reply_text(t("invalid_address", lang))
-            return STEP_FIND_LOC
+            return STEP_FIND_LOCATION
 
         lat, lng = coords
         await save_geocache(address, lat, lng)
@@ -151,7 +151,7 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
 find_handler = ConversationHandler(
     entry_points=[CommandHandler("find", find_ep)],
     states={
-        STEP_FIND_LOC: [
+        STEP_FIND_LOCATION: [
             MessageHandler(filters.LOCATION, find_receive_location),
             MessageHandler(filters.TEXT & ~filters.COMMAND, find_receive_text),
         ],
