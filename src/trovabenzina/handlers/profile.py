@@ -20,15 +20,6 @@ from trovabenzina.utils import inline_kb
 __all__ = ["profile_handler"]
 
 # ---------------------------------------------------------------------------
-# Exit helper: catch any command to exit profile flow
-# ---------------------------------------------------------------------------
-async def exit_profile(update: Update, context: CallbackContext) -> int:
-    """Terminate the /profile conversation on any command."""
-    context.chat_data.pop("current_state", None)
-    return ConversationHandler.END
-
-
-# ---------------------------------------------------------------------------
 # Conversation states
 # ---------------------------------------------------------------------------
 MENU, LANG_SELECT, FUEL_SELECT, SERVICE_SELECT = range(4)
@@ -284,14 +275,10 @@ async def save_service(update: Update, context: CallbackContext) -> int:
 # ---------------------------------------------------------------------------
 # Invalid text handler
 # ---------------------------------------------------------------------------
-async def invalid_input(update: Update, context: CallbackContext) -> int:
-    # if user types any command, end this conversation
-    text = update.effective_message.text or ""
-    if text.startswith("/"):
-        return ConversationHandler.END
+async def invalid_text(update: Update, context: CallbackContext) -> int:
     state = context.chat_data.get("current_state", MENU)
     if state == MENU:
-        return await profile_ep(update, context)
+        return ConversationHandler.END
     if state == LANG_SELECT:
         return await ask_language(update, context)
     if state == FUEL_SELECT:
@@ -308,27 +295,22 @@ profile_handler = ConversationHandler(
             CallbackQueryHandler(ask_language, pattern="^profile_set_language$"),
             CallbackQueryHandler(ask_fuel, pattern="^profile_set_fuel$"),
             CallbackQueryHandler(ask_service, pattern="^profile_set_service$"),
-            # capture any command to exit, but allow propagation further
-            MessageHandler(filters.COMMAND, lambda u, c: ConversationHandler.END, block=False),
-            MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_input),
+            MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),
         ],
         LANG_SELECT: [
             CallbackQueryHandler(back_to_menu, pattern="^profile$"),
             CallbackQueryHandler(save_language, pattern="^set_lang:"),
-            MessageHandler(filters.COMMAND, lambda u, c: ConversationHandler.END, block=False),
-            MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_input),
+            MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),
         ],
         FUEL_SELECT: [
             CallbackQueryHandler(back_to_menu, pattern="^profile$"),
             CallbackQueryHandler(save_fuel, pattern="^set_fuel:"),
-            MessageHandler(filters.COMMAND, lambda u, c: ConversationHandler.END, block=False),
-            MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_input),
+            MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),
         ],
         SERVICE_SELECT: [
             CallbackQueryHandler(back_to_menu, pattern="^profile$"),
             CallbackQueryHandler(save_service, pattern="^set_service:"),
-            MessageHandler(filters.COMMAND, lambda u, c: ConversationHandler.END, block=False),
-            MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_input),
+            MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),
         ],
     },
     fallbacks=[],
