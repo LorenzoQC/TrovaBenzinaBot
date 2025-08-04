@@ -172,8 +172,8 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
 
             lines.append(
                 f"{medals[i]} <b><u><a href=\"{link}\">{station['brand']} • {station['name']}</a></u></b>\n" +
-                f"• {t('address', lang)}: {station['address']}\n" +
-                f"• {t('price', lang)}: <b>{price:.3f} {t('price_unit', lang)}</b>, {price_note}\n" +
+                f"• <u>{t('address', lang)}</u>: {station['address']}\n" +
+                f"• <u>{t('price', lang)}</u>: <b>{price:.3f} {t('price_unit', lang)}</b>, {price_note}\n" +
                 f"<i>[{t('last_update', lang)}: {formatted_date}]</i>"
             )
 
