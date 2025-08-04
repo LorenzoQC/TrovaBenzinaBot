@@ -21,6 +21,7 @@ def build_keyboard(choices, prefix, back_callback=None):
     Build an InlineKeyboardMarkup from choices.
     :param choices: iterable of (key, label)
     :param prefix: callback_data prefix, e.g. 'lang', 'fuel', 'serv'
+    :param back_callback: callback_data for the back button (optional)
     """
     kb = inline_kb([(label, f"{prefix}_{key}") for key, label in choices])
     if back_callback:
@@ -158,7 +159,7 @@ async def start_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 # Handlers via factories, passing in getters directly
 language_selected = make_selection_handler(
-    lambda lang: {code: name for name, code in LANGUAGE_MAP.items()},
+    lambda lang: {code: name for name, code in FUEL_MAP.items()},
     "lang",
     "select_fuel",
     "fuel",
@@ -167,7 +168,7 @@ language_selected = make_selection_handler(
 )
 
 fuel_selected = make_selection_handler(
-    lambda lang: {code: t(name, lang) for name, code in FUEL_MAP.items()},
+    lambda lang: {code: t(name, lang) for name, code in SERVICE_MAP.items()},
     "fuel",
     "select_service",
     "serv",
@@ -176,7 +177,7 @@ fuel_selected = make_selection_handler(
 )
 
 service_selected = make_selection_handler(
-    lambda lang: {code: t(name, lang) for name, code in SERVICE_MAP.items()},
+    None,
     "service",
     None,
     None,
