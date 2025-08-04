@@ -156,16 +156,22 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
             if not station.get("address"):
                 station["address"] = await fetch_address(station["id"]) or t("no_address", lang)
 
+            if abs(pct) == 0:
+                price_note = t('equal_average', lang)
+            else:
+                price_note = t('below_average', lang, pct=abs(pct))
+
             lines.append(
                 f"{medals[i]} <b><a href=\"{link}\">{station['brand']} • {station['name']}</a></b>\n"
                 f"<b>{t('address', lang)}</b>: {station['address']}\n"
-                f"<b>{t('price', lang)}</b>: {price:.3f} €/\u200bL\n"
-                f"<b>{t('saving', lang)}</b>: {abs(pct)}% ({t('average', lang)}: {avg:.3f} €/\u200bL)"
+                f"<b>{t('price', lang)}</b>: {price:.3f} {t('price_unit', lang)}, {price_note}"
             )
 
         # send the combined message
         await origin.message.reply_text(
-            f"<u>{t(label_key, lang)}</u> 📍\n\n\n" + "\n\n".join(lines),
+            f"<u>{t(label_key, lang)}</u> 📍\n" +
+            f"{t('average_zone_price', lang)}: {avg:.3f}\n\n" +
+            "\n\n".join(lines),
             parse_mode=ParseMode.HTML,
             disable_web_page_preview=True,
         )
