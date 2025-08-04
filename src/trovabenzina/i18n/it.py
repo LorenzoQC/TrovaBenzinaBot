@@ -54,7 +54,7 @@ TRANSLATIONS = {
     "no_address": "-",
     "price": "Prezzo",
     "price_unit": "€/\u200bL",
-    "below_average": "{pct}% più economico della media",
+    "below_average": "più economico della media",
     "equal_average": "in linea con la media",
     "last_update": "Ultimo aggiornamento",
 }

@@ -166,21 +166,20 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
                 formatted_date = t("unknown_update", lang)
 
             if abs(pct) == 0:
-                price_note = t('equal_average', lang)
+                price_note = f"{t('equal_average', lang)}"
             else:
-                price_note = t('below_average', lang, pct=abs(pct))
+                price_note = f"<b>{pct}%</b> {t('below_average', lang)}"
 
             lines.append(
                 f"{medals[i]} <b><a href=\"{link}\">{station['brand']} • {station['name']}</a></b>\n"
-                f"<b>{t('address', lang)}</b>: {station['address']}\n"
-                f"<b>{t('price', lang)}</b>: {price:.3f} {t('price_unit', lang)}, {price_note}\n" +
-                f"<b>{t('last_update', lang)}</b>: {formatted_date}"
+                f"<b>{price:.3f} {t('price_unit', lang)}</b>, {price_note}\n" +
+                f"[{t('last_update', lang)}: {formatted_date}]"
             )
 
         # send the combined message
         await origin.message.reply_text(
             f"<u>{t(label_key, lang)}</u> 📍\n" +
-            f"{t('average_zone_price', lang)}: {avg:.3f} {t('price_unit', lang)}\n\n" +
+            f"{t('average_zone_price', lang)}: <b>{avg:.3f} {t('price_unit', lang)}</b>\n\n" +
             "\n\n".join(lines),
             parse_mode=ParseMode.HTML,
             disable_web_page_preview=True,
