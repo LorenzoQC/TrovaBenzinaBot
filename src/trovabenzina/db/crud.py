@@ -69,7 +69,11 @@ async def upsert_user(
             service_id=service_id,
             language_id=language_id,
         )
-        update_vals: Dict[str, Any] = {"fuel_id": fuel_id, "service_id": service_id}
+        update_vals: Dict[str, Any] = {
+            "fuel_id": fuel_id,
+            "service_id": service_id,
+            "upd_ts": func.now(),
+        }
         if language_code is not None:
             update_vals["language_id"] = language_id
         stmt = stmt.on_conflict_do_update(

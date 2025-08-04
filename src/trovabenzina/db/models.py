@@ -28,7 +28,7 @@ class TimestampMixin:
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     upd_ts: Mapped[Optional[datetime]] = mapped_column(
-        DateTime(timezone=True), server_onupdate=func.now(), nullable=True
+        DateTime(timezone=True), onupdate=func.now(), nullable=True
     )
     del_ts: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True), default=None, nullable=True
