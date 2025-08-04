@@ -168,7 +168,7 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
             if abs(pct) == 0:
                 price_note = f"{t('equal_average', lang)}"
             else:
-                price_note = f"<b>{pct}%</b> {t('below_average', lang)}"
+                price_note = f"{pct}% {t('below_average', lang)}"
 
             lines.append(
                 f"{medals[i]} <b><u><a href=\"{link}\">{station['brand']} • {station['name']}</a></u></b>\n" +
