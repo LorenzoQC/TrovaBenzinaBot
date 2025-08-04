@@ -64,7 +64,7 @@ async def _get_or_create_defaults(uid: int, username: str) -> tuple[str, str, st
 # BACK BUTTON HANDLER
 # ---------------------------------------------------------------------------
 
-async def back_to_menu(update: Update, context: CallbackContext) -> int:
+async def back_to_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Handle '↩' callback by returning to the main profile menu."""
     query = update.callback_query
     await query.answer()
@@ -79,13 +79,15 @@ async def back_to_menu(update: Update, context: CallbackContext) -> int:
         lang_code,
         next((n for n, c in LANGUAGE_MAP.items() if c == lang_code), lang_code)
     )
-    fuel_name = next((n for n, c in FUEL_MAP.items() if c == fuel_code), fuel_code)
-    service_name = next((n for n, c in SERVICE_MAP.items() if c == service_code), service_code)
+    fuel_name_key = next((n for n, c in FUEL_MAP.items() if c == fuel_code), fuel_code)
+    service_name_key = next((n for n, c in SERVICE_MAP.items() if c == service_code), service_code)
+    fuel_label = t(fuel_name_key, lang_code)
+    service_label = t(service_name_key, lang_code)
 
     summary = (
         f"{t('language', lang_code)}: {lang_name}\n"
-        f"{t('fuel', lang_code)}: {fuel_name}\n"
-        f"{t('service', lang_code)}: {service_name}"
+        f"{t('fuel', lang_code)}: {fuel_label}\n"
+        f"{t('service', lang_code)}: {service_label}"
     )
 
     # edit the message to show the main menu again
@@ -99,7 +101,7 @@ async def back_to_menu(update: Update, context: CallbackContext) -> int:
 # ---------------------------------------------------------------------------
 # /profile entry-point
 # ---------------------------------------------------------------------------
-async def profile_ep(update: Update, context: CallbackContext) -> int:
+async def profile_ep(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     uid = update.effective_user.id
     username = update.effective_user.username
     fuel_code, service_code, lang_code = await _get_or_create_defaults(uid, username)
@@ -107,14 +109,19 @@ async def profile_ep(update: Update, context: CallbackContext) -> int:
     context.user_data["lang"] = lang_code
 
     # human-readable labels
-    lang_name = LANGUAGE_MAP.get(lang_code, next((n for n, c in LANGUAGE_MAP.items() if c == lang_code), lang_code))
-    fuel_name = next((n for n, c in FUEL_MAP.items() if c == fuel_code), fuel_code)
-    service_name = next((n for n, c in SERVICE_MAP.items() if c == service_code), service_code)
+    lang_name = LANGUAGE_MAP.get(
+        lang_code,
+        next((n for n, c in LANGUAGE_MAP.items() if c == lang_code), lang_code)
+    )
+    fuel_name_key = next((n for n, c in FUEL_MAP.items() if c == fuel_code), fuel_code)
+    service_name_key = next((n for n, c in SERVICE_MAP.items() if c == service_code), service_code)
+    fuel_label = t(fuel_name_key, lang_code)
+    service_label = t(service_name_key, lang_code)
 
     summary = (
         f"{t('language', lang_code)}: {lang_name}\n"
-        f"{t('fuel', lang_code)}: {fuel_name}\n"
-        f"{t('service', lang_code)}: {service_name}"
+        f"{t('fuel', lang_code)}: {fuel_label}\n"
+        f"{t('service', lang_code)}: {service_label}"
     )
 
     await update.effective_message.reply_text(
@@ -179,13 +186,16 @@ async def save_language(update: Update, context: CallbackContext) -> int:
 # ---------------------------------------------------------------------------
 # Fuel flow
 # ---------------------------------------------------------------------------
-async def ask_fuel(update: Update, context: CallbackContext) -> int:
+async def ask_fuel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
     await query.answer()
     context.chat_data["current_state"] = STEP_PROFILE_FUEL
     lang = context.user_data.get("lang", DEFAULT_LANGUAGE)
 
-    items = [(name, f"set_fuel:{code}") for name, code in FUEL_MAP.items()]
+    items = [
+        (t(name, lang), f"set_fuel:{code}")
+        for name, code in FUEL_MAP.items()
+    ]
     rows = inline_kb(items, per_row=2)
     rows.append([InlineKeyboardButton("↩", callback_data="profile")])
 
@@ -195,27 +205,33 @@ async def ask_fuel(update: Update, context: CallbackContext) -> int:
     )
     return STEP_PROFILE_FUEL
 
-async def save_fuel(update: Update, context: CallbackContext) -> int:
+
+async def save_fuel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Save new fuel and show confirmation + profile menu in one message."""
     query = update.callback_query
     await query.answer()
+
     uid = update.effective_user.id
     username = update.effective_user.username
     new_fuel = query.data.split(":", 1)[1]
 
     # persist new fuel
     _, service_code, lang_code = await _get_or_create_defaults(uid, username)
+
     await upsert_user(uid, username, new_fuel, service_code, lang_code)
 
     # rebuild profile summary
-    lang_name = LANGUAGE_MAP.get(lang_code, next((n for n, c in LANGUAGE_MAP.items() if c == lang_code), lang_code))
-    fuel_name = next((n for n, c in FUEL_MAP.items() if c == new_fuel), new_fuel)
-    service_name = next((n for n, c in SERVICE_MAP.items() if c == service_code), service_code)
+    lang_name = LANGUAGE_MAP.get(lang_code, lang_code)
+    fuel_name_key = next((n for n, c in FUEL_MAP.items() if c == new_fuel), new_fuel)
+    service_name_key = next((n for n, c in SERVICE_MAP.items() if c == service_code), service_code)
+    fuel_label = t(fuel_name_key, lang_code)
+    service_label = t(service_name_key, lang_code)
+
     summary = (
         f"{t('fuel_updated', lang_code)}\n\n"
         f"{t('language', lang_code)}: {lang_name}\n"
-        f"{t('fuel', lang_code)}: {fuel_name}\n"
-        f"{t('service', lang_code)}: {service_name}"
+        f"{t('fuel', lang_code)}: {fuel_label}\n"
+        f"{t('service', lang_code)}: {service_label}"
     )
     await query.edit_message_text(
         summary,
@@ -227,13 +243,16 @@ async def save_fuel(update: Update, context: CallbackContext) -> int:
 # ---------------------------------------------------------------------------
 # Service flow
 # ---------------------------------------------------------------------------
-async def ask_service(update: Update, context: CallbackContext) -> int:
+async def ask_service(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
     await query.answer()
     context.chat_data["current_state"] = STEP_PROFILE_SERVICE
     lang = context.user_data.get("lang", DEFAULT_LANGUAGE)
 
-    items = [(name, f"set_service:{code}") for name, code in SERVICE_MAP.items()]
+    items = [
+        (t(name, lang), f"set_service:{code}")
+        for name, code in SERVICE_MAP.items()
+    ]
     rows = inline_kb(items, per_row=2)
     rows.append([InlineKeyboardButton("↩", callback_data="profile")])
 
@@ -243,27 +262,31 @@ async def ask_service(update: Update, context: CallbackContext) -> int:
     )
     return STEP_PROFILE_SERVICE
 
-async def save_service(update: Update, context: CallbackContext) -> int:
+
+async def save_service(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Save new service and show confirmation + profile menu in one message."""
     query = update.callback_query
     await query.answer()
+
     uid = update.effective_user.id
     username = update.effective_user.username
     new_service = query.data.split(":", 1)[1]
-
-    # persist new service
     fuel_code, _, lang_code = await _get_or_create_defaults(uid, username)
+
     await upsert_user(uid, username, fuel_code, new_service, lang_code)
 
     # rebuild profile summary
-    lang_name = LANGUAGE_MAP.get(lang_code, next((n for n, c in LANGUAGE_MAP.items() if c == lang_code), lang_code))
-    fuel_name = next((n for n, c in FUEL_MAP.items() if c == fuel_code), fuel_code)
-    service_name = next((n for n, c in SERVICE_MAP.items() if c == new_service), new_service)
+    lang_name = LANGUAGE_MAP.get(lang_code, lang_code)
+    fuel_name_key = next((n for n, c in FUEL_MAP.items() if c == fuel_code), fuel_code)
+    service_name_key = next((n for n, c in SERVICE_MAP.items() if c == new_service), new_service)
+    fuel_label = t(fuel_name_key, lang_code)
+    service_label = t(service_name_key, lang_code)
+
     summary = (
         f"{t('service_updated', lang_code)}\n\n"
         f"{t('language', lang_code)}: {lang_name}\n"
-        f"{t('fuel', lang_code)}: {fuel_name}\n"
-        f"{t('service', lang_code)}: {service_name}"
+        f"{t('fuel', lang_code)}: {fuel_label}\n"
+        f"{t('service', lang_code)}: {service_label}"
     )
     await query.edit_message_text(
         summary,
