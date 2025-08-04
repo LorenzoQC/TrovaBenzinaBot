@@ -12,7 +12,7 @@ from .session import AsyncSession
 
 # Path to CSV folder
 BASE_DIR = Path(__file__).resolve().parents[3]
-ASSETS_CONFIG_DIR = BASE_DIR / "assets" / "config"
+ASSETS_CONFIG_DIR = BASE_DIR / "assets" / "config" / "csv"
 
 
 async def _sync_model_from_csv(model, csv_filename):
