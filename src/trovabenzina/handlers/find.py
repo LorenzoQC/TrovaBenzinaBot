@@ -75,7 +75,7 @@ async def find_receive_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     return ConversationHandler.END
 
 async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
-    """Perform two radius searches, filter by fuel/service, send top 3 and log each."""
+    """Perform two radius searches, filter by fuel/service, send top 3 below-average and log each."""
     uid = origin.effective_user.id
     fuel_code, service_code, lang = await get_user(uid)
     lat = ctx.user_data.get("search_lat")
@@ -92,32 +92,58 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
     ]:
         res = await call_api(lat, lng, radius, ft)
         stations = res.get("results", []) if res else []
-        # filter stations by fuelId and isSelf
+
+        # first filter: fuelId and isSelf
         filtered = []
         for st in stations:
-            fuels = [f for f in st.get("fuels", [])
-                     if f.get("fuelId") == fid and f.get("isSelf") == is_self]
+            fuels = [
+                f for f in st.get("fuels", [])
+                if f.get("fuelId") == fid and f.get("isSelf") == is_self
+            ]
             if fuels:
                 st["_filtered_fuels"] = fuels
                 filtered.append(st)
 
         if not filtered:
             await origin.message.reply_text(
-                f"<b>{t(label_key, lang)}</b>\n\n{t('no_stations', lang)}",
+                f"<u>{t(label_key, lang)}</u> 📍\n\n{t('no_stations', lang)}",
                 parse_mode=ParseMode.HTML
             )
             await save_search(uid, fuel_code, service_code, 0.0, 0.0)
             continue
 
-        # compute prices and stats
+        # calculate prices and average
         prices = [f["price"] for st in filtered for f in st["_filtered_fuels"]]
         avg = sum(prices) / len(prices)
-        lowest = min(prices)
 
-        # sort by filtered price
-        sorted_res = sorted(filtered, key=lambda r: r["_filtered_fuels"][0]["price"])
+        # second filter: only stations with price <= average
+        below_avg = [
+            st for st in filtered
+            if st["_filtered_fuels"][0]["price"] <= avg
+        ]
 
-        # build message lines
+        if not below_avg:
+            await origin.message.reply_text(
+                f"<u>{t(label_key, lang)}</u> 📍\n\n{t('no_stations', lang)}",
+                parse_mode=ParseMode.HTML
+            )
+            await save_search(uid, fuel_code, service_code, 0.0, 0.0)
+            continue
+
+        # sort by ascending price
+        sorted_res = sorted(
+            below_avg,
+            key=lambda r: r["_filtered_fuels"][0]["price"]
+        )
+
+        # compute the lowest price among those below average
+        lowest = min(
+            f["price"]
+            for st in below_avg
+            for f in st["_filtered_fuels"]
+        )
+
+        # build message lines for the top 3
         lines = []
         medals = ["🥇", "🥈", "🥉"]
         for i, station in enumerate(sorted_res[:3]):
@@ -137,7 +163,7 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
                 f"<b>{t('saving', lang)}</b>: {abs(pct)}% ({t('average', lang)}: {avg:.3f} €xL)"
             )
 
-        # send combined message
+        # send the combined message
         await origin.message.reply_text(
             f"<u>{t(label_key, lang)}</u> 📍\n\n\n" + "\n\n".join(lines),
             parse_mode=ParseMode.HTML,
