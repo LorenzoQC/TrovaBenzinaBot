@@ -5,6 +5,7 @@ import os
 from telegram.ext import (
     ApplicationBuilder,
 )
+from telegram.request import HTTPXRequest
 
 from trovabenzina.config import BOT_TOKEN, BASE_URL
 from trovabenzina.core.scheduler import setup_scheduler
@@ -67,8 +68,18 @@ def main() -> None:
         len(LANGUAGE_MAP), len(FUEL_MAP), len(SERVICE_MAP),
     )
 
+    httpx_request = HTTPXRequest(
+        connect_timeout=20.0,  # maximum time to establish the connection
+        read_timeout=20.0,  # maximum time to receive the response
+        write_timeout=20.0,  # maximum time to send the payload
+        pool_timeout=5.0,  # maximum wait time to acquire a connection from the pool
+    )
+
     # Build the Telegram application
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
+    app = (ApplicationBuilder()
+           .token(BOT_TOKEN)
+           .request(httpx_request)
+           .build())
 
     # Add handlers
     app.add_handler(start_handler)  # /start
