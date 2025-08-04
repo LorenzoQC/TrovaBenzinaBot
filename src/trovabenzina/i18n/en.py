@@ -1,7 +1,15 @@
 # EN - English
 TRANSLATIONS = {
+    # ─────────── config ───────────
     "language_code": "en",
     "language_name": "English",
+    "gasoline": "Gasoline",
+    "diesel": "Diesele",
+    "cng": "CNG",
+    "lpg": "LPG",
+    "self_service": "Self-service",
+    "full_service": "Full-service",
+    "no_preference": "No preference",
 
     # ─────────── /start ───────────
     "select_language": "Select language 🌐️",
@@ -11,12 +19,12 @@ TRANSLATIONS = {
     "select_service": "Select service ⛽",
     "invalid_service": "⚠️ Invalid service",
     "profile_saved": "✅ Profile saved correctly",
+    "user_already_registered": "User already registered.\n\nUtilize /profile command to edit the preferences",
 
     # ─────────── /help ───────────
     "help": (
         "/start – set up your profile\n"
         "/find – cheapest stations nearby\n"
-        "/favorites – manage favourites\n"
         "/profile – edit profile\n"
         "/help – show this message"
     ),
@@ -47,7 +55,4 @@ TRANSLATIONS = {
     "compared_to_avg": "(average: {avg:.3f} €/L)",
     "lets_go": "Let's go!",
     "no_address": "Address not available",
-
-    # ─────────── generics ───────────
-    "use_commands": "⛔ Please use commands",
 }

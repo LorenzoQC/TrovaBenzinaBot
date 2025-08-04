@@ -21,7 +21,6 @@ def build_keyboard(choices, prefix, back_callback=None):
     Build an InlineKeyboardMarkup from choices.
     :param choices: iterable of (key, label)
     :param prefix: callback_data prefix, e.g. 'lang', 'fuel', 'serv'
-    :param back_callback: callback_data for the back button (optional)
     """
     kb = inline_kb([(label, f"{prefix}_{key}") for key, label in choices])
     if back_callback:
@@ -63,7 +62,7 @@ def make_selection_handler(
 
         # otherwise prompt next
         lang = ctx.user_data.get("lang", DEFAULT_LANGUAGE)
-        choices_map = choices_getter()
+        choices_map = choices_getter(lang)
         kb = build_keyboard(choices_map.items(), callback_prefix, back_callback)
         await query.edit_message_text(
             t(prompt_key, lang),
@@ -89,7 +88,7 @@ def make_back_handler(
         query = update.callback_query
         await query.answer()
         lang = ctx.user_data.get("lang", DEFAULT_LANGUAGE)
-        choices_map = choices_getter()
+        choices_map = choices_getter(lang)
         kb = build_keyboard(choices_map.items(), callback_prefix, back_callback)
         await query.edit_message_text(
             t(prompt_key, lang),
@@ -121,7 +120,7 @@ def make_repeat_handler(
                 pass
 
         lang = ctx.user_data.get("lang", DEFAULT_LANGUAGE)
-        choices_map = choices_getter()
+        choices_map = choices_getter(lang)
         kb = build_keyboard(choices_map.items(), callback_prefix, back_callback)
         sent = await update.effective_message.reply_text(
             t(prompt_key, lang),
@@ -140,7 +139,6 @@ async def start_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     # check if user already exists
     existing = await get_user(update.effective_user.id)
     if existing:
-        # existing is a tuple (fuel_code, service_code, language_code)
         _, _, lang_code = existing
         lang = lang_code or DEFAULT_LANGUAGE
         await update.effective_message.reply_text(
@@ -160,40 +158,68 @@ async def start_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 # Handlers via factories, passing in getters directly
 language_selected = make_selection_handler(
-    lambda: {code: name for name, code in FUEL_MAP.items()},
-    "lang", "select_fuel", "fuel", STEP_START_FUEL,
-    back_callback="back_lang"
+    lambda lang: {code: name for name, code in LANGUAGE_MAP.items()},
+    "lang",
+    "select_fuel",
+    "fuel",
+    STEP_START_FUEL,
+    back_callback="back_lang",
 )
+
 fuel_selected = make_selection_handler(
-    lambda: {code: name for name, code in SERVICE_MAP.items()},
-    "fuel", "select_service", "serv", STEP_START_SERVICE,
-    back_callback="back_fuel"
+    lambda lang: {code: t(name, lang) for name, code in FUEL_MAP.items()},
+    "fuel",
+    "select_service",
+    "serv",
+    STEP_START_SERVICE,
+    back_callback="back_fuel",
 )
+
 service_selected = make_selection_handler(
-    None, "service", None, None, None
+    lambda lang: {code: t(name, lang) for name, code in SERVICE_MAP.items()},
+    "service",
+    None,
+    None,
+    None,
 )
 
 back_to_lang = make_back_handler(
-    lambda: {code: name for name, code in LANGUAGE_MAP.items()},
-    "select_language", "lang", STEP_START_LANGUAGE
+    lambda lang: {code: name for name, code in LANGUAGE_MAP.items()},
+    "select_language",
+    "lang",
+    STEP_START_LANGUAGE,
 )
+
 back_to_fuel = make_back_handler(
-    lambda: {code: name for name, code in FUEL_MAP.items()},
-    "select_fuel", "fuel", STEP_START_FUEL,
-    back_callback="back_lang"
+    lambda lang: {code: t(name, lang) for name, code in FUEL_MAP.items()},
+    "select_fuel",
+    "fuel",
+    STEP_START_FUEL,
+    back_callback="back_lang",
 )
 
 repeat_lang_prompt = make_repeat_handler(
-    lambda: {code: name for name, code in LANGUAGE_MAP.items()},
-    "select_language", "lang", None, STEP_START_LANGUAGE
+    lambda lang: {code: name for name, code in LANGUAGE_MAP.items()},
+    "select_language",
+    "lang",
+    None,
+    STEP_START_LANGUAGE,
 )
+
 repeat_fuel_prompt = make_repeat_handler(
-    lambda: {code: name for name, code in FUEL_MAP.items()},
-    "select_fuel", "fuel", "back_lang", STEP_START_FUEL
+    lambda lang: {code: t(name, lang) for name, code in FUEL_MAP.items()},
+    "select_fuel",
+    "fuel",
+    "back_lang",
+    STEP_START_FUEL,
 )
+
 repeat_service_prompt = make_repeat_handler(
-    lambda: {code: name for name, code in SERVICE_MAP.items()},
-    "select_service", "serv", "back_fuel", STEP_START_SERVICE
+    lambda lang: {code: t(name, lang) for name, code in SERVICE_MAP.items()},
+    "select_service",
+    "serv",
+    "back_fuel",
+    STEP_START_SERVICE,
 )
 
 start_handler = ConversationHandler(

@@ -1,7 +1,15 @@
 # IT - Italiano
 TRANSLATIONS = {
+    # ─────────── config ───────────
     "language_code": "it",
     "language_name": "Italiano",
+    "gasoline": "Benzina",
+    "diesel": "Gasolio",
+    "cng": "Metano",
+    "lpg": "GPL",
+    "self_service": "Self-service",
+    "full_service": "Servito",
+    "no_preference": "Indifferente",
 
     # ─────────── /start ───────────
     "select_language": "Seleziona lingua 🌐️",
@@ -17,7 +25,6 @@ TRANSLATIONS = {
     "help": (
         "/start – configura il profilo\n"
         "/find – cerca i distributori più economici\n"
-        "/favorites – gestisci i preferiti\n"
         "/profile – modifica profilo\n"
         "/help – mostra questo messaggio"
     ),
