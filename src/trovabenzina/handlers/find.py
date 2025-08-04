@@ -171,14 +171,15 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
                 price_note = f"<b>{pct}%</b> {t('below_average', lang)}"
 
             lines.append(
-                f"{medals[i]} <b><a href=\"{link}\">{station['brand']} • {station['name']}</a></b>\n"
-                f"<b>{price:.3f} {t('price_unit', lang)}</b>, {price_note}\n" +
-                f"[{t('last_update', lang)}: {formatted_date}]"
+                f"{medals[i]} <b><u><a href=\"{link}\">{station['brand']} • {station['name']}</a></u></b>\n" +
+                f"• {t('address', lang)}: {station['address']}\n" +
+                f"• {t('price', lang)}: <b>{price:.3f} {t('price_unit', lang)}</b>, {price_note}\n" +
+                f"<i>[{t('last_update', lang)}: {formatted_date}]</i>"
             )
 
         # send the combined message
         await origin.message.reply_text(
-            f"<u>{t(label_key, lang)}</u> 📍\n" +
+            f"<b><u>{t(label_key, lang)}</u></b> 📍\n" +
             f"{t('average_zone_price', lang)}: <b>{avg:.3f} {t('price_unit', lang)}</b>\n\n" +
             "\n\n".join(lines),
             parse_mode=ParseMode.HTML,
