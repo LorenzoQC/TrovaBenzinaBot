@@ -73,8 +73,8 @@ def main() -> None:
     # Add handlers
     app.add_handler(start_handler)  # /start
     app.add_handler(help_handler)  # /help
-    app.add_handler(profile_handler)  # /profile
     app.add_handler(find_handler)  # /find
+    app.add_handler(profile_handler)  # /profile
 
     # Background scheduler setup
     setup_scheduler(loop, app)
