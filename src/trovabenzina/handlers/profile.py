@@ -167,14 +167,19 @@ async def save_language(update: Update, context: CallbackContext) -> int:
     context.user_data["lang"] = new_code
 
     # rebuild profile summary
-    lang_name = LANGUAGE_MAP.get(new_code, next((n for n, c in LANGUAGE_MAP.items() if c == new_code), new_code))
-    fuel_name = next((n for n, c in FUEL_MAP.items() if c == fuel_code), fuel_code)
-    service_name = next((n for n, c in SERVICE_MAP.items() if c == service_code), service_code)
+    lang_name = LANGUAGE_MAP.get(
+        new_code,
+        next((n for n, c in LANGUAGE_MAP.items() if c == new_code), new_code)
+    )
+    fuel_name_key = next((n for n, c in FUEL_MAP.items() if c == fuel_code), fuel_code)
+    service_name_key = next((n for n, c in SERVICE_MAP.items() if c == service_code), service_code)
+    fuel_label = t(fuel_name_key, new_code)
+    service_label = t(service_name_key, new_code)
     summary = (
         f"{t('language_updated', new_code)}\n\n"
         f"{t('language', new_code)}: {lang_name}\n"
-        f"{t('fuel', new_code)}: {fuel_name}\n"
-        f"{t('service', new_code)}: {service_name}"
+        f"{t('fuel', new_code)}: {fuel_label}\n"
+        f"{t('service', new_code)}: {service_label}"
     )
     await query.edit_message_text(
         summary,
@@ -221,7 +226,10 @@ async def save_fuel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     await upsert_user(uid, username, new_fuel, service_code, lang_code)
 
     # rebuild profile summary
-    lang_name = LANGUAGE_MAP.get(lang_code, lang_code)
+    lang_name = LANGUAGE_MAP.get(
+        lang_code,
+        next((n for n, c in LANGUAGE_MAP.items() if c == lang_code), lang_code)
+    )
     fuel_name_key = next((n for n, c in FUEL_MAP.items() if c == new_fuel), new_fuel)
     service_name_key = next((n for n, c in SERVICE_MAP.items() if c == service_code), service_code)
     fuel_label = t(fuel_name_key, lang_code)
@@ -276,7 +284,10 @@ async def save_service(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
     await upsert_user(uid, username, fuel_code, new_service, lang_code)
 
     # rebuild profile summary
-    lang_name = LANGUAGE_MAP.get(lang_code, lang_code)
+    lang_name = LANGUAGE_MAP.get(
+        lang_code,
+        next((n for n, c in LANGUAGE_MAP.items() if c == lang_code), lang_code)
+    )
     fuel_name_key = next((n for n, c in FUEL_MAP.items() if c == fuel_code), fuel_code)
     service_name_key = next((n for n, c in SERVICE_MAP.items() if c == new_service), new_service)
     fuel_label = t(fuel_name_key, lang_code)
