@@ -1,3 +1,4 @@
+from datetime import datetime
 from urllib.parse import quote_plus
 
 from telegram import Update, KeyboardButton, ReplyKeyboardMarkup
@@ -156,6 +157,14 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
             if not station.get("address"):
                 station["address"] = await fetch_address(station["id"]) or t("no_address", lang)
 
+            # parse ISO timestamp and format to "DD/MM/YYYY HH:MM"
+            raw_date = station.get("insertDate")
+            if raw_date:
+                dt = datetime.fromisoformat(raw_date)
+                formatted_date = dt.strftime("%d/%m/%Y %H:%M")
+            else:
+                formatted_date = t("unknown_update", lang)
+
             if abs(pct) == 0:
                 price_note = t('equal_average', lang)
             else:
@@ -164,13 +173,14 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
             lines.append(
                 f"{medals[i]} <b><a href=\"{link}\">{station['brand']} • {station['name']}</a></b>\n"
                 f"<b>{t('address', lang)}</b>: {station['address']}\n"
-                f"<b>{t('price', lang)}</b>: {price:.3f} {t('price_unit', lang)}, {price_note}"
+                f"<b>{t('price', lang)}</b>: {price:.3f} {t('price_unit', lang)}, {price_note}\n" +
+                f"<b>{t('last_update', lang)}</b>: {formatted_date}"
             )
 
         # send the combined message
         await origin.message.reply_text(
             f"<u>{t(label_key, lang)}</u> 📍\n" +
-            f"{t('average_zone_price', lang)}: {avg:.3f}\n\n" +
+            f"{t('average_zone_price', lang)}: {avg:.3f} {t('price_unit', lang)}\n\n" +
             "\n\n".join(lines),
             parse_mode=ParseMode.HTML,
             disable_web_page_preview=True,
