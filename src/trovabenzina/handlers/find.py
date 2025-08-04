@@ -158,4 +158,5 @@ find_handler = ConversationHandler(
     },
     fallbacks=[],
     block=True,
+    allow_reentry=True,
 )

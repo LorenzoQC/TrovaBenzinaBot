@@ -317,4 +317,5 @@ profile_handler = ConversationHandler(
         MessageHandler(filters.COMMAND, exit_profile),
     ],
     block=False,
+    allow_reentry=True,
 )
