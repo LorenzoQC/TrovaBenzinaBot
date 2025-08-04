@@ -9,7 +9,7 @@ from telegram.ext import (
     CommandHandler,
     ConversationHandler,
     MessageHandler,
-    filters,
+    filters, ContextTypes,
 )
 
 from trovabenzina.config import DEFAULT_LANGUAGE, FUEL_MAP, SERVICE_MAP, LANGUAGE_MAP
@@ -20,6 +20,9 @@ from trovabenzina.utils import inline_kb, STEP_PROFILE_MENU, STEP_PROFILE_LANGUA
 
 __all__ = ["profile_handler"]
 
+
+async def exit_profile(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    return ConversationHandler.END
 
 # ---------------------------------------------------------------------------
 # Helper utilities
@@ -310,6 +313,8 @@ profile_handler = ConversationHandler(
             MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),
         ],
     },
-    fallbacks=[],
+    fallbacks=[
+        MessageHandler(filters.COMMAND, exit_profile),
+    ],
     block=False,
 )
