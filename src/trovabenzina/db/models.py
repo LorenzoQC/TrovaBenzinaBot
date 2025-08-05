@@ -7,7 +7,8 @@ from sqlalchemy import (
     ForeignKey,
     BigInteger,
     DateTime,
-    func
+    func,
+    Integer
 )
 from sqlalchemy.orm import (
     DeclarativeBase,
@@ -15,7 +16,6 @@ from sqlalchemy.orm import (
     mapped_column,
     relationship
 )
-from sqlalchemy.sql.sqltypes import Integer
 
 
 class TimestampMixin:
