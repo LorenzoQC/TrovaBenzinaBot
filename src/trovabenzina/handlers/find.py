@@ -94,6 +94,9 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
     fuel_code, service_code, lang = await get_user(uid)
     lat = ctx.user_data.get("search_lat")
     lng = ctx.user_data.get("search_lng")
+    price_unit_all = f"{t('eur_symbol', lang)}{t('slash_symbol', lang)}{t('liter_symbol', lang)}"
+    price_unit_cng = f"{t('eur_symbol', lang)}{t('slash_symbol', lang)}{t('kilo_symbol', lang)}"
+    price_unit = price_unit_cng if fuel_code == "3" else price_unit_all
 
     # determine self-service flag
     is_self = service_code == "1"
@@ -196,14 +199,14 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
             lines.append(
                 f"{medals[i]} <b><a href=\"{link}\">{station['brand']} • {station['name']}</a></b>\n" +
                 f"• <u>{t('address', lang)}</u>: {station['address']}\n" +
-                f"• <u>{t('price', lang)}</u>: <b>{price:.3f} {t('price_unit', lang)}</b>, {price_note}\n" +
+                f"• <u>{t('price', lang)}</u>: <b>{price:.3f} {price_unit}</b>, {price_note}\n" +
                 f"<i>[{t('last_update', lang)}: {formatted_date}]</i>"
             )
 
         header = (
             f"<b><u>{t(label_key, lang)}</u></b> 📍\n"
             f"{num_stations} {t('stations_analyzed', lang)}\n"
-            f"{t('average_zone_price', lang)}: <b>{avg:.3f} {t('price_unit', lang)}</b>\n\n"
+            f"{t('average_zone_price', lang)}: <b>{avg:.3f} {price_unit}</b>\n\n"
         )
 
         # send the combined message

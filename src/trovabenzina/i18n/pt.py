@@ -1,61 +1,64 @@
-# AR - العربية
+# PT - Português
 TRANSLATIONS = {
     # ─────────── config ───────────
-    "language_code": "ar",
-    "language_name": "العربية",
-    "gasoline": "بنزين",
-    "diesel": "ديزل",
-    "cng": "غاز طبيعي مضغوط",
-    "lpg": "غاز البترول المسال",
-    "self_service": "خدمة ذاتية",
-    "full_service": "خدمة كاملة",
-    "no_preference": "بدون تفضيل",
+    "language_code": "pt",
+    "language_name": "Português",
+    "gasoline": "Gasolina",
+    "diesel": "Diesel",
+    "cng": "GNC",
+    "lpg": "GLP",
+    "self_service": "Autoatendimento",
+    "full_service": "Serviço completo",
+    "no_preference": "Sem preferência",
 
     # ─────────── /start ───────────
-    "select_language": "اختر اللغة 🌐️",
-    "invalid_language": "⚠️ لغة غير صالحة!",
-    "select_fuel": "اختر الوقود 🛢️",
-    "invalid_fuel": "⚠️ وقود غير صالح!",
-    "select_service": "اختر الخدمة ⛽",
-    "invalid_service": "⚠️ خدمة غير صالحة!",
-    "profile_saved": "✅ تم حفظ الملف الشخصي بنجاح!\n\nاستخدم /find لبدء البحث.",
-    "user_already_registered": "⚠️ المستخدم مسجل بالفعل!\n\nاستخدم /profile لتعديل التفضيلات أو /find لبدء البحث.",
+    "select_language": "Selecionar idioma 🌐️",
+    "invalid_language": "⚠️ Idioma inválido!",
+    "select_fuel": "Selecionar combustível 🛢️",
+    "invalid_fuel": "⚠️ Combustível inválido!",
+    "select_service": "Selecionar serviço ⛽",
+    "invalid_service": "⚠️ Serviço inválido!",
+    "profile_saved": "✅ Perfil salvo com sucesso!\n\nUse /find para iniciar uma busca.",
+    "user_already_registered": "⚠️ Usuário já registrado!\n\nUse /profile para modificar preferências ou /find para iniciar uma busca.",
 
     # ─────────── /help ───────────
     "help": (
-        "/start – إعداد ملفك الشخصي\n"
-        "/find – البحث عن أرخص المحطات\n"
-        "/profile – تعديل ملفك الشخصي\n"
-        "/help – عرض هذه الرسالة"
+        "/start – configurar seu perfil\n"
+        "/find – buscar os postos mais baratos\n"
+        "/profile – modificar seu perfil\n"
+        "/help – mostrar esta mensagem"
     ),
 
     # ─────────── /profile ───────────
-    "language": "🌐️ اللغة",
-    "fuel": "🛢️ الوقود",
-    "service": "⛽ الخدمة",
-    "edit_language": "تعديل اللغة 🌐️",
-    "edit_fuel": "تعديل الوقود 🛢️",
-    "edit_service": "تعديل الخدمة ⛽",
-    "language_updated": "✅ تم تحديث اللغة بنجاح!",
-    "fuel_updated": "✅ تم تحديث الوقود بنجاح!",
-    "service_updated": "✅ تم تحديث الخدمة بنجاح!",
+    "language": "🌐️ Idioma",
+    "fuel": "🛢️ Combustível",
+    "service": "⛽ Serviço",
+    "edit_language": "Editar idioma 🌐️",
+    "edit_fuel": "Editar combustível 🛢️",
+    "edit_service": "Editar serviço ⛽",
+    "language_updated": "✅ Idioma atualizado com sucesso!",
+    "fuel_updated": "✅ Combustível atualizado com sucesso!",
+    "service_updated": "✅ Serviço atualizado com sucesso!",
 
     # ─────────── /find ───────────
-    "ask_location": "اكتب عنوانًا أو أرسل موقعك 📍",
-    "send_location": "إرسال الموقع عبر GPS 🌍",
-    "geocode_cap_reached": "⚠️ التعرف على العناوين غير متاح حاليًا!\nالرجاء المحاولة لاحقًا أو إرسال موقعك.",
-    "invalid_address": "⚠️ عنوان غير صالح",
-    "processing_search": "جاري البحث...🔍",
-    "no_stations": "❌ لم يتم العثور على محطات",
-    "near_label": "المحطات ضمن 2 كم",
-    "far_label": "المحطات ضمن 7 كم",
-    "stations_analyzed": "محطات تم تحليلها",
-    "average_zone_price": "متوسط سعر المنطقة",
-    "address": "العنوان",
+    "ask_location": "Digite um endereço ou envie sua localização 📍",
+    "send_location": "Enviar localização GPS 🌍",
+    "geocode_cap_reached": "⚠️ Reconhecimento de endereço indisponível no momento!\nPor favor, tente novamente mais tarde ou envie sua localização.",
+    "invalid_address": "⚠️ Endereço inválido",
+    "processing_search": "Pesquisando...🔍",
+    "no_stations": "❌ Nenhum posto encontrado",
+    "near_label": "Postos dentro de 2 km",
+    "far_label": "Postos dentro de 7 km",
+    "stations_analyzed": "postos analisados",
+    "average_zone_price": "Preço médio da área",
+    "address": "Endereço",
     "no_address": "-",
-    "price": "السعر",
-    "price_unit": "€/\u200bل",
-    "below_average": "أرخص من المتوسط",
-    "equal_average": "مطابق للمتوسط",
-    "last_update": "آخر تحديث",
+    "price": "Preço",
+    "eur_symbol": "€",
+    "slash_symbol": "/\u200b",
+    "liter_symbol": "L",
+    "kilo_symbol": "kg",
+    "below_average": "mais barato que a média",
+    "equal_average": "em linha com a média",
+    "last_update": "Última atualização",
 }
