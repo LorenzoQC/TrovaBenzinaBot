@@ -106,6 +106,8 @@ async def save_search(
         tg_id: int,
         fuel_code: str,
         service_code: str,
+        radius: int,
+        num_stations: int,
         price_avg: float,
         price_min: float,
 ) -> None:
@@ -129,6 +131,8 @@ async def save_search(
             user_id=user_id,
             fuel_id=fuel_id,
             service_id=service_id,
+            radius=radius,
+            num_stations=num_stations,
             price_avg=price_avg,
             price_min=price_min,
         )

@@ -15,6 +15,7 @@ from sqlalchemy.orm import (
     mapped_column,
     relationship
 )
+from sqlalchemy.sql.sqltypes import Integer
 
 
 class TimestampMixin:
@@ -49,7 +50,7 @@ class Base(DeclarativeBase):
 
 
 class Fuel(CodeNameMixin, TimestampMixin, Base):
-    __tablename__ = "fuels"
+    __tablename__ = "dom_fuels"
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
@@ -58,7 +59,7 @@ class Fuel(CodeNameMixin, TimestampMixin, Base):
 
 
 class Service(CodeNameMixin, TimestampMixin, Base):
-    __tablename__ = "services"
+    __tablename__ = "dom_services"
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
@@ -67,7 +68,7 @@ class Service(CodeNameMixin, TimestampMixin, Base):
 
 
 class Language(CodeNameMixin, TimestampMixin, Base):
-    __tablename__ = "languages"
+    __tablename__ = "dom_languages"
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
@@ -100,6 +101,8 @@ class Search(TimestampMixin, Base):
     fuel_id: Mapped[int] = mapped_column(ForeignKey("fuels.id"), nullable=False)
     service_id: Mapped[int] = mapped_column(ForeignKey("services.id"), nullable=False)
 
+    radius: Mapped[int] = mapped_column(Integer, nullable=False)
+    num_stations: Mapped[int] = mapped_column(Integer, nullable=False)
     price_avg: Mapped[float] = mapped_column(Float, nullable=False)
     price_min: Mapped[float] = mapped_column(Float, nullable=False)
 

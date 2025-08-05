@@ -93,7 +93,7 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
     ]:
         res = await call_api(lat, lng, radius, ft)
         stations = res.get("results", []) if res else []
-        count_total = len(stations)
+        num_stations = len(stations)
 
         # first filter: fuelId and isSelf
         filtered = []
@@ -180,7 +180,7 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
 
         header = (
             f"<b><u>{t(label_key, lang)}</u></b> 📍\n"
-            f"{count_total} {t('stations_analyzed', lang)}\n"
+            f"{num_stations} {t('stations_analyzed', lang)}\n"
             f"{t('average_zone_price', lang)}: <b>{avg:.3f} {t('price_unit', lang)}</b>\n\n"
         )
 
@@ -193,7 +193,7 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
         )
 
         # log each search
-        await save_search(uid, fuel_code, service_code, round(avg, 3), round(lowest, 3))
+        await save_search(uid, fuel_code, service_code, radius, num_stations, round(avg, 3), round(lowest, 3))
 
 
 find_handler = ConversationHandler(
