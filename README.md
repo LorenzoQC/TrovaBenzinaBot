@@ -6,19 +6,21 @@ Telegram bot that allows users to find the cheapest fuel stations nearby in Ital
 
 ## 🚀 Features
 
-* **Fuel Station Search**: Finds fuel stations offering the lowest prices for the selected fuel type near the user's
+* **Fuel Station Search**: Finds stations offering the lowest prices for the selected fuel type near the user's
   location.
-* **Geolocation**: Uses Telegram's location sharing to quickly pinpoint nearby fuel stations.
-* **Personalization**: Users can select preferred language, fuel type, and service type.
-* **Intuitive Interface**: Simple commands and inline buttons for immediate navigation.
+* **Geolocation**: Uses Telegram's location sharing to quickly locate nearby fuel stations.
+* **Personalization**: Users can select their preferred language, fuel type, and service type.
+* **Intuitive Interface**: Simple commands and inline buttons for seamless navigation.
 
-## 🛠️ Technologies Used
+## 🛠️ Technologies used
 
 * Python 3.12
-* Telegram Bot API (`python-telegram-bot[webhooks] v22.2`)
-* Web framework: `aiohttp` for handling webhooks
-* PostgreSQL database (`asyncpg`)
-* APScheduler for periodic tasks
+* Telegram Bot API (`python-telegram-bot[webhooks]==22.2`)
+* Web framework: `aiohttp==3.10.11` for webhook handling
+* Database driver: `asyncpg>=0.27.0` for PostgreSQL
+* Scheduling: `APScheduler==3.10.4`
+* ORM & async support: `SQLAlchemy[asyncio]>=2.0.0`
+* File operations: `aiofiles~=24.1.0`
 
 ## 📦 Requirements
 
@@ -30,10 +32,10 @@ pip install -r requirements.txt
 
 ## 🚀 Deployment
 
-The bot is currently deployed on [Railway](https://railway.app) and is live on Telegram
+The bot is currently deployed on [Railway](https://railway.app) and is available on Telegram
 as [@trovabenzinabot](https://t.me/trovabenzinabot).
 
-## 🌐 Environment Variables Configuration
+## 🌐 Environment variables configuration
 
 Set the following environment variables:
 
@@ -41,28 +43,35 @@ Set the following environment variables:
 * `DATABASE_URL`: PostgreSQL connection URL
 * `GOOGLE_MAPS_API_KEY`: API Key for Google Maps Geocoding
 
-## 🔧 Project Structure
+## 🔧 Project structure
 
 ```plaintext
 .
-├── assets/       # Images and media assets used by the bot
-├── src/          # Source code of the application
+├── assets/                  # Static resources for the bot
+│   ├── config/              # Additional configuration files
+│   │   ├── csv/             # CSV data files
+│   │   └── sql/             # Database initialization scripts
+│   └── images/              # Images and icons
+├── src/                     # Application source code
 │   └── trovabenzina/
-│       ├── bot/        # Bot initialization and scheduler setup
-│       ├── config/     # Configuration and secret management
-│       ├── core/       # Core modules: API and database interactions
-│       ├── handlers/   # Handlers for various bot commands
-│       ├── i18n/       # Translation files for supported languages
-│       └── utils/      # Utility functions and helpers
-├── requirements.txt  # Project dependencies
-└── Dockerfile        # Docker configuration for containerized deployment
+│       ├── api/             # External API integrations (Google Maps, MISE)
+│       ├── config/          # Configuration and secret management
+│       ├── core/            # Bot initialization and scheduler
+│       ├── db/              # Database access and synchronization
+│       ├── handlers/        # Command and conversation handlers
+│       ├── i18n/            # Multilingual translation files
+│       └── utils/           # Utility functions and helpers
+├── requirements.txt         # Project dependencies
+├── Dockerfile               # Docker configuration for deployment
+└── README.md                # Project documentation
 ```
 
-## 📌 Main Bot Commands
+## 📌 Bot commands
 
-* `/start`: Start user profile configuration.
-* `/find`: Find the cheapest fuel station based on current location.
-* `/preferences`: Edit language, fuel, and service preferences.
+* `/start`: Start user profile setup.
+* `/find`: Find the cheapest fuel station based on the current location.
+* `/profile`: View or edit your profile preferences (language, fuel type, service type).
+* `/help`: Show help information and available commands.
 
 ## 🤝 Contributing
 

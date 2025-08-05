@@ -13,4 +13,5 @@ APScheduler==3.10.4
 # ORM & async support
 SQLAlchemy[asyncio]>=2.0.0
 
+#File operations
 aiofiles~=24.1.0
