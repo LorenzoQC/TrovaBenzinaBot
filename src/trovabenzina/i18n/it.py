@@ -19,13 +19,13 @@ TRANSLATIONS = {
     "select_service": "Seleziona servizio ⛽",
     "invalid_service": "⚠️ Servizio non valido!",
     "profile_saved": "✅ Profilo salvato correttamente!\n\nUtilizza il comando /find per avviare una ricerca.",
-    "user_already_registered": "⚠️ Utente già registrato!\n\nUtilizza il comando /profile per modificare le preferenze.",
+    "user_already_registered": "⚠️ Utente già registrato!\n\nUtilizza il comando /profile per modificare le preferenze o il comando /find per avviare una ricerca.",
 
     # ─────────── /help ───────────
     "help": (
         "/start – configura il profilo\n"
         "/find – cerca i distributori più economici\n"
-        "/profile – modifica profilo\n"
+        "/profile – modifica il profilo\n"
         "/help – mostra questo messaggio"
     ),
 
