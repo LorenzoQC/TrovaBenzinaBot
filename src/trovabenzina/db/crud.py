@@ -174,7 +174,7 @@ async def save_geocache(
 async def count_geostats() -> int:
     async with AsyncSession() as session:
         result = await session.execute(
-            select(text("count")).select_from(text("v_geostats"))
+            select(text("count")).select_from(text("v_geocoding_month_calls"))
         )
         cnt = result.scalar_one_or_none()
         return cnt or 0
