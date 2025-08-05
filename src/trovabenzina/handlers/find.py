@@ -169,7 +169,7 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
                 price_note = f"{pct}% {t('below_average', lang)}"
 
             lines.append(
-                f"{medals[i]} <b><a href={link}>{station['brand']} • {station['name']}</a></b>\n" +
+                f"{medals[i]} <b><a href=\'{link}\'>{station['brand']} • {station['name']}</a></b>\n" +
                 f"• <u>{t('address', lang)}</u>: {station['address']}\n" +
                 f"• <u>{t('price', lang)}</u>: <b>{price:.3f} {t('price_unit', lang)}</b>, {price_note}\n" +
                 f"<i>[{t('last_update', lang)}: {formatted_date}]</i>"
