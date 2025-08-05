@@ -12,7 +12,7 @@ from .session import AsyncSession
 
 # Path to CSV folder
 BASE_DIR = Path(__file__).resolve().parents[3]
-ASSETS_CONFIG_DIR = BASE_DIR / "assets" / "config" / "csv"
+ASSETS_CSV_DIR = BASE_DIR / "assets" / "config" / "csv"
 
 
 async def _sync_model_from_csv(model, csv_filename):
@@ -22,7 +22,7 @@ async def _sync_model_from_csv(model, csv_filename):
     - Updates name if changed, and clears del_ts if previously soft-deleted.
     - Soft-deletes DB records no longer in CSV (sets del_ts to now).
     """
-    csv_path = os.path.join(ASSETS_CONFIG_DIR, csv_filename)
+    csv_path = os.path.join(ASSETS_CSV_DIR, csv_filename)
 
     # Read CSV asynchronously
     async with aiofiles.open(csv_path, mode="r", encoding="utf-8") as f:

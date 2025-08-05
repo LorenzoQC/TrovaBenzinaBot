@@ -45,6 +45,7 @@ TRANSLATIONS = {
     "send_location": "Invia posizione GPS 🌍",
     "geocode_cap_reached": "⚠️ Riconoscimento indirizzo al momento non disponibile!\n.Per favore riprova più tardi, oppure invia la tua posizione.",
     "invalid_address": "⚠️ Indirizzo non valido",
+    "processing_search": "Ricerca in corso...🔍",
     "no_stations": "❌ Nessun distributore trovato",
     "near_label": "Distributori nel raggio di 2 km",
     "far_label": "Distributori nel raggio di 7 km",

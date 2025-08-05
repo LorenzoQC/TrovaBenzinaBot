@@ -1,7 +1,7 @@
 from datetime import datetime
 from urllib.parse import quote_plus
 
-from telegram import Update, KeyboardButton, ReplyKeyboardMarkup
+from telegram import Update, KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.constants import ParseMode
 from telegram.ext import (
     ContextTypes,
@@ -40,6 +40,14 @@ async def find_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 async def find_receive_location(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     """Receive a location and perform the search."""
+    uid = update.effective_user.id
+    _, _, lang = await get_user(uid) or (None, None, DEFAULT_LANGUAGE)
+    proc_msg = await update.message.reply_text(
+        t("processing_search", lang),
+        reply_markup=ReplyKeyboardRemove(),
+    )
+    ctx.user_data["processing_msg_id"] = proc_msg.message_id
+
     loc = update.message.location
     ctx.user_data["search_lat"] = loc.latitude
     ctx.user_data["search_lng"] = loc.longitude
@@ -50,6 +58,11 @@ async def find_receive_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     """Receive an address, geocode (with cache) and perform the search."""
     uid = update.effective_user.id
     _, _, lang = await get_user(uid) or (None, None, DEFAULT_LANGUAGE)
+    proc_msg = await update.message.reply_text(
+        t("processing_search", lang),
+        reply_markup=ReplyKeyboardRemove(),
+    )
+    ctx.user_data["processing_msg_id"] = proc_msg.message_id
     address = update.message.text.strip()
 
     # check cache
@@ -94,6 +107,15 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
         res = await call_api(lat, lng, radius, ft)
         stations = res.get("results", []) if res else []
         num_stations = len(stations)
+
+        # delete the “processing” message if present
+        chat_id = origin.effective_chat.id
+        proc_id = ctx.user_data.pop("processing_msg_id", None)
+        if proc_id:
+            try:
+                await ctx.bot.delete_message(chat_id, proc_id)
+            except Exception:
+                pass
 
         # first filter: fuelId and isSelf
         filtered = []

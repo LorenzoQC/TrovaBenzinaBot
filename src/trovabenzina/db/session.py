@@ -11,7 +11,7 @@ from .models import Base
 log = logging.getLogger(__name__)
 
 BASE_DIR = Path(__file__).resolve().parents[3]
-ASYNC_SQL_DIR = BASE_DIR / "assets" / "config" / "sql"
+ASSETS_SQL_DIR = BASE_DIR / "assets" / "config" / "sql"
 
 _url = make_url(DATABASE_URL)
 if _url.drivername == "postgresql":
@@ -36,8 +36,8 @@ async def init_db() -> None:
         # Create tables
         await conn.run_sync(Base.metadata.create_all)
         # Execute SQL scripts
-        if ASYNC_SQL_DIR.exists():
-            for sql_file in sorted(ASYNC_SQL_DIR.glob("*.sql")):
+        if ASSETS_SQL_DIR.exists():
+            for sql_file in sorted(ASSETS_SQL_DIR.glob("*.sql")):
                 sql_text = sql_file.read_text(encoding="utf-8")
                 if not sql_text.strip():
                     continue
