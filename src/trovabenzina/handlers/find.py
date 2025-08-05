@@ -151,8 +151,11 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
             f0 = station["_filtered_fuels"][0]
             price = f0["price"]
             pct = int(round((avg - price) / avg * 100))
-            dest = f"{station['location']['lat']},{station['location']['lng']}"
-            link = f"https://www.google.com/maps/dir/?api=1&destination={quote_plus(dest)}"
+            label = quote_plus(f"{station['brand']} {station['name']}")
+            link = (
+                f"geo:{station['location']['lat']},{station['location']['lng']}"
+                f"?q={station['location']['lat']},{station['location']['lng']}({label})"
+            )
 
             if not station.get("address"):
                 station["address"] = await fetch_address(station["id"]) or t("no_address", lang)
