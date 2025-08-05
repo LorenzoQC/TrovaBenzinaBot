@@ -82,9 +82,9 @@ class User(TimestampMixin, Base):
     tg_id: Mapped[int] = mapped_column(BigInteger, unique=True, nullable=False, index=True)
     tg_username: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
-    fuel_id: Mapped[int] = mapped_column(ForeignKey("fuels.id"), nullable=False)
-    service_id: Mapped[int] = mapped_column(ForeignKey("services.id"), nullable=False)
-    language_id: Mapped[int] = mapped_column(ForeignKey("languages.id"), nullable=True)
+    fuel_id: Mapped[int] = mapped_column(ForeignKey("dom_fuels.id"), nullable=False)
+    service_id: Mapped[int] = mapped_column(ForeignKey("dom_services.id"), nullable=False)
+    language_id: Mapped[int] = mapped_column(ForeignKey("dom_languages.id"), nullable=True)
 
     fuel: Mapped[Fuel] = relationship(back_populates="users")
     service: Mapped[Service] = relationship(back_populates="users")
@@ -98,8 +98,8 @@ class Search(TimestampMixin, Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
-    fuel_id: Mapped[int] = mapped_column(ForeignKey("fuels.id"), nullable=False)
-    service_id: Mapped[int] = mapped_column(ForeignKey("services.id"), nullable=False)
+    fuel_id: Mapped[int] = mapped_column(ForeignKey("dom_fuels.id"), nullable=False)
+    service_id: Mapped[int] = mapped_column(ForeignKey("dom_services.id"), nullable=False)
 
     radius: Mapped[int] = mapped_column(Integer, nullable=False)
     num_stations: Mapped[int] = mapped_column(Integer, nullable=False)
