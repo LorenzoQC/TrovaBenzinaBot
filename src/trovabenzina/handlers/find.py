@@ -93,6 +93,7 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
     ]:
         res = await call_api(lat, lng, radius, ft)
         stations = res.get("results", []) if res else []
+        count_total = len(stations)
 
         # first filter: fuelId and isSelf
         filtered = []
@@ -177,10 +178,15 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
                 f"<i>[{t('last_update', lang)}: {formatted_date}]</i>"
             )
 
+        header = (
+            f"<b><u>{t(label_key, lang)}</u></b> 📍\n"
+            f"{count_total} {t('stations_analyzed', lang)}\n"
+            f"{t('average_zone_price', lang)}: <b>{avg:.3f} {t('price_unit', lang)}</b>\n\n"
+        )
+
         # send the combined message
         await origin.message.reply_text(
-            f"<b><u>{t(label_key, lang)}</u></b> 📍\n" +
-            f"{t('average_zone_price', lang)}: <b>{avg:.3f} {t('price_unit', lang)}</b>\n\n" +
+            header +
             "\n\n".join(lines),
             parse_mode=ParseMode.HTML,
             disable_web_page_preview=True,

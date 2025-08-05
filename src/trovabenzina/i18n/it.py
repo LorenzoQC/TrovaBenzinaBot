@@ -48,6 +48,7 @@ TRANSLATIONS = {
     "no_stations": "❌ Nessun distributore trovato",
     "near_label": "Distributori nel raggio di 2 km",
     "far_label": "Distributori nel raggio di 7 km",
+    "stations_analyzed": "stazioni analizzate",
     "average_zone_price": "Prezzo medio della zona",
     "station": "Distributore",
     "address": "Indirizzo",
