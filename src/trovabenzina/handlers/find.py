@@ -136,7 +136,7 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
                 f"<u>{t(label_key, lang)}</u> 📍\n\n{t('no_stations', lang)}",
                 parse_mode=ParseMode.HTML
             )
-            await save_search(uid, fuel_code, service_code, 0.0, 0.0)
+            await save_search(uid, fuel_code, service_code, radius, num_stations, None, None)
             continue
 
         # calculate prices and average
@@ -154,7 +154,7 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
                 f"<u>{t(label_key, lang)}</u> 📍\n\n{t('no_stations', lang)}",
                 parse_mode=ParseMode.HTML
             )
-            await save_search(uid, fuel_code, service_code, 0.0, 0.0)
+            await save_search(uid, fuel_code, service_code, radius, num_stations, None, None)
             continue
 
         # sort by ascending price

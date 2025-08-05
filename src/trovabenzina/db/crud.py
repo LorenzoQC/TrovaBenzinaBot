@@ -108,8 +108,8 @@ async def save_search(
         service_code: str,
         radius: int,
         num_stations: int,
-        price_avg: float,
-        price_min: float,
+        price_avg: Optional[float] = None,
+        price_min: Optional[float] = None,
 ) -> None:
     """
     Record search analytics: insert into searches with correct foreign keys.

@@ -103,8 +103,8 @@ class Search(TimestampMixin, Base):
 
     radius: Mapped[int] = mapped_column(Integer, nullable=False)
     num_stations: Mapped[int] = mapped_column(Integer, nullable=False)
-    price_avg: Mapped[float] = mapped_column(Float, nullable=False)
-    price_min: Mapped[float] = mapped_column(Float, nullable=False)
+    price_avg: Mapped[float] = mapped_column(Float, nullable=True)
+    price_min: Mapped[float] = mapped_column(Float, nullable=True)
 
     user: Mapped[User] = relationship(back_populates="searches")
     fuel: Mapped[Fuel] = relationship(back_populates="searches")
