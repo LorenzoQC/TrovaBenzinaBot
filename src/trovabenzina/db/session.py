@@ -10,7 +10,8 @@ from .models import Base
 
 log = logging.getLogger(__name__)
 
-ASYNC_SQL_DIR = Path(__file__).parent.parent / "assets" / "config" / "sql"
+BASE_DIR = Path(__file__).resolve().parents[3]
+ASYNC_SQL_DIR = BASE_DIR / "assets" / "config" / "sql"
 
 _url = make_url(DATABASE_URL)
 if _url.drivername == "postgresql":
