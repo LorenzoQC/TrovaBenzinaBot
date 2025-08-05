@@ -51,7 +51,6 @@ TRANSLATIONS = {
     "far_label": "Distributori nel raggio di 7 km",
     "stations_analyzed": "stazioni analizzate",
     "average_zone_price": "Prezzo medio della zona",
-    "station": "Distributore",
     "address": "Indirizzo",
     "no_address": "-",
     "price": "Prezzo",
