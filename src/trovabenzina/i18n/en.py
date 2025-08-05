@@ -4,7 +4,7 @@ TRANSLATIONS = {
     "language_code": "en",
     "language_name": "English",
     "gasoline": "Gasoline",
-    "diesel": "Diesele",
+    "diesel": "Diesel",
     "cng": "CNG",
     "lpg": "LPG",
     "self_service": "Self-service",
@@ -13,19 +13,19 @@ TRANSLATIONS = {
 
     # ─────────── /start ───────────
     "select_language": "Select language 🌐️",
-    "invalid_language": "⚠️ Invalid language",
+    "invalid_language": "⚠️ Invalid language!",
     "select_fuel": "Select fuel 🛢️",
-    "invalid_fuel": "⚠️ Invalid fuel",
+    "invalid_fuel": "⚠️ Invalid fuel!",
     "select_service": "Select service ⛽",
-    "invalid_service": "⚠️ Invalid service",
-    "profile_saved": "✅ Profile saved correctly",
-    "user_already_registered": "User already registered.\n\nUtilize /profile command to edit the preferences",
+    "invalid_service": "⚠️ Invalid service!",
+    "profile_saved": "✅ Profile saved successfully!\n\nUse /find to start a search.",
+    "user_already_registered": "⚠️ User already registered!\n\nUse /profile to modify preferences or /find to start a search.",
 
     # ─────────── /help ───────────
     "help": (
         "/start – set up your profile\n"
-        "/find – cheapest stations nearby\n"
-        "/profile – edit profile\n"
+        "/find – search for the cheapest stations\n"
+        "/profile – modify your profile\n"
         "/help – show this message"
     ),
 
@@ -36,23 +36,26 @@ TRANSLATIONS = {
     "edit_language": "Edit language 🌐️",
     "edit_fuel": "Edit fuel 🛢️",
     "edit_service": "Edit service ⛽",
-    "language_updated": "✅ Language updated correctly",
-    "fuel_updated": "✅ Fuel updated correctly",
-    "service_updated": "✅ Service updated correctly",
+    "language_updated": "✅ Language updated successfully!",
+    "fuel_updated": "✅ Fuel updated successfully!",
+    "service_updated": "✅ Service updated successfully!",
 
     # ─────────── /find ───────────
-    "select_radius": "Select search radius 📏",
-    "invalid_radius": "⚠️ Invalid radius",
-    "send_location": "Send GPS location 📍",
-    "ask_location": "➤ Send your location or pick a favourite place",
+    "ask_location": "Type an address or send your location 📍",
+    "send_location": "Send GPS location 🌍",
+    "geocode_cap_reached": "⚠️ Address recognition not available at the moment!\nPlease try again later, or send your location.",
     "invalid_address": "⚠️ Invalid address",
+    "processing_search": "Searching...🔍",
     "no_stations": "❌ No stations found",
-
-    # price notes
-    "note_cheaper": "Save {pct}%!",
-    "note_equal": "In line with average",
-    "note_more_expensive": "Costs {pct}% more",
-    "compared_to_avg": "(average: {avg:.3f} €/L)",
-    "lets_go": "Let's go!",
-    "no_address": "Address not available",
+    "near_label": "Stations within 2 km",
+    "far_label": "Stations within 7 km",
+    "stations_analyzed": "stations analyzed",
+    "average_zone_price": "Average zone price",
+    "address": "Address",
+    "no_address": "-",
+    "price": "Price",
+    "price_unit": "€/\u200bL",
+    "below_average": "cheaper than average",
+    "equal_average": "in line with average",
+    "last_update": "Last update",
 }
