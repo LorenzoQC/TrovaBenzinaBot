@@ -27,7 +27,7 @@ __all__ = ["find_handler"]
 async def find_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     """Handle /find command: ask user for address or location."""
     uid = update.effective_user.id
-    _, _, lang = await get_user(uid) or (None, None, DEFAULT_LANGUAGE)
+    _, lang = await get_user(uid) or (None, DEFAULT_LANGUAGE)
 
     button = KeyboardButton(text=t("send_location", lang), request_location=True)
     kb = ReplyKeyboardMarkup([[button]], one_time_keyboard=True, resize_keyboard=True)
