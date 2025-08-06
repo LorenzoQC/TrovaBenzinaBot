@@ -149,7 +149,7 @@ async def save_language(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
     new_lang = query.data.split(":", 1)[1]
 
     # persist new language
-    fuel_code = (await _get_or_create_defaults(uid, username))[:2]
+    fuel_code, _ = (await _get_or_create_defaults(uid, username))[:2]
     await upsert_user(uid, username, fuel_code, new_lang)
     context.user_data["lang"] = new_lang
 
