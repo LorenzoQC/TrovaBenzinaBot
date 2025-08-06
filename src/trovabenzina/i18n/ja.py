@@ -7,17 +7,12 @@ TRANSLATIONS = {
     "diesel": "ディーゼル",
     "cng": "CNG",
     "lpg": "LPG",
-    "self_service": "セルフサービス",
-    "full_service": "フルサービス",
-    "no_preference": "指定なし",
 
     # ─────────── /start ───────────
     "select_language": "言語を選択 🌐️",
     "invalid_language": "⚠️ 無効な言語です！",
-    "select_fuel": "燃料を選択 🛢️",
+    "select_fuel": "燃料を選択 ⛽",
     "invalid_fuel": "⚠️ 無効な燃料です！",
-    "select_service": "サービスを選択 ⛽",
-    "invalid_service": "⚠️ 無効なサービスです！",
     "profile_saved": "✅ プロファイルが正常に保存されました！\n\n/find を使用して検索を開始します。",
     "user_already_registered": "⚠️ 既に登録済みです！\n\n/profile で設定を変更するか /find で検索を開始します。",
 
@@ -31,14 +26,11 @@ TRANSLATIONS = {
 
     # ─────────── /profile ───────────
     "language": "🌐️ 言語",
-    "fuel": "🛢️ 燃料",
-    "service": "⛽ サービス",
+    "fuel": "⛽ 燃料",
     "edit_language": "言語を編集 🌐️",
-    "edit_fuel": "燃料を編集 🛢️",
-    "edit_service": "サービスを編集 ⛽",
+    "edit_fuel": "燃料を編集 ⛽",
     "language_updated": "✅ 言語が正常に更新されました！",
     "fuel_updated": "✅ 燃料が正常に更新されました！",
-    "service_updated": "✅ サービスが正常に更新されました！",
 
     # ─────────── /find ───────────
     "ask_location": "住所を入力するか位置情報を送信してください 📍",

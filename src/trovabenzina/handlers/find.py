@@ -89,19 +89,16 @@ async def find_receive_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     return ConversationHandler.END
 
 async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
-    """Perform two radius searches, filter by fuel/service, send top 3 below-average and log each."""
+    """Perform two radius searches, filter by fuel, send top 3 below-average and log each."""
     uid = origin.effective_user.id
-    fuel_code, service_code, lang = await get_user(uid)
+    fuel_code, lang = await get_user(uid)
     lat = ctx.user_data.get("search_lat")
     lng = ctx.user_data.get("search_lng")
     price_unit_all = f"{t('eur_symbol', lang)}{t('slash_symbol', lang)}{t('liter_symbol', lang)}"
     price_unit_cng = f"{t('eur_symbol', lang)}{t('slash_symbol', lang)}{t('kilo_symbol', lang)}"
     price_unit = price_unit_cng if fuel_code == "3" else price_unit_all
-
-    # determine self-service flag
-    is_self = service_code == "1"
     fid = int(fuel_code)
-    ft = f"{fuel_code}-{service_code}"
+    ft = f"{fuel_code}-x"
 
     for radius, label_key in [
         (DEFAULT_RADIUS_NEAR, "near_label"),
@@ -125,7 +122,7 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
         for st in stations:
             fuels = [
                 f for f in st.get("fuels", [])
-                if f.get("fuelId") == fid and f.get("isSelf") == is_self
+                if f.get("fuelId") == fid
             ]
             if fuels:
                 st["_filtered_fuels"] = fuels
@@ -136,7 +133,7 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
                 f"<u>{t(label_key, lang)}</u> 📍\n\n{t('no_stations', lang)}",
                 parse_mode=ParseMode.HTML
             )
-            await save_search(uid, fuel_code, service_code, radius, num_stations, None, None)
+            await save_search(uid, fuel_code, radius, num_stations, None, None)
             continue
 
         # calculate prices and average
@@ -154,7 +151,7 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
                 f"<u>{t(label_key, lang)}</u> 📍\n\n{t('no_stations', lang)}",
                 parse_mode=ParseMode.HTML
             )
-            await save_search(uid, fuel_code, service_code, radius, num_stations, None, None)
+            await save_search(uid, fuel_code, radius, num_stations, None, None)
             continue
 
         # sort by ascending price
@@ -218,7 +215,7 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
         )
 
         # log each search
-        await save_search(uid, fuel_code, service_code, radius, num_stations, round(avg, 3), round(lowest, 3))
+        await save_search(uid, fuel_code, radius, num_stations, round(avg, 3), round(lowest, 3))
 
 
 find_handler = ConversationHandler(

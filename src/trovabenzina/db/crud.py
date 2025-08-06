@@ -9,7 +9,7 @@ from sqlalchemy import text, delete, func
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.future import select
 
-from .models import Fuel, Service, Language, User, GeoCache, Search
+from .models import Fuel, Language, User, GeoCache, Search
 from .session import AsyncSession
 
 logger = logging.getLogger(__name__)
@@ -33,28 +33,15 @@ async def get_fuel_map() -> Dict[str, str]:
     return {f.name: f.code for f in fuels}
 
 
-async def get_service_map() -> Dict[str, str]:
-    async with AsyncSession() as session:
-        result = await session.execute(
-            select(Service).where(Service.del_ts.is_(None))
-        )
-        services = result.scalars().all()
-    return {s.name: s.code for s in services}
-
-
 async def upsert_user(
         tg_id: int,
         tg_username: str,
         fuel_code: str,
-        service_code: str,
         language_code: Optional[str] = None,
 ) -> None:
     async with AsyncSession() as session:
         fuel_id = (await session.execute(
             select(Fuel.id).where(Fuel.code == fuel_code)
-        )).scalar_one()
-        service_id = (await session.execute(
-            select(Service.id).where(Service.code == service_code)
         )).scalar_one()
         language_id = None
         if language_code:
@@ -66,12 +53,10 @@ async def upsert_user(
             tg_id=tg_id,
             tg_username=tg_username,
             fuel_id=fuel_id,
-            service_id=service_id,
             language_id=language_id,
         )
         update_vals: Dict[str, Any] = {
             "fuel_id": fuel_id,
-            "service_id": service_id,
             "upd_ts": func.now(),
         }
         if language_code is not None:
@@ -86,13 +71,12 @@ async def upsert_user(
 
 async def get_user(
         tg_id: int
-) -> Optional[Tuple[str, str, Optional[str]]]:
+) -> Optional[Tuple[str, Optional[str]]]:
     async with AsyncSession() as session:
         result = await session.execute(
-            select(Fuel.code, Service.code, Language.code)
+            select(Fuel.code, Language.code)
             .select_from(User)
             .join(Fuel, User.fuel_id == Fuel.id)
-            .join(Service, User.service_id == Service.id)
             .outerjoin(Language, User.language_id == Language.id)
             .where(User.tg_id == tg_id)
         )
@@ -105,7 +89,6 @@ async def get_user(
 async def save_search(
         tg_id: int,
         fuel_code: str,
-        service_code: str,
         radius: int,
         num_stations: int,
         price_avg: Optional[float] = None,
@@ -119,18 +102,14 @@ async def save_search(
         user_id = (await session.execute(
             select(User.id).where(User.tg_id == tg_id)
         )).scalar_one()
-        # get fuel and service ids
+        # get fuel id
         fuel_id = (await session.execute(
             select(Fuel.id).where(Fuel.code == fuel_code)
-        )).scalar_one()
-        service_id = (await session.execute(
-            select(Service.id).where(Service.code == service_code)
         )).scalar_one()
         # insert Search record
         new_search = Search(
             user_id=user_id,
             fuel_id=fuel_id,
-            service_id=service_id,
             radius=radius,
             num_stations=num_stations,
             price_avg=price_avg,

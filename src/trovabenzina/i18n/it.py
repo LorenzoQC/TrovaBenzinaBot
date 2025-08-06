@@ -7,17 +7,12 @@ TRANSLATIONS = {
     "diesel": "Gasolio",
     "cng": "Metano",
     "lpg": "GPL",
-    "self_service": "Self-service",
-    "full_service": "Servito",
-    "no_preference": "Indifferente",
 
     # ─────────── /start ───────────
     "select_language": "Seleziona lingua 🌐️",
     "invalid_language": "⚠️ Lingua non valida!",
-    "select_fuel": "Seleziona carburante 🛢️",
+    "select_fuel": "Seleziona carburante ⛽",
     "invalid_fuel": "⚠️ Carburante non valido!",
-    "select_service": "Seleziona servizio ⛽",
-    "invalid_service": "⚠️ Servizio non valido!",
     "profile_saved": "✅ Profilo salvato correttamente!\n\nUtilizza il comando /find per avviare una ricerca.",
     "user_already_registered": "⚠️ Utente già registrato!\n\nUtilizza il comando /profile per modificare le preferenze o il comando /find per avviare una ricerca.",
 
@@ -31,14 +26,11 @@ TRANSLATIONS = {
 
     # ─────────── /profile ───────────
     "language": "🌐️ Lingua",
-    "fuel": "🛢️ Carburante",
-    "service": "⛽ Servizio",
+    "fuel": "⛽ Carburante",
     "edit_language": "Modifica lingua 🌐️",
-    "edit_fuel": "Modifica carburante 🛢️",
-    "edit_service": "Modifica servizio ⛽",
+    "edit_fuel": "Modifica carburante ⛽",
     "language_updated": "✅ Lingua aggiornata correttamente!",
     "fuel_updated": "✅ Carburante aggiornato correttamente!",
-    "service_updated": "✅ Servizio aggiornato correttamente!",
 
     # ─────────── /find ───────────
     "ask_location": "Digita un indirizzo oppure invia la tua posizione 📍",
@@ -61,4 +53,19 @@ TRANSLATIONS = {
     "below_average": "più economico della media",
     "equal_average": "in linea con la media",
     "last_update": "Ultimo aggiornamento",
+
+    # ─────────── /statistics ───────────
+    "no_statistics": "⚠️ Nessuna statistica disponibile!\n\nUtilizza il comando /find per avviare una ricerca.",
+    "statistics": (
+        "<b><u>Statistiche {fuel_name}</u></b> 📊\n"
+        "<b>{num_searches} ricerche</b> effettuate.\n"
+        "<b>{num_stations} distributori</b> analizzati.\n"
+        "Risparmio medio: <b>{avg_eur_save_per_unit} {price_unit}</b>, ovvero il {avg_pct_save}%.\n"
+        "Risparmio annuo stimato: {avg}!\n\n"
+        "ℹ️ Come abbiamo calcolato questi dati?\n"
+        "• Il risparmio medio è calcolato ipotizzando di effettuare sempre il rifornimento presso il distributore più economico proposto dal bot, confrontandone il prezzo con il prezzo medio della zona.\n"
+        "• Il risparmio annuo è calcolato ipotizzando una percorrenza di 10.000km annui con un consumo medio di {avg_consumption_per_100km}{uom} ogni 100km."
+    ),
+    "reset_statistics": "Azzera statistiche",
+
 }

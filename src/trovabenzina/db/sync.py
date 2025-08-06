@@ -7,7 +7,7 @@ import aiofiles
 import aiofiles.os
 from sqlalchemy.future import select
 
-from .models import Fuel, Service, Language
+from .models import Fuel, Language
 from .session import AsyncSession
 
 # Path to CSV folder
@@ -78,8 +78,7 @@ async def _sync_model_from_csv(model, csv_filename):
 
 async def sync_config_tables():
     """
-    Sync fuels, services, and languages tables with their respective CSV configs.
+    Sync languages and fuels tables with their respective CSV configs.
     """
     await _sync_model_from_csv(Fuel, "fuels.csv")
-    await _sync_model_from_csv(Service, "services.csv")
     await _sync_model_from_csv(Language, "languages.csv")

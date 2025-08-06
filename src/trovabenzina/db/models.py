@@ -38,7 +38,7 @@ class TimestampMixin:
 
 class CodeNameMixin:
     """
-    Mixin that adds 'code' and 'name' fields for config tables.
+    Mixin that adds 'code' and 'name' fields for domain tables.
     """
     code: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -60,15 +60,6 @@ class Fuel(CodeNameMixin, TimestampMixin, Base):
     searches: Mapped[List["Search"]] = relationship(back_populates="fuel")
 
 
-class Service(CodeNameMixin, TimestampMixin, Base):
-    __tablename__ = "dom_services"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-
-    users: Mapped[List["User"]] = relationship(back_populates="service")
-    searches: Mapped[List["Search"]] = relationship(back_populates="service")
-
-
 class Language(CodeNameMixin, TimestampMixin, Base):
     __tablename__ = "dom_languages"
 
@@ -85,11 +76,9 @@ class User(TimestampMixin, Base):
     tg_username: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
     fuel_id: Mapped[int] = mapped_column(ForeignKey("dom_fuels.id"), nullable=False)
-    service_id: Mapped[int] = mapped_column(ForeignKey("dom_services.id"), nullable=False)
     language_id: Mapped[int] = mapped_column(ForeignKey("dom_languages.id"), nullable=True)
 
     fuel: Mapped[Fuel] = relationship(back_populates="users")
-    service: Mapped[Service] = relationship(back_populates="users")
     language: Mapped[Language] = relationship(back_populates="users")
 
     searches: Mapped[List["Search"]] = relationship(back_populates="user")
@@ -101,7 +90,6 @@ class Search(TimestampMixin, Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     fuel_id: Mapped[int] = mapped_column(ForeignKey("dom_fuels.id"), nullable=False)
-    service_id: Mapped[int] = mapped_column(ForeignKey("dom_services.id"), nullable=False)
 
     radius: Mapped[int] = mapped_column(Integer, nullable=False)
     num_stations: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -110,7 +98,6 @@ class Search(TimestampMixin, Base):
 
     user: Mapped[User] = relationship(back_populates="searches")
     fuel: Mapped[Fuel] = relationship(back_populates="searches")
-    service: Mapped[Service] = relationship(back_populates="searches")
 
 
 class GeoCache(TimestampMixin, Base):

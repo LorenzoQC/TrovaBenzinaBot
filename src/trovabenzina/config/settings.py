@@ -46,7 +46,6 @@ DEFAULT_RADIUS_FAR = float(os.getenv("DEFAULT_RADIUS_FAR", "7"))
 # In‐memory maps (populated at startup from the database)
 # Keys: display name; Values: code string
 FUEL_MAP = {}
-SERVICE_MAP = {}
 LANGUAGE_MAP = {}
 
 # Conversation states (for backward‐compatibility)

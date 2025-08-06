@@ -7,17 +7,12 @@ TRANSLATIONS = {
     "diesel": "Diesel",
     "cng": "CNG",
     "lpg": "LPG",
-    "self_service": "Self-service",
-    "full_service": "Full-service",
-    "no_preference": "No preference",
 
     # ─────────── /start ───────────
     "select_language": "Select language 🌐️",
     "invalid_language": "⚠️ Invalid language!",
-    "select_fuel": "Select fuel 🛢️",
+    "select_fuel": "Select fuel ⛽",
     "invalid_fuel": "⚠️ Invalid fuel!",
-    "select_service": "Select service ⛽",
-    "invalid_service": "⚠️ Invalid service!",
     "profile_saved": "✅ Profile saved successfully!\n\nUse /find to start a search.",
     "user_already_registered": "⚠️ User already registered!\n\nUse /profile to modify preferences or /find to start a search.",
 
@@ -31,14 +26,11 @@ TRANSLATIONS = {
 
     # ─────────── /profile ───────────
     "language": "🌐️ Language",
-    "fuel": "🛢️ Fuel",
-    "service": "⛽ Service",
+    "fuel": "⛽ Fuel",
     "edit_language": "Edit language 🌐️",
-    "edit_fuel": "Edit fuel 🛢️",
-    "edit_service": "Edit service ⛽",
+    "edit_fuel": "Edit fuel ⛽",
     "language_updated": "✅ Language updated successfully!",
     "fuel_updated": "✅ Fuel updated successfully!",
-    "service_updated": "✅ Service updated successfully!",
 
     # ─────────── /find ───────────
     "ask_location": "Type an address or send your location 📍",
