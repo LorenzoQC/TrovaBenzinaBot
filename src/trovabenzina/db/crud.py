@@ -171,7 +171,7 @@ async def save_geocache(
         await session.commit()
 
 
-async def count_geostats() -> int:
+async def count_geocoding_month_calls() -> int:
     async with AsyncSession() as session:
         result = await session.execute(
             select(text("count")).select_from(text("v_geocoding_month_calls"))
@@ -213,3 +213,23 @@ async def calculate_monthly_savings(
         )
         rows = result.all()
     return sum((r.price_avg - r.price_min) * 50 for r in rows)
+
+
+async def get_user_stats(tg_id: int) -> List[Dict[str, Any]]:
+    """
+    Returns per-fuel stats for the given user
+    """
+    async with AsyncSession() as session:
+        user_id = await session.execute(
+            select(User.id).where(User.tg_id == tg_id)
+        )
+        user_id = user_id.scalar_one()
+
+        stmt = (
+            select(text("*"))
+            .select_from(text("v_users_searches_stats"))
+            .where(text("user_id = :user_id"))
+        )
+        result = await session.execute(stmt, {"user_id": user_id})
+
+        return [dict(row) for row in result.mappings().all()]

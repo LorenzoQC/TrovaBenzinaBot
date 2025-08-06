@@ -1,7 +1,7 @@
 import aiohttp
 
 from trovabenzina.config import GEOCODE_HARD_CAP, GOOGLE_API_KEY, GEOCODE_URL
-from trovabenzina.db.crud import get_geocache, count_geostats, save_geocache
+from trovabenzina.db.crud import get_geocache, count_geocoding_month_calls, save_geocache
 
 __all__ = [
     "geocode",
@@ -15,7 +15,7 @@ async def geocode(addr: str):
         return record.lat, record.lng
 
     # Rate limiting via view
-    count = await count_geostats()
+    count = await count_geocoding_month_calls()
     if count >= GEOCODE_HARD_CAP:
         return None
 

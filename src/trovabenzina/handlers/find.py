@@ -18,7 +18,7 @@ from trovabenzina.config import (
     DEFAULT_LANGUAGE,
     GEOCODE_HARD_CAP,
 )
-from trovabenzina.db.crud import get_user, save_search, get_geocache, save_geocache, count_geostats
+from trovabenzina.db.crud import get_user, save_search, get_geocache, save_geocache, count_geocoding_month_calls
 from trovabenzina.i18n import t
 from trovabenzina.utils import STEP_FIND_LOCATION
 
@@ -70,7 +70,7 @@ async def find_receive_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if record:
         lat, lng = record.lat, record.lng
     else:
-        stats = await count_geostats()
+        stats = await count_geocoding_month_calls()
         if stats >= GEOCODE_HARD_CAP:
             await update.message.reply_text(t("geocode_cap_reached", lang))
             return STEP_FIND_LOCATION
