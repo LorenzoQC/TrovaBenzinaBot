@@ -149,11 +149,11 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
         )
         target_is_self = min_fuel.get("isSelf")
 
-        # choose cheapest for each station and filter by service type
+        # choose cheapest for each station (prefer self-service on price ties) and filter by service type
         for st in filtered:
             st["_chosen_fuel"] = min(
                 st["_filtered_fuels"],
-                key=lambda f: f["price"]
+                key=lambda f: (f["price"], not f.get("isSelf"))
             )
         filtered = [
             st for st in filtered
