@@ -150,7 +150,7 @@ async def start_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 # Handlers via factories
 language_selected = make_selection_handler(
-    lambda lang: {code: t(name, lang) for name, code in LANGUAGE_MAP.items()},
+    lambda lang: {code: t(name, lang) for name, code in FUEL_MAP.items()},
     "lang",
     "select_fuel",
     "fuel",
@@ -159,7 +159,7 @@ language_selected = make_selection_handler(
 )
 
 fuel_selected = make_selection_handler(
-    lambda lang: {code: t(name, lang) for name, code in FUEL_MAP.items()},
+    None,
     "fuel",
     None,
     None,
