@@ -13,13 +13,13 @@ TRANSLATIONS = {
     "invalid_language": "⚠️ 無効な言語です！",
     "select_fuel": "燃料を選択 ⛽",
     "invalid_fuel": "⚠️ 無効な燃料です！",
-    "profile_saved": "✅ プロファイルが正常に保存されました！\n\n/find を使用して検索を開始します。",
-    "user_already_registered": "⚠️ 既に登録済みです！\n\n/profile で設定を変更するか /find で検索を開始します。",
+    "profile_saved": "✅ プロファイルが正常に保存されました！\n\n/search を使用して検索を開始します。",
+    "user_already_registered": "⚠️ 既に登録済みです！\n\n/profile で設定を変更するか /search で検索を開始します。",
 
     # ─────────── /help ───────────
     "help": (
         "/start – プロファイルを設定する\n"
-        "/find – 最安値のガソリンスタンドを検索する\n"
+        "/search – 最安値のガソリンスタンドを検索する\n"
         "/profile – プロファイルを編集する\n"
         "/help – このメッセージを表示する"
     ),
@@ -32,7 +32,7 @@ TRANSLATIONS = {
     "language_updated": "✅ 言語が正常に更新されました！",
     "fuel_updated": "✅ 燃料が正常に更新されました！",
 
-    # ─────────── /find ───────────
+    # ─────────── /search ───────────
     "ask_location": "住所を入力するか位置情報を送信してください 📍",
     "send_location": "GPS 位置情報を送信 🌍",
     "geocode_cap_reached": "⚠️ 現在アドレス認識を利用できません！\n後でもう一度試すか、位置情報を送信してください。",

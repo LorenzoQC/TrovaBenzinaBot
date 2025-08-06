@@ -13,13 +13,13 @@ TRANSLATIONS = {
     "invalid_language": "⚠️ Idioma no válido!",
     "select_fuel": "Seleccionar combustible ⛽",
     "invalid_fuel": "⚠️ Combustible no válido!",
-    "profile_saved": "✅ Perfil guardado con éxito!\n\nUsa /find para iniciar una búsqueda.",
-    "user_already_registered": "⚠️ Usuario ya registrado!\n\nUsa /profile para modificar las preferencias o /find para iniciar una búsqueda.",
+    "profile_saved": "✅ Perfil guardado con éxito!\n\nUsa /search para iniciar una búsqueda.",
+    "user_already_registered": "⚠️ Usuario ya registrado!\n\nUsa /profile para modificar las preferencias o /search para iniciar una búsqueda.",
 
     # ─────────── /help ───────────
     "help": (
         "/start – configurar tu perfil\n"
-        "/find – buscar las estaciones más baratas\n"
+        "/search – buscar las estaciones más baratas\n"
         "/profile – modificar tu perfil\n"
         "/help – mostrar este mensaje"
     ),
@@ -32,7 +32,7 @@ TRANSLATIONS = {
     "language_updated": "✅ Idioma actualizado con éxito!",
     "fuel_updated": "✅ Combustible actualizado con éxito!",
 
-    # ─────────── /find ───────────
+    # ─────────── /search ───────────
     "ask_location": "Escribe una dirección o envía tu ubicación 📍",
     "send_location": "Enviar ubicación GPS 🌍",
     "geocode_cap_reached": "⚠️ ¡Reconocimiento de direcciones no disponible en este momento!\nPor favor, inténtalo más tarde o envía tu ubicación.",

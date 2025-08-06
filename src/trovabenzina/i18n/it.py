@@ -13,13 +13,13 @@ TRANSLATIONS = {
     "invalid_language": "⚠️ Lingua non valida!",
     "select_fuel": "Seleziona carburante ⛽",
     "invalid_fuel": "⚠️ Carburante non valido!",
-    "profile_saved": "✅ Profilo salvato correttamente!\n\nUtilizza il comando /find per avviare una ricerca.",
-    "user_already_registered": "⚠️ Utente già registrato!\n\nUtilizza il comando /profile per modificare le preferenze o il comando /find per avviare una ricerca.",
+    "profile_saved": "✅ Profilo salvato correttamente!\n\nUtilizza il comando /search per avviare una ricerca.",
+    "user_already_registered": "⚠️ Utente già registrato!\n\nUtilizza il comando /profile per modificare le preferenze o il comando /search per avviare una ricerca.",
 
     # ─────────── /help ───────────
     "help": (
         "/start – configura il profilo\n"
-        "/find – cerca i distributori più economici\n"
+        "/search – cerca i distributori più economici\n"
         "/profile – modifica il profilo\n"
         "/help – mostra questo messaggio"
     ),
@@ -32,7 +32,7 @@ TRANSLATIONS = {
     "language_updated": "✅ Lingua aggiornata correttamente!",
     "fuel_updated": "✅ Carburante aggiornato correttamente!",
 
-    # ─────────── /find ───────────
+    # ─────────── /search ───────────
     "ask_location": "Digita un indirizzo oppure invia la tua posizione 📍",
     "send_location": "Invia posizione GPS 🌍",
     "geocode_cap_reached": "⚠️ Riconoscimento indirizzo al momento non disponibile!\n.Per favore riprova più tardi, oppure invia la tua posizione.",
@@ -55,7 +55,7 @@ TRANSLATIONS = {
     "last_update": "Ultimo aggiornamento",
 
     # ─────────── /statistics ───────────
-    "no_statistics": "⚠️ Nessuna statistica disponibile!\n\nUtilizza il comando /find per avviare una ricerca.",
+    "no_statistics": "⚠️ Nessuna statistica disponibile!\n\nUtilizza il comando /search per avviare una ricerca.",
     "statistics": (
         "<b><u>Statistiche {fuel_name}</u></b> 📊\n"
         "<b>{num_searches} ricerche</b> effettuate.\n"

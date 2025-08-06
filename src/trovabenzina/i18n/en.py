@@ -13,13 +13,13 @@ TRANSLATIONS = {
     "invalid_language": "⚠️ Invalid language!",
     "select_fuel": "Select fuel ⛽",
     "invalid_fuel": "⚠️ Invalid fuel!",
-    "profile_saved": "✅ Profile saved successfully!\n\nUse /find to start a search.",
-    "user_already_registered": "⚠️ User already registered!\n\nUse /profile to modify preferences or /find to start a search.",
+    "profile_saved": "✅ Profile saved successfully!\n\nUse /search to start a search.",
+    "user_already_registered": "⚠️ User already registered!\n\nUse /profile to modify preferences or /search to start a search.",
 
     # ─────────── /help ───────────
     "help": (
         "/start – set up your profile\n"
-        "/find – search for the cheapest stations\n"
+        "/search – search for the cheapest stations\n"
         "/profile – modify your profile\n"
         "/help – show this message"
     ),
@@ -32,7 +32,7 @@ TRANSLATIONS = {
     "language_updated": "✅ Language updated successfully!",
     "fuel_updated": "✅ Fuel updated successfully!",
 
-    # ─────────── /find ───────────
+    # ─────────── /search ───────────
     "ask_location": "Type an address or send your location 📍",
     "send_location": "Send GPS location 🌍",
     "geocode_cap_reached": "⚠️ Address recognition not available at the moment!\nPlease try again later, or send your location.",

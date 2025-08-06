@@ -19,7 +19,7 @@ from trovabenzina.handlers import (
     start_handler,
     help_handler,
     profile_handler,
-    find_handler,
+    search_handler,
 )
 from trovabenzina.utils import (
     setup_logging,
@@ -80,7 +80,7 @@ def main() -> None:
     # Add handlers
     app.add_handler(start_handler)  # /start
     app.add_handler(help_handler)  # /help
-    app.add_handler(find_handler)  # /find
+    app.add_handler(search_handler)  # /search
     app.add_handler(profile_handler)  # /profile
 
     # Background scheduler setup

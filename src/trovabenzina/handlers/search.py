@@ -26,12 +26,13 @@ from trovabenzina.db.crud import (
     count_geocoding_month_calls,
 )
 from trovabenzina.i18n import t
-from trovabenzina.utils import STEP_FIND_LOCATION
+from trovabenzina.utils import STEP_SEARCH_LOCATION
 
-__all__ = ["find_handler"]
+__all__ = ["search_handler"]
 
-async def find_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Handle /find command: ask user for address or location."""
+
+async def search_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Handle /search command: ask user for address or location."""
     uid = update.effective_user.id
     _, lang = await get_user(uid) or (None, DEFAULT_LANGUAGE)
 
@@ -42,9 +43,10 @@ async def find_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         t("ask_location", lang),
         reply_markup=kb,
     )
-    return STEP_FIND_LOCATION
+    return STEP_SEARCH_LOCATION
 
-async def find_receive_location(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+
+async def search_receive_location(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     """Receive a location and perform the search."""
     uid = update.effective_user.id
     _, lang = await get_user(uid) or (None, DEFAULT_LANGUAGE)
@@ -60,7 +62,8 @@ async def find_receive_location(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await run_search(update, ctx)
     return ConversationHandler.END
 
-async def find_receive_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+
+async def search_receive_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     """Receive an address, geocode (with cache) and perform the search."""
     uid = update.effective_user.id
     _, lang = await get_user(uid) or (None, DEFAULT_LANGUAGE)
@@ -78,12 +81,12 @@ async def find_receive_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         stats = await count_geocoding_month_calls()
         if stats >= GEOCODE_HARD_CAP:
             await update.message.reply_text(t("geocode_cap_reached", lang))
-            return STEP_FIND_LOCATION
+            return STEP_SEARCH_LOCATION
 
         coords = await geocode(address)
         if not coords:
             await update.message.reply_text(t("invalid_address", lang))
-            return STEP_FIND_LOCATION
+            return STEP_SEARCH_LOCATION
 
         lat, lng = coords
         await save_geocache(address, lat, lng)
@@ -249,12 +252,13 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
             round(lowest, 3)
         )
 
-find_handler = ConversationHandler(
-    entry_points=[CommandHandler("find", find_ep)],
+
+search_handler = ConversationHandler(
+    entry_points=[CommandHandler("search", search_ep)],
     states={
-        STEP_FIND_LOCATION: [
-            MessageHandler(filters.LOCATION, find_receive_location),
-            MessageHandler(filters.TEXT & ~filters.COMMAND, find_receive_text),
+        STEP_SEARCH_LOCATION: [
+            MessageHandler(filters.LOCATION, search_receive_location),
+            MessageHandler(filters.TEXT & ~filters.COMMAND, search_receive_text),
         ],
     },
     fallbacks=[],

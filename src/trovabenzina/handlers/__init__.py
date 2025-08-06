@@ -1,6 +1,6 @@
-from .find import find_handler
 from .help import help_handler
 from .profile import profile_handler
+from .search import search_handler
 from .start import start_handler
 
 __all__ = [
@@ -10,6 +10,6 @@ __all__ = [
     "help_handler",
     # profile
     "profile_handler",
-    # find
-    "find_handler",
+    # search
+    "search_handler",
 ]
