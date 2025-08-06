@@ -53,6 +53,7 @@ class Fuel(CodeNameMixin, TimestampMixin, Base):
     __tablename__ = "dom_fuels"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    avg_consumption_per_100km: Mapped[float] = mapped_column(Float, nullable=False)
 
     users: Mapped[List["User"]] = relationship(back_populates="fuel")
     searches: Mapped[List["Search"]] = relationship(back_populates="fuel")

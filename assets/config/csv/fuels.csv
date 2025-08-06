@@ -1,5 +1,5 @@
-code,name
-1,gasoline
-2,diesel
-3,cng
-4,lpg
+code,name,avg_consumption_per_100km
+1,gasoline,7.0
+2,diesel,5.0
+3,cng,4.0
+4,lpg,8.0
