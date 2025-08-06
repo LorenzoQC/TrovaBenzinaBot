@@ -41,7 +41,7 @@ async def find_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 async def find_receive_location(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     """Receive a location and perform the search."""
     uid = update.effective_user.id
-    _, _, lang = await get_user(uid) or (None, None, DEFAULT_LANGUAGE)
+    _, lang = await get_user(uid) or (None, DEFAULT_LANGUAGE)
     proc_msg = await update.message.reply_text(
         t("processing_search", lang),
         reply_markup=ReplyKeyboardRemove(),
@@ -57,7 +57,7 @@ async def find_receive_location(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 async def find_receive_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     """Receive an address, geocode (with cache) and perform the search."""
     uid = update.effective_user.id
-    _, _, lang = await get_user(uid) or (None, None, DEFAULT_LANGUAGE)
+    _, lang = await get_user(uid) or (None, DEFAULT_LANGUAGE)
     proc_msg = await update.message.reply_text(
         t("processing_search", lang),
         reply_markup=ReplyKeyboardRemove(),
