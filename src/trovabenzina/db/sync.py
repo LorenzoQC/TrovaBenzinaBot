@@ -24,36 +24,49 @@ async def _sync_model_from_csv(model, csv_filename):
     """
     csv_path = os.path.join(ASSETS_CSV_DIR, csv_filename)
 
-    # Read CSV asynchronously
+    # Read CSV into a map: code -> full row dict
     async with aiofiles.open(csv_path, mode="r", encoding="utf-8") as f:
-        # Reset pointer and read all lines
         await f.seek(0)
-        lines = await f.read()
-    csv_map = {}
-    for row in csv.DictReader(lines.splitlines()):
-        # Expect columns: code, name
-        csv_map[row["code"]] = row["name"]
+        content = await f.read()
+    csv_map = {row["code"]: row for row in csv.DictReader(content.splitlines())}
 
     async with AsyncSession() as session:
+        # Load existing items
         result = await session.execute(select(model))
         db_items = result.scalars().all()
-
-        now = datetime.now(timezone.utc)
         db_map = {item.code: item for item in db_items}
+        now = datetime.now(timezone.utc)
 
         # 1) Insert new or update existing
-        for code, name in csv_map.items():
+        for code, row in csv_map.items():
             if code not in db_map:
-                obj = model(code=code, name=name)
+                # build kwargs from CSV row (convert floats when possibile)
+                kwargs = {"code": code}
+                for key, val in row.items():
+                    if key == "code":
+                        continue
+                    try:
+                        parsed = float(val)
+                    except (ValueError, TypeError):
+                        parsed = val
+                    kwargs[key] = parsed
+                obj = model(**kwargs)
                 session.add(obj)
             else:
                 obj = db_map[code]
-                # Restore if soft-deleted
+                # restore if soft-deleted
                 if obj.del_ts is not None:
                     obj.del_ts = None
-                # Update name if changed
-                if obj.name != name:
-                    obj.name = name
+                # update fields if changed
+                for key, val in row.items():
+                    if key == "code" or not hasattr(obj, key):
+                        continue
+                    try:
+                        parsed = float(val)
+                    except (ValueError, TypeError):
+                        parsed = val
+                    if getattr(obj, key) != parsed:
+                        setattr(obj, key, parsed)
 
         # 2) Soft-delete missing entries
         for code, obj in db_map.items():
