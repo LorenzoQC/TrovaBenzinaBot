@@ -18,7 +18,13 @@ from trovabenzina.config import (
     DEFAULT_LANGUAGE,
     GEOCODE_HARD_CAP,
 )
-from trovabenzina.db.crud import get_user, save_search, get_geocache, save_geocache, count_geocoding_month_calls
+from trovabenzina.db.crud import (
+    get_user,
+    save_search,
+    get_geocache,
+    save_geocache,
+    count_geocoding_month_calls,
+)
 from trovabenzina.i18n import t
 from trovabenzina.utils import STEP_FIND_LOCATION
 
@@ -65,7 +71,6 @@ async def find_receive_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     ctx.user_data["processing_msg_id"] = proc_msg.message_id
     address = update.message.text.strip()
 
-    # check cache
     record = await get_geocache(address)
     if record:
         lat, lng = record.lat, record.lng
@@ -117,7 +122,7 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
             except Exception:
                 pass
 
-        # first filter: fuelId and isSelf
+        # first filter: by fuelId only
         filtered = []
         for st in stations:
             fuels = [
@@ -136,15 +141,30 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
             await save_search(uid, fuel_code, radius, num_stations, None, None)
             continue
 
-        # calculate prices and average
-        prices = [f["price"] for st in filtered for f in st["_filtered_fuels"]]
-        avg = sum(prices) / len(prices)
+        # determine target service type based on lowest price fuel
+        all_fuels = [f for st in filtered for f in st["_filtered_fuels"]]
+        min_fuel = min(all_fuels, key=lambda f: f["price"])
+        target_is_self = min_fuel.get("isSelf")
+
+        # choose cheapest for each station and filter by service type
+        for st in filtered:
+            st["_chosen_fuel"] = min(st["_filtered_fuels"], key=lambda f: f["price"])
+        filtered = [st for st in filtered if st["_chosen_fuel"].get("isSelf") == target_is_self]
+        num_stations = len(filtered)
+
+        if not filtered:
+            await origin.message.reply_text(
+                f"<u>{t(label_key, lang)}</u> 📍\n\n{t('no_stations', lang)}",
+                parse_mode=ParseMode.HTML
+            )
+            await save_search(uid, fuel_code, radius, num_stations, None, None)
+            continue
+
+        # calculate average on chosen fuels
+        avg = sum(st["_chosen_fuel"]["price"] for st in filtered) / len(filtered)
 
         # second filter: only stations with price <= average
-        below_avg = [
-            st for st in filtered
-            if st["_filtered_fuels"][0]["price"] <= avg
-        ]
+        below_avg = [st for st in filtered if st["_chosen_fuel"]["price"] <= avg]
 
         if not below_avg:
             await origin.message.reply_text(
@@ -157,21 +177,17 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
         # sort by ascending price
         sorted_res = sorted(
             below_avg,
-            key=lambda r: r["_filtered_fuels"][0]["price"]
+            key=lambda r: r["_chosen_fuel"]["price"]
         )
 
         # compute the lowest price among those below average
-        lowest = min(
-            f["price"]
-            for st in below_avg
-            for f in st["_filtered_fuels"]
-        )
+        lowest = sorted_res[0]["_chosen_fuel"]["price"]
 
         # build message lines for the top 3
         lines = []
         medals = ["🥇", "🥈", "🥉"]
         for i, station in enumerate(sorted_res[:3]):
-            f0 = station["_filtered_fuels"][0]
+            f0 = station["_chosen_fuel"]
             price = f0["price"]
             pct = int(round((avg - price) / avg * 100))
             dest = f"{station['location']['lat']},{station['location']['lng']}"
@@ -180,7 +196,6 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
             if not station.get("address"):
                 station["address"] = await fetch_address(station["id"]) or t("no_address", lang)
 
-            # parse ISO timestamp and format to "DD/MM/YYYY HH:MM"
             raw_date = station.get("insertDate")
             if raw_date:
                 dt = datetime.fromisoformat(raw_date)
@@ -188,15 +203,12 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
             else:
                 formatted_date = t("unknown_update", lang)
 
-            if abs(pct) == 0:
-                price_note = f"{t('equal_average', lang)}"
-            else:
-                price_note = f"{pct}% {t('below_average', lang)}"
+            price_note = t('equal_average', lang) if pct == 0 else f"{pct}% {t('below_average', lang)}"
 
             lines.append(
-                f"{medals[i]} <b><a href=\"{link}\">{station['brand']} • {station['name']}</a></b>\n" +
-                f"• <u>{t('address', lang)}</u>: {station['address']}\n" +
-                f"• <u>{t('price', lang)}</u>: <b>{price:.3f} {price_unit}</b>, {price_note}\n" +
+                f"{medals[i]} <b><a href=\"{link}\">{station['brand']} • {station['name']}</a></b>\n"
+                f"• <u>{t('address', lang)}</u>: {station['address']}\n"
+                f"• <u>{t('price', lang)}</u>: <b>{price:.3f} {price_unit}</b>, {price_note}\n"
                 f"<i>[{t('last_update', lang)}: {formatted_date}]</i>"
             )
 
@@ -206,17 +218,13 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
             f"{t('average_zone_price', lang)}: <b>{avg:.3f} {price_unit}</b>\n\n"
         )
 
-        # send the combined message
         await origin.message.reply_text(
-            header +
-            "\n\n".join(lines),
+            header + "\n\n".join(lines),
             parse_mode=ParseMode.HTML,
             disable_web_page_preview=True,
         )
 
-        # log each search
         await save_search(uid, fuel_code, radius, num_stations, round(avg, 3), round(lowest, 3))
-
 
 find_handler = ConversationHandler(
     entry_points=[CommandHandler("find", find_ep)],
