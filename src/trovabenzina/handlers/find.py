@@ -141,15 +141,24 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
             await save_search(uid, fuel_code, radius, num_stations, None, None)
             continue
 
-        # determine target service type based on lowest price fuel
+        # determine target service type based on lowest price fuel; prefer self-service on ties
         all_fuels = [f for st in filtered for f in st["_filtered_fuels"]]
-        min_fuel = min(all_fuels, key=lambda f: f["price"])
+        min_fuel = min(
+            all_fuels,
+            key=lambda f: (f["price"], not f.get("isSelf"))
+        )
         target_is_self = min_fuel.get("isSelf")
 
         # choose cheapest for each station and filter by service type
         for st in filtered:
-            st["_chosen_fuel"] = min(st["_filtered_fuels"], key=lambda f: f["price"])
-        filtered = [st for st in filtered if st["_chosen_fuel"].get("isSelf") == target_is_self]
+            st["_chosen_fuel"] = min(
+                st["_filtered_fuels"],
+                key=lambda f: f["price"]
+            )
+        filtered = [
+            st for st in filtered
+            if st["_chosen_fuel"].get("isSelf") == target_is_self
+        ]
         num_stations = len(filtered)
 
         if not filtered:
@@ -161,10 +170,15 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
             continue
 
         # calculate average on chosen fuels
-        avg = sum(st["_chosen_fuel"]["price"] for st in filtered) / len(filtered)
+        avg = sum(
+            st["_chosen_fuel"]["price"] for st in filtered
+        ) / len(filtered)
 
         # second filter: only stations with price <= average
-        below_avg = [st for st in filtered if st["_chosen_fuel"]["price"] <= avg]
+        below_avg = [
+            st for st in filtered
+            if st["_chosen_fuel"]["price"] <= avg
+        ]
 
         if not below_avg:
             await origin.message.reply_text(
@@ -203,7 +217,9 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
             else:
                 formatted_date = t("unknown_update", lang)
 
-            price_note = t('equal_average', lang) if pct == 0 else f"{pct}% {t('below_average', lang)}"
+            price_note = (
+                t('equal_average', lang) if pct == 0 else f"{pct}% {t('below_average', lang)}"
+            )
 
             lines.append(
                 f"{medals[i]} <b><a href=\"{link}\">{station['brand']} • {station['name']}</a></b>\n"
@@ -224,7 +240,14 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
             disable_web_page_preview=True,
         )
 
-        await save_search(uid, fuel_code, radius, num_stations, round(avg, 3), round(lowest, 3))
+        await save_search(
+            uid,
+            fuel_code,
+            radius,
+            num_stations,
+            round(avg, 3),
+            round(lowest, 3)
+        )
 
 find_handler = ConversationHandler(
     entry_points=[CommandHandler("find", find_ep)],
