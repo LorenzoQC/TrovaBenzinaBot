@@ -130,7 +130,7 @@ async def start_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     """
     existing = await get_user(update.effective_user.id)
     if existing:
-        _, _, lang = existing
+        _, lang = existing
         lang = lang or DEFAULT_LANGUAGE
         await update.effective_message.reply_text(
             t("user_already_registered", lang)
