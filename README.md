@@ -69,8 +69,8 @@ Set the following environment variables:
 ## 📌 Bot commands
 
 * `/start`: Start user profile setup.
-* `/find`: Find the cheapest fuel station based on the current location.
-* `/profile`: View or edit your profile preferences (language, fuel type, service type).
+* `/search`: Search the cheapest fuel stations based on the current location.
+* `/profile`: View or edit your profile preferences (language, fuel type).
 * `/help`: Show help information and available commands.
 
 ## 🤝 Contributing

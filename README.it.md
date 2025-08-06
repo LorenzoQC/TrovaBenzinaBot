@@ -70,8 +70,8 @@ Imposta le seguenti variabili d'ambiente:
 ## 📌 Comandi del bot
 
 * `/start`: Avvia la configurazione del profilo utente.
-* `/find`: Trova il distributore di carburante più economico in base alla posizione attuale.
-* `/profile`: Visualizza o modifica le preferenze del profilo (lingua, tipo di carburante, tipo di servizio).
+* `/find`: Cerca i distributori di carburante più economici in base alla posizione attuale.
+* `/profile`: Visualizza o modifica le preferenze del profilo (lingua, tipo di carburante).
 * `/help`: Mostra informazioni di aiuto e comandi disponibili.
 
 ## 🤝 Contribuire
