@@ -19,7 +19,7 @@ async def statistics_ep(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     tg_id = update.effective_user.id
     # fetch user language
     user_row = await get_user(tg_id)
-    _, _, lang = user_row if user_row else (None, None, DEFAULT_LANGUAGE)
+    _, lang = user_row if user_row else (None, DEFAULT_LANGUAGE)
 
     stats = await get_user_stats(tg_id)
     if not stats:
@@ -96,7 +96,7 @@ async def reset_stats_cb(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     # fetch internal user id and lang
     user_row = await get_user(tg_id)
     if user_row:
-        _, service_code, lang = user_row
+        _, lang = user_row
     else:
         lang = DEFAULT_LANGUAGE
 
