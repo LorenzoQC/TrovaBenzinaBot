@@ -112,6 +112,7 @@ async def reset_stats_cb(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         await session.execute(
             sa_update(Search)
             .where(Search.user_id == user_id)
+            .where(Search.del_ts.is_(None))
             .values(del_ts=func.now())
         )
         await session.commit()
