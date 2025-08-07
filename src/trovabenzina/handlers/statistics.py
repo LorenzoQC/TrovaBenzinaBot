@@ -22,7 +22,6 @@ async def statistics_ep(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 
     stats = await get_user_stats(tg_id)
     if not stats:
-        # no statistics to show
         await update.effective_message.reply_text(
             t("no_statistics", lang)
         )
@@ -36,8 +35,9 @@ async def statistics_ep(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         )
         fuels = {f.id: f for f in rows.scalars().all()}
 
-    # build combined message
+    # build per-fuel blocks and collect consumption info
     blocks = []
+    consumption_lines = []
     for s in stats:
         fuel_name = t(s.get("fuel_name"), lang)
         num_searches = s.get("num_searches")
@@ -57,23 +57,34 @@ async def statistics_ep(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         # consumption and unit of measure
         cons = fuels.get(fid).avg_consumption_per_100km if fuels.get(fid) else 0
         uom = t('kilo_symbol', lang) if code == "3" else t('liter_symbol', lang)
-
-        block = t(
-            "statistics",
-            lang,
-            fuel_name=fuel_name,
-            num_searches=num_searches,
-            num_stations=num_stations,
-            avg_eur_save_per_unit=f"{avg_eur:.3f}",
-            price_unit=pu,
-            avg_pct_save=f"{avg_pct:.1f}",
-            estimated_annual_save_eur=f"{est_save:.2f} {t('eur_symbol', lang)}",
-            avg_consumption_per_100km=f"{cons:.1f}",
-            uom=uom
+        # collect consumption line for later
+        consumption_lines.append(
+            t(
+                "fuel_consumption", lang,
+                avg_consumption_per_100km=f"{cons:.1f}",
+                uom=uom
+            )
         )
-        blocks.append(block)
 
+        # build block without info
+        blocks.append(
+            t(
+                "statistics", lang,
+                fuel_name=fuel_name,
+                num_searches=num_searches,
+                num_stations=num_stations,
+                avg_eur_save_per_unit=f"{avg_eur:.3f}",
+                price_unit=pu,
+                avg_pct_save=f"{avg_pct:.1f}",
+                estimated_annual_save_eur=f"{est_save:.2f} {t('eur_symbol', lang)}"
+            )
+        )
+
+    # combine fuel blocks
     combined = "\n\n".join(blocks)
+    # append info and consumption lines
+    combined += "\n\n" + t("statistics_info", lang)
+    combined += "\n" + "\n".join(consumption_lines)
 
     # reset button under combined message
     reset_btn = InlineKeyboardButton(
@@ -95,7 +106,6 @@ async def reset_stats_cb(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     query = update.callback_query
     await query.answer()
     tg_id = update.effective_user.id
-    # fetch internal user id and lang
     user_row = await get_user(tg_id)
     if user_row:
         _, lang = user_row
@@ -103,12 +113,11 @@ async def reset_stats_cb(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         lang = DEFAULT_LANGUAGE
 
     async with AsyncSession() as session:
-        # get internal id
         res = await session.execute(
             select(User.id).where(User.tg_id == tg_id)
         )
         user_id = res.scalar_one()
-        # mark all searches as deleted
+        # mark non-deleted searches as deleted
         await session.execute(
             sa_update(Search)
             .where(Search.user_id == user_id)
@@ -117,13 +126,10 @@ async def reset_stats_cb(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         )
         await session.commit()
 
-    # confirm reset
     await query.edit_message_text(
         t("statistics reset", lang)
     )
 
-
-# handler registrations
 statistics_handler = [
     CommandHandler("statistics", statistics_ep),
     CallbackQueryHandler(reset_stats_cb, pattern="^reset_stats$")
