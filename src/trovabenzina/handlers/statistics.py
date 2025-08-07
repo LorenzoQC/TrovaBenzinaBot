@@ -58,7 +58,9 @@ async def statistics_ep(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         consumption = fuels.get(fid).avg_consumption_per_100km if fuels.get(fid) else None
         uom = t('liter_symbol', lang) if consumption and consumption > 0 else t('kilo_symbol', lang)
 
-        message = t("statistics", lang).format(
+        message = t(
+            "statistics",
+            lang,
             fuel_name=fuel_name,
             num_searches=num_searches,
             num_stations=num_stations,
