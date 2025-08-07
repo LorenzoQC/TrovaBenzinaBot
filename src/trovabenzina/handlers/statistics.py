@@ -1,4 +1,4 @@
-from sqlalchemy import select, func
+from sqlalchemy import select, func, update as sa_update
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes, CommandHandler, CallbackQueryHandler
@@ -110,7 +110,7 @@ async def reset_stats_cb(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         user_id = res.scalar_one()
         # mark all searches as deleted
         await session.execute(
-            update(Search)
+            sa_update(Search)
             .where(Search.user_id == user_id)
             .values(del_ts=func.now())
         )
