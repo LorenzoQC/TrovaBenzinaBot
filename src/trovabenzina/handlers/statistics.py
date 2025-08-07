@@ -11,7 +11,6 @@ from trovabenzina.i18n import t
 
 __all__ = ["statistics_handler"]
 
-
 async def statistics_ep(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """
     Handler for /statistics command: shows per-fuel stats or a no-data message.
@@ -29,64 +28,65 @@ async def statistics_ep(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         )
         return
 
-    # open a session to fetch consumption values
+    # preload consumption values
     async with AsyncSession() as session:
-        # preload consumption for all fuels
         fuel_ids = [s["fuel_id"] for s in stats]
         rows = await session.execute(
             select(Fuel).where(Fuel.id.in_(fuel_ids))
         )
         fuels = {f.id: f for f in rows.scalars().all()}
 
-    # send one message per fuel
+    # build combined message
+    blocks = []
     for s in stats:
-        fuel_name = s.get("fuel_name")
+        fuel_name = t(s.get("fuel_name"), lang)
         num_searches = s.get("num_searches")
         num_stations = s.get("num_stations")
         avg_eur = s.get("avg_eur_save_per_unit")
-        avg_pct = s.get("avg_pct_save") * 100  # fraction → percent
-        est_annual = s.get("estimated_annual_save_eur")
+        avg_pct = s.get("avg_pct_save") * 100
+        est_save = s.get("estimated_annual_save_eur")
+        code = str(s.get("fuel_code"))
         fid = s.get("fuel_id")
 
         # determine price unit (€/l or €/kg)
-        price_unit = f"{t('eur_symbol', lang)}{t('slash_symbol', lang)}{t('liter_symbol', lang)}"
-        # assume fuelId 3 = CNG
-        if str(s.get("fuel_code")) == "3":
-            price_unit = f"{t('eur_symbol', lang)}{t('slash_symbol', lang)}{t('kilo_symbol', lang)}"
+        if code == "3":  # CNG
+            pu = f"{t('eur_symbol', lang)}{t('slash_symbol', lang)}{t('kilo_symbol', lang)}"
+        else:
+            pu = f"{t('eur_symbol', lang)}{t('slash_symbol', lang)}{t('liter_symbol', lang)}"
 
         # consumption and unit of measure
-        consumption = fuels.get(fid).avg_consumption_per_100km if fuels.get(fid) else None
-        uom = t('liter_symbol', lang) if consumption and consumption > 0 else t('kilo_symbol', lang)
+        cons = fuels.get(fid).avg_consumption_per_100km if fuels.get(fid) else 0
+        uom = t('kilo_symbol', lang) if code == "3" else t('liter_symbol', lang)
 
-        message = t(
+        block = t(
             "statistics",
             lang,
             fuel_name=fuel_name,
             num_searches=num_searches,
             num_stations=num_stations,
             avg_eur_save_per_unit=f"{avg_eur:.3f}",
-            price_unit=price_unit,
+            price_unit=pu,
             avg_pct_save=f"{avg_pct:.1f}",
-            avg=f"{est_annual:.2f} {t('eur_symbol', lang)}",
-            avg_consumption_per_100km=f"{consumption:.1f}",
+            estimated_annual_save_eur=f"{est_save:.2f} {t('eur_symbol', lang)}",
+            avg_consumption_per_100km=f"{cons:.1f}",
             uom=uom
         )
-        await update.effective_message.reply_text(
-            message,
-            parse_mode=ParseMode.HTML,
-            disable_web_page_preview=True
-        )
+        blocks.append(block)
 
-    # button to reset statistics
-    reset_button = InlineKeyboardButton(
+    combined = "\n\n".join(blocks)
+
+    # reset button under combined message
+    reset_btn = InlineKeyboardButton(
         t("reset_statistics", lang), callback_data="reset_stats"
     )
-    kb = InlineKeyboardMarkup([[reset_button]])
+    kb = InlineKeyboardMarkup([[reset_btn]])
+
     await update.effective_message.reply_text(
-        t("reset_statistics", lang),
+        combined,
+        parse_mode=ParseMode.HTML,
+        disable_web_page_preview=True,
         reply_markup=kb
     )
-
 
 async def reset_stats_cb(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """
