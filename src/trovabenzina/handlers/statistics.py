@@ -61,6 +61,7 @@ async def statistics_ep(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         consumption_lines.append(
             t(
                 "fuel_consumption", lang,
+                fuel_name=fuel_name,
                 avg_consumption_per_100km=f"{cons:.1f}",
                 uom=uom
             )
