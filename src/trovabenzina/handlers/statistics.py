@@ -44,7 +44,7 @@ async def statistics_ep(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         num_searches = s.get("num_searches")
         num_stations = s.get("num_stations")
         avg_eur = s.get("avg_eur_save_per_unit")
-        avg_pct = s.get("avg_perc_save") * 100  # fraction → percent
+        avg_pct = s.get("avg_pct_save") * 100  # fraction → percent
         est_annual = s.get("estimated_annual_save_eur")
         fid = s.get("fuel_id")
 
