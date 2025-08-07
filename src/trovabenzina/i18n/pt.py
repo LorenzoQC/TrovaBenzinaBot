@@ -7,6 +7,8 @@ TRANSLATIONS = {
     "diesel": "Diesel",
     "cng": "GNC",
     "lpg": "GLP",
+    "liter_symbol": "L",
+    "kilo_symbol": "kg",
 
     # ─────────── /start ───────────
     "select_language": "Selecionar idioma 🌐️",
@@ -48,9 +50,25 @@ TRANSLATIONS = {
     "price": "Preço",
     "eur_symbol": "€",
     "slash_symbol": "/\u200b",
-    "liter_symbol": "L",
-    "kilo_symbol": "kg",
     "below_average": "mais barato que a média",
     "equal_average": "em linha com a média",
     "last_update": "Última atualização",
+
+    # ─────────── /statistics ───────────
+    "no_statistics": "⚠️ Nenhuma estatística disponível!\n\nUse /search para iniciar uma busca.",
+    "statistics": (
+        "<b><u>Estatísticas {fuel_name}</u></b> 📊\n"
+        "<b>{num_searches} buscas</b> realizadas.\n"
+        "<b>{num_stations} postos</b> analisados.\n"
+        "Economia média: <b>{avg_eur_save_per_unit} {price_unit}</b>, ou <b>{avg_pct_save}%</b>.\n"
+        "Economia anual estimada: <b>{estimated_annual_save_eur}</b>."
+    ),
+    "statistics_info": "<i>ℹ️ Como esses números são calculados?</i>\n"
+                       "• A economia média assume sempre abastecer no posto mais barato sugerido pelo bot em comparação com o preço médio da área.\n"
+                       "• A economia anual assume 10.000 km por ano com consumo médio de:\n",
+    "fuel_consumption": "  - {fuel_name} = {avg_consumption_per_100km}{uom} por 100 km",
+    "reset_statistics": "Redefinir estatísticas ♻️",
+    "statistics_reset": "✅ Estatísticas redefinidas com sucesso!\n\nUse /search para iniciar uma busca.",
+
+
 }

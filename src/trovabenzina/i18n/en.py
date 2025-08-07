@@ -7,6 +7,8 @@ TRANSLATIONS = {
     "diesel": "Diesel",
     "cng": "CNG",
     "lpg": "LPG",
+    "liter_symbol": "L",
+    "kilo_symbol": "kg",
 
     # ─────────── /start ───────────
     "select_language": "Select language 🌐️",
@@ -48,9 +50,23 @@ TRANSLATIONS = {
     "price": "Price",
     "eur_symbol": "€",
     "slash_symbol": "/\u200b",
-    "liter_symbol": "L",
-    "kilo_symbol": "kg",
     "below_average": "cheaper than average",
     "equal_average": "in line with average",
     "last_update": "Last update",
+
+    # ─────────── /statistics ───────────
+    "no_statistics": "⚠️ No statistics available!\n\nUse /search to start a search.",
+    "statistics": (
+        "<b><u>{fuel_name} Statistics</u></b> 📊\n"
+        "<b>{num_searches} searches</b> performed.\n"
+        "<b>{num_stations} stations</b> analyzed.\n"
+        "Average savings: <b>{avg_eur_save_per_unit} {price_unit}</b>, or <b>{avg_pct_save}%</b>.\n"
+        "Estimated annual savings: <b>{estimated_annual_save_eur}</b>."
+    ),
+    "statistics_info": "<i>ℹ️ How are these figures calculated?</i>\n"
+                       "• Average savings assumes always filling at the cheapest station offered by the bot compared to the zone average price.\n"
+                       "• Annual savings assumes 10,000 km per year at an average consumption of:\n",
+    "fuel_consumption": "  - {fuel_name} = {avg_consumption_per_100km}{uom} per 100km",
+    "reset_statistics": "Reset statistics ♻️",
+    "statistics_reset": "✅ Statistics reset successfully!\n\nUse /search to start a search.",
 }

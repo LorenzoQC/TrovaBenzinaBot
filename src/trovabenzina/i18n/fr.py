@@ -7,6 +7,8 @@ TRANSLATIONS = {
     "diesel": "Diesel",
     "cng": "Gaz naturel",
     "lpg": "GPL",
+    "liter_symbol": "L",
+    "kilo_symbol": "kg",
 
     # ─────────── /start ───────────
     "select_language": "Choisir la langue 🌐️",
@@ -48,9 +50,23 @@ TRANSLATIONS = {
     "price": "Prix",
     "eur_symbol": "€",
     "slash_symbol": "/\u200b",
-    "liter_symbol": "L",
-    "kilo_symbol": "kg",
     "below_average": "moins cher que la moyenne",
     "equal_average": "conforme à la moyenne",
     "last_update": "Dernière mise à jour",
+
+    # ─────────── /statistics ───────────
+    "no_statistics": "⚠️ Keine Statistiken verfügbar!\n\nVerwende /search, um eine Suche zu starten.",
+    "statistics": (
+        "<b><u>{fuel_name} Statistiken</u></b> 📊\n"
+        "<b>{num_searches} Suchen</b> durchgeführt.\n"
+        "<b>{num_stations} Stationen</b> analysiert.\n"
+        "Durchschnittliche Einsparung: <b>{avg_eur_save_per_unit} {price_unit}</b>, bzw. <b>{avg_pct_save}%</b>.\n"
+        "Geschätzte jährliche Einsparung: <b>{estimated_annual_save_eur}</b>."
+    ),
+    "statistics_info": "<i>ℹ️ Wie wurden diese Daten berechnet?</i>\n"
+                       "• Die durchschnittliche Einsparung basiert darauf, stets an der günstigsten vom Bot vorgeschlagenen Tankstelle im Vergleich zum Durchschnittspreis der Zone zu tanken.\n"
+                       "• Die jährliche Einsparung basiert auf einer Fahrleistung von 10.000 km pro Jahr bei einem Durchschnittsverbrauch von:\n",
+    "fuel_consumption": "  - {fuel_name} = {avg_consumption_per_100km}{uom} pro 100 km",
+    "reset_statistics": "Statistiken zurücksetzen ♻️",
+    "statistics_reset": "✅ Statistiken erfolgreich zurückgesetzt!\n\nVerwende /search, um eine Suche zu starten.",
 }

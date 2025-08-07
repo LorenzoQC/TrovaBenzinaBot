@@ -60,8 +60,8 @@ TRANSLATIONS = {
         "<b><u>Statistiche {fuel_name}</u></b> 📊\n"
         "<b>{num_searches} ricerche</b> effettuate.\n"
         "<b>{num_stations} distributori</b> analizzati.\n"
-        "Risparmio medio: <b>{avg_eur_save_per_unit} {price_unit}</b>, ovvero il {avg_pct_save}%.\n"
-        "Risparmio annuo stimato: <b>{estimated_annual_save_eur}</b>!"
+        "Risparmio medio: <b>{avg_eur_save_per_unit} {price_unit}</b>, ovvero il <b>{avg_pct_save}%</b>.\n"
+        "Risparmio annuo stimato: <b>{estimated_annual_save_eur}</b>."
     ),
     "statistics_info": "<i>ℹ️ Come abbiamo calcolato questi dati?</i>\n"
                        "• Il risparmio medio è calcolato ipotizzando di effettuare sempre il rifornimento presso il distributore più economico proposto dal bot, confrontandone il prezzo con il prezzo medio della zona.\n"

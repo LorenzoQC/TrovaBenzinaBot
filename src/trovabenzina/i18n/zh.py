@@ -7,6 +7,8 @@ TRANSLATIONS = {
     "diesel": "柴油",
     "cng": "压缩天然气",
     "lpg": "液化石油气",
+    "liter_symbol": "L",
+    "kilo_symbol": "kg",
 
     # ─────────── /start ───────────
     "select_language": "选择语言 🌐️",
@@ -48,9 +50,23 @@ TRANSLATIONS = {
     "price": "价格",
     "eur_symbol": "€",
     "slash_symbol": "/\u200b",
-    "liter_symbol": "L",
-    "kilo_symbol": "kg",
     "below_average": "低于平均水平",
     "equal_average": "与平均水平持平",
     "last_update": "最后更新",
+
+    # ─────────── /statistics ───────────
+    "no_statistics": "⚠️ 暂无可用统计数据！\n\n使用 /search 开启一次搜索。",
+    "statistics": (
+        "<b><u>{fuel_name} 统计</u></b> 📊\n"
+        "<b>共进行 {num_searches} 次搜索</b>。\n"
+        "<b>分析了 {num_stations} 个加油站</b>。\n"
+        "平均节省：<b>{avg_eur_save_per_unit} {price_unit}</b>，即 <b>{avg_pct_save}%</b>。\n"
+        "预计年节省：<b>{estimated_annual_save_eur}</b>。"
+    ),
+    "statistics_info": "<i>ℹ️ 这些数据如何计算？</i>\n"
+                       "• 平均节省基于始终在 bot 推荐的最便宜加油站加油，与区域平均价格对比。\n"
+                       "• 年节省基于每年行驶 10,000 公里，平均油耗为：\n",
+    "fuel_consumption": "  - {fuel_name} = {avg_consumption_per_100km}{uom} 每 100 公里",
+    "reset_statistics": "重置统计数据 ♻️",
+    "statistics_reset": "✅ 统计数据已重置！\n\n使用 /search 开启一次搜索。",
 }
