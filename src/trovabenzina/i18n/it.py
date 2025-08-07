@@ -7,6 +7,8 @@ TRANSLATIONS = {
     "diesel": "Gasolio",
     "cng": "Metano",
     "lpg": "GPL",
+    "liter_symbol": "L",
+    "kilo_symbol": "kg",
 
     # ─────────── /start ───────────
     "select_language": "Seleziona lingua 🌐️",
@@ -48,8 +50,6 @@ TRANSLATIONS = {
     "price": "Prezzo",
     "eur_symbol": "€",
     "slash_symbol": "/\u200b",
-    "liter_symbol": "L",
-    "kilo_symbol": "kg",
     "below_average": "più economico della media",
     "equal_average": "in linea con la media",
     "last_update": "Ultimo aggiornamento",
@@ -62,10 +62,11 @@ TRANSLATIONS = {
         "<b>{num_stations} distributori</b> analizzati.\n"
         "Risparmio medio: <b>{avg_eur_save_per_unit} {price_unit}</b>, ovvero il {avg_pct_save}%.\n"
         "Risparmio annuo stimato: {avg}!\n\n"
-        "ℹ️ Come abbiamo calcolato questi dati?\n"
+        "<i>ℹ️ Come abbiamo calcolato questi dati?</i>\n"
         "• Il risparmio medio è calcolato ipotizzando di effettuare sempre il rifornimento presso il distributore più economico proposto dal bot, confrontandone il prezzo con il prezzo medio della zona.\n"
         "• Il risparmio annuo è calcolato ipotizzando una percorrenza di 10.000km annui con un consumo medio di {avg_consumption_per_100km}{uom} ogni 100km."
     ),
-    "reset_statistics": "Azzera statistiche",
+    "reset_statistics": "Azzera le statistiche ♻️",
+    "statistics reset": "✅ Statistiche resettate correttamente!\n\nUtilizza il comando /search per avviare una ricerca.",
 
 }
