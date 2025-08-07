@@ -83,8 +83,8 @@ async def statistics_ep(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     # combine fuel blocks
     combined = "\n\n".join(blocks)
     # append info and consumption lines
-    combined += "\n\n" + t("statistics_info", lang)
-    combined += "\n" + "\n".join(consumption_lines)
+    combined += "\n\n\n" + t("statistics_info", lang)
+    combined += "\n".join(consumption_lines)
 
     # reset button under combined message
     reset_btn = InlineKeyboardButton(
