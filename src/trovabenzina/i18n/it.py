@@ -66,7 +66,7 @@ TRANSLATIONS = {
     "statistics_info": "<i>ℹ️ Come abbiamo calcolato questi dati?</i>\n"
                        "• Il risparmio medio è calcolato ipotizzando di effettuare sempre il rifornimento presso il distributore più economico proposto dal bot, confrontandone il prezzo con il prezzo medio della zona.\n"
                        "• Il risparmio annuo è calcolato ipotizzando una percorrenza di 10.000km annui con un consumo medio di: \n",
-    "fuel_consumption": " - {avg_consumption_per_100km}{uom} ogni 100km",
+    "fuel_consumption": "  - {fuel_name} = {avg_consumption_per_100km}{uom} ogni 100km",
     "reset_statistics": "Azzera le statistiche ♻️",
     "statistics reset": "✅ Statistiche resettate correttamente!\n\nUtilizza il comando /search per avviare una ricerca.",
 
