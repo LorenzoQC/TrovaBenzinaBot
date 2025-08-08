@@ -1,4 +1,3 @@
-from sqlalchemy import select, func, update as sa_update
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes, CommandHandler, CallbackQueryHandler
@@ -8,10 +7,8 @@ from trovabenzina.i18n import t
 from ..db import (
     get_user_stats,
     get_user,
-    Fuel,
-    Search,
-    User,
-    AsyncSession
+    get_fuels_by_ids_map,
+    soft_delete_user_searches_by_tg_id,
 )
 
 __all__ = ["statistics_handler"]
@@ -33,12 +30,8 @@ async def statistics_ep(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         return
 
     # preload consumption values
-    async with AsyncSession() as session:
-        fuel_ids = [s["fuel_id"] for s in stats]
-        rows = await session.execute(
-            select(Fuel).where(Fuel.id.in_(fuel_ids))
-        )
-        fuels = {f.id: f for f in rows.scalars().all()}
+    fuel_ids = [s["fuel_id"] for s in stats]
+    fuels = await get_fuels_by_ids_map(fuel_ids)
 
     # build per-fuel blocks and collect consumption info
     blocks = []
@@ -118,19 +111,7 @@ async def reset_stats_cb(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     else:
         lang = DEFAULT_LANGUAGE
 
-    async with AsyncSession() as session:
-        res = await session.execute(
-            select(User.id).where(User.tg_id == tg_id)
-        )
-        user_id = res.scalar_one()
-        # mark non-deleted searches as deleted
-        await session.execute(
-            sa_update(Search)
-            .where(Search.user_id == user_id)
-            .where(Search.del_ts.is_(None))
-            .values(del_ts=func.now())
-        )
-        await session.commit()
+    await soft_delete_user_searches_by_tg_id(tg_id)
 
     await query.edit_message_text(
         t("statistics reset", lang)

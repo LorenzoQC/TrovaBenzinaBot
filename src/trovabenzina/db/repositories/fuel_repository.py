@@ -1,6 +1,8 @@
 """Fuel repository: read helpers around the Fuel model."""
 
-from typing import Dict
+from __future__ import annotations
+
+from typing import Dict, Iterable
 
 from sqlalchemy import select
 
@@ -22,20 +24,19 @@ async def get_fuel_map() -> Dict[str, str]:
     return {f.name: f.code for f in fuels}
 
 
-async def get_fuel_id_by_code(code: str) -> int:
-    """Resolve a fuel internal ID from its public code.
+async def get_fuels_by_ids_map(ids: Iterable[int]) -> Dict[int, Fuel]:
+    """Return a dict {fuel_id: Fuel} for the given IDs.
 
     Args:
-        code: Public `Fuel.code`.
+        ids: Iterable of `Fuel.id`.
 
     Returns:
-        int: The internal `Fuel.id`.
-
-    Raises:
-        sqlalchemy.exc.NoResultFound: If the code does not exist.
+        Dict[int, Fuel]: Mapping id -> Fuel instance.
     """
+    ids = list({*ids})
+    if not ids:
+        return {}
     async with AsyncSession() as session:
-        result = await session.execute(
-            select(Fuel.id).where(Fuel.code == code)
-        )
-        return result.scalar_one()
+        rows = await session.execute(select(Fuel).where(Fuel.id.in_(ids)))
+        fuels = rows.scalars().all()
+    return {f.id: f for f in fuels}

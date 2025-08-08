@@ -1,9 +1,10 @@
 """Search repository: writes and analytics helpers for searches."""
 
-from datetime import date
+from __future__ import annotations
+
 from typing import Optional
 
-from sqlalchemy import select
+from sqlalchemy import func, select, update
 
 from ..models import Search, User, Fuel
 from ..session import AsyncSession
@@ -51,29 +52,38 @@ async def save_search(
         await session.commit()
 
 
-async def calculate_monthly_savings(
-        user_id: int,
-        start_date: date,
-        end_date: date,
-) -> float:
-    """Estimate total savings for a user in a period.
-
-    The current heuristic multiplies per-search savings `(avg - min)` by 50
-    (approx. liters/year budget per user). Adjust as needed.
+async def soft_delete_user_searches(user_id: int) -> int:
+    """Soft-delete all active searches for a given user.
 
     Args:
         user_id: Internal `User.id`.
-        start_date: Period start (inclusive).
-        end_date: Period end (inclusive).
 
     Returns:
-        float: Estimated savings in the period.
+        int: Number of rows updated.
     """
     async with AsyncSession() as session:
-        result = await session.execute(
-            select(Search.price_avg, Search.price_min)
+        res = await session.execute(
+            update(Search)
             .where(Search.user_id == user_id)
-            .where(Search.ins_ts.between(start_date, end_date))
+            .where(Search.del_ts.is_(None))
+            .values(del_ts=func.now())
         )
-        rows = result.all()
-    return sum((r.price_avg - r.price_min) * 50 for r in rows)
+        await session.commit()
+        return res.rowcount or 0
+
+
+async def soft_delete_user_searches_by_tg_id(tg_id: int) -> int:
+    """Soft-delete all active searches for a given Telegram user.
+
+    Args:
+        tg_id: Telegram user ID.
+
+    Returns:
+        int: Number of rows updated.
+    """
+    async with AsyncSession() as session:
+        user_id = (await session.execute(
+            select(User.id).where(User.tg_id == tg_id)
+        )).scalar_one()
+
+    return await soft_delete_user_searches(user_id)
