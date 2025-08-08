@@ -82,9 +82,6 @@ def main() -> None:
     app.add_handler(profile_handler)  # /profile
     app.add_handler(search_handler)  # /search
 
-    # Background scheduler setup
-    setup_scheduler(loop, app)
-
     # Debug: list registered handlers
     log.debug("=== HANDLER REGISTRY ===")
     for group, handler_list in app.handlers.items():
