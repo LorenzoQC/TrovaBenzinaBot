@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """Read-only view: per-user, per-fuel aggregated search statistics."""
 
 from decimal import Decimal
@@ -5,12 +7,12 @@ from decimal import Decimal
 from sqlalchemy import Integer, String, Numeric
 from sqlalchemy.orm import Mapped, mapped_column
 
-from .base import Base
+from .base import ViewBase
 
 __all__ = ["VUsersSearchesStats"]
 
 
-class VUsersSearchesStats(Base):
+class VUsersSearchesStats(ViewBase):
     """Maps the SQL view `v_users_searches_stats`."""
 
     __tablename__ = "v_users_searches_stats"

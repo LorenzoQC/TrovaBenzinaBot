@@ -9,9 +9,9 @@ This module exposes:
 - `init_db()`: idempotent database initializer (tables + optional SQL scripts).
 
 Notes:
-    - Models must be imported before `Base.metadata.create_all()` so that all
-      mapped classes are registered. We import the `models` package explicitly
-      for that side effect.
+    - Only entity models (tables) must be registered on `Base` before
+      `create_all()`. View models should inherit from `ViewBase` and are not
+      created by `create_all()`, so they won't clash with CREATE VIEW.
 """
 
 import logging
@@ -22,8 +22,7 @@ from sqlalchemy.engine.url import make_url
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
 from trovabenzina.config import DATABASE_URL
-from .models import Base
-from . import models as _models  # side-effect import: registers all mapped classes
+from .models.base import Base  # import only Base here (not the whole package)
 
 log = logging.getLogger(__name__)
 
@@ -39,23 +38,6 @@ if _url.drivername == "postgresql":
 # Async engine and session factory
 engine = create_async_engine(_url, echo=False, pool_pre_ping=True, future=True)
 AsyncSession = async_sessionmaker(engine, expire_on_commit=False)
-
-
-def _ensure_models_loaded() -> None:
-    """Touch exported symbols to silence linters while ensuring models are imported.
-
-    This function relies on the side effect of importing `.models` above.
-    """
-    _ = (
-        _models.Fuel,
-        _models.Language,
-        _models.User,
-        _models.Search,
-        _models.GeoCache,
-        _models.VGeocodingMonthCalls,
-        _models.VUsersSearchesStats,
-    )
-    return None
 
 
 def _split_sql_naive(sql: str) -> list[str]:
@@ -133,27 +115,21 @@ async def init_db() -> None:
 
     Steps:
         1) Set session time zone to Europe/Rome (server-side).
-        2) Create all tables from SQLAlchemy metadata.
+        2) Create all tables from SQLAlchemy metadata (`Base.metadata.create_all`).
         3) Execute optional SQL scripts (e.g., CREATE OR REPLACE VIEW ...).
 
     Notes:
-        - Ensure models are imported before `create_all()` so that all mappings
-          are present on `Base.metadata`.
+        - Ensure that only *table* models inherit from `Base`. View models
+          must inherit from `ViewBase` and won't be created by `create_all()`.
         - SQL scripts are executed within a transaction; failing statements will
           abort the transaction and raise, making the deploy fail fast.
-
-    Raises:
-        Exception: Propagates any SQL execution error for visibility in logs.
     """
     # Step 1: set TZ and create tables
     async with engine.begin() as conn:
         # Force session timezone (affects NOW(), etc.)
         await conn.execute(text("SET TIME ZONE 'Europe/Rome';"))
 
-        # Ensure models are imported/registered on Base.metadata
-        _ensure_models_loaded()
-
-        # Create tables for all mapped classes
+        # Create tables for all mapped classes on Base
         await conn.run_sync(Base.metadata.create_all)
 
     # Step 2: execute SQL assets (e.g., create/replace views)
