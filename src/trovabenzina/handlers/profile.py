@@ -13,9 +13,9 @@ from telegram.ext import (
 )
 
 from trovabenzina.config import DEFAULT_LANGUAGE, FUEL_MAP, LANGUAGE_MAP
-from trovabenzina.db.crud import get_user, upsert_user
 from trovabenzina.i18n import t
 from trovabenzina.utils import inline_kb, STEP_PROFILE_MENU, STEP_PROFILE_LANGUAGE, STEP_PROFILE_FUEL
+from ..db import get_user, upsert_user
 
 __all__ = ["profile_handler"]
 

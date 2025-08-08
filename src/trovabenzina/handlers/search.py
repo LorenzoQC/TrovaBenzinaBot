@@ -18,15 +18,15 @@ from trovabenzina.config import (
     DEFAULT_LANGUAGE,
     GEOCODE_HARD_CAP,
 )
-from trovabenzina.db.crud import (
+from trovabenzina.i18n import t
+from trovabenzina.utils import STEP_SEARCH_LOCATION
+from ..db import (
     get_user,
     save_search,
     get_geocache,
     save_geocache,
     count_geocoding_month_calls,
 )
-from trovabenzina.i18n import t
-from trovabenzina.utils import STEP_SEARCH_LOCATION
 
 __all__ = ["search_handler"]
 

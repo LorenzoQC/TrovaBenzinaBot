@@ -2,8 +2,8 @@ from telegram import Update
 from telegram.ext import ContextTypes, CommandHandler
 
 from trovabenzina.config import DEFAULT_LANGUAGE
-from trovabenzina.db import get_user
 from trovabenzina.i18n import t
+from ..db import get_user
 
 __all__ = [
     "help_handler",

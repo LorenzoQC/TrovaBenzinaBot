@@ -1,7 +1,7 @@
 import aiohttp
 
 from trovabenzina.config import GEOCODE_HARD_CAP, GOOGLE_API_KEY, GEOCODE_URL
-from trovabenzina.db.crud import get_geocache, count_geocoding_month_calls, save_geocache
+from ..db import get_geocache, count_geocoding_month_calls, save_geocache
 
 __all__ = [
     "geocode",

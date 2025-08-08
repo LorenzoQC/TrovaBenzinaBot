@@ -9,9 +9,9 @@ from telegram.ext import (
 )
 
 from trovabenzina.config import DEFAULT_LANGUAGE, FUEL_MAP, LANGUAGE_MAP
-from trovabenzina.db.crud import upsert_user, get_user
 from trovabenzina.i18n import t
 from trovabenzina.utils import STEP_START_FUEL, STEP_START_LANGUAGE, inline_kb
+from ..db import upsert_user, get_user
 
 __all__ = ["start_handler"]
 

@@ -4,10 +4,15 @@ from telegram.constants import ParseMode
 from telegram.ext import ContextTypes, CommandHandler, CallbackQueryHandler
 
 from trovabenzina.config import DEFAULT_LANGUAGE
-from trovabenzina.db.crud import get_user_stats, get_user
-from trovabenzina.db.models import Fuel, Search, User
-from trovabenzina.db.session import AsyncSession
 from trovabenzina.i18n import t
+from ..db import (
+    get_user_stats,
+    get_user,
+    Fuel,
+    Search,
+    User,
+    AsyncSession
+)
 
 __all__ = ["statistics_handler"]
 

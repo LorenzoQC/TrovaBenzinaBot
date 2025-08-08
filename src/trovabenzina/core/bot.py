@@ -8,11 +8,6 @@ from telegram.ext import (
 from telegram.request import HTTPXRequest
 
 from trovabenzina.config import BOT_TOKEN, BASE_URL
-from trovabenzina.core.scheduler import setup_scheduler
-from trovabenzina.db.crud import (
-    get_fuel_map,
-    get_language_map,
-)
 from trovabenzina.db.session import init_db
 from trovabenzina.db.sync import sync_config_tables
 from trovabenzina.handlers import (
@@ -26,6 +21,7 @@ from trovabenzina.utils import (
     setup_logging,
     describe,
 )
+from ..db import get_fuel_map, get_language_map
 
 # Configure logging
 setup_logging()
