@@ -92,7 +92,7 @@ def _parse_csv_row_for_model(model, row: Dict[str, str]) -> Dict[str, Any]:
             # `code` is handled explicitly by caller
             continue
         col = cols.get(key)
-        if not col:
+        if col is None:
             # Ignore unknown CSV columns silently (we'll warn once at start)
             continue
         out[key] = _cast_for_column(col.type, raw)
