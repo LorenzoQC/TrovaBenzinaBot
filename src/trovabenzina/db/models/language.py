@@ -16,7 +16,7 @@ __all__ = ["Language"]
 
 
 class Language(CodeNameMixin, TimestampMixin, Base):
-    """Language supported by the bot/UI."""
+    """Language supported by the bot."""
 
     __tablename__ = "dom_languages"
 

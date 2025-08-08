@@ -24,7 +24,7 @@ from .session import AsyncSession
 
 log = logging.getLogger(__name__)
 
-# Paths to CSV assets (adjust if your layout changes)
+# Paths to CSV assets
 BASE_DIR = Path(__file__).resolve().parents[3]
 ASSETS_CSV_DIR = BASE_DIR / "assets" / "config" / "csv"
 
@@ -93,7 +93,7 @@ def _parse_csv_row_for_model(model, row: Dict[str, str]) -> Dict[str, Any]:
             continue
         col = cols.get(key)
         if col is None:
-            # Ignore unknown CSV columns silently (we'll warn once at start)
+            # Ignore unknown CSV columns silently
             continue
         out[key] = _cast_for_column(col.type, raw)
     return out

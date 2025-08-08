@@ -22,11 +22,11 @@ from sqlalchemy.engine.url import make_url
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
 from trovabenzina.config import DATABASE_URL
-from .models.base import Base  # import only Base here (not the whole package)
+from .models.base import Base
 
 log = logging.getLogger(__name__)
 
-# Project root and SQL assets directory (adjust if your layout changes)
+# Project root and SQL assets directory
 BASE_DIR = Path(__file__).resolve().parents[3]
 ASSETS_SQL_DIR = BASE_DIR / "assets" / "config" / "sql"
 
