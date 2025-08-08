@@ -11,7 +11,6 @@ from telegram.ext import (
     filters,
 )
 
-from trovabenzina.api import fetch_address, call_api, geocode
 from trovabenzina.config import (
     DEFAULT_RADIUS_NEAR,
     DEFAULT_RADIUS_FAR,
@@ -20,6 +19,7 @@ from trovabenzina.config import (
 )
 from trovabenzina.i18n import t
 from trovabenzina.utils import STEP_SEARCH_LOCATION
+from ..api import get_station_address, search_stations, geocode_address
 from ..db import (
     get_user,
     save_search,
@@ -83,7 +83,7 @@ async def search_receive_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text(t("geocode_cap_reached", lang))
             return STEP_SEARCH_LOCATION
 
-        coords = await geocode(address)
+        coords = await geocode_address(address)
         if not coords:
             await update.message.reply_text(t("invalid_address", lang))
             return STEP_SEARCH_LOCATION
@@ -112,7 +112,7 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
         (DEFAULT_RADIUS_NEAR, "near_label"),
         (DEFAULT_RADIUS_FAR, "far_label")
     ]:
-        res = await call_api(lat, lng, radius, ft)
+        res = await search_stations(lat, lng, radius, ft)
         stations = res.get("results", []) if res else []
         num_stations = len(stations)
 
@@ -211,7 +211,7 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
             link = f"https://www.google.com/maps/dir/?api=1&destination={quote_plus(dest)}"
 
             if not station.get("address"):
-                station["address"] = await fetch_address(station["id"]) or t("no_address", lang)
+                station["address"] = await get_station_address(station["id"]) or t("no_address", lang)
 
             raw_date = station.get("insertDate")
             if raw_date:
