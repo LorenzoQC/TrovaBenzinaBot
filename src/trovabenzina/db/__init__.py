@@ -23,9 +23,7 @@ from .models import (
 from .repositories import (
     # fuels
     get_fuel_map,
-    get_fuel_id_by_code,
     get_fuels_by_ids_map,
-    get_fuel_consumption_map,
     # languages
     get_language_map,
     get_language_id_by_code,
@@ -38,7 +36,6 @@ from .repositories import (
     soft_delete_user_searches_by_tg_id,
     # searches
     save_search,
-    calculate_monthly_savings,
     # geocache
     get_geocache,
     save_geocache,
@@ -68,9 +65,7 @@ __all__ = [
     "init_db",
     # Repositories
     "get_fuel_map",
-    "get_fuel_id_by_code",
     "get_fuels_by_ids_map",
-    "get_fuel_consumption_map",
     "get_language_map",
     "get_language_id_by_code",
     "upsert_user",
@@ -78,7 +73,6 @@ __all__ = [
     "get_user_id_by_tg_id",
     "get_search_users",
     "save_search",
-    "calculate_monthly_savings",
     "soft_delete_user_searches",
     "soft_delete_user_searches_by_tg_id",
     "get_geocache",
