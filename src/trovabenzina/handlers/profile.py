@@ -123,8 +123,8 @@ async def ask_language(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
     context.chat_data["current_state"] = STEP_PROFILE_LANGUAGE
     lang = context.user_data.get("lang", DEFAULT_LANGUAGE)
 
-    # LANGUAGE_MAP is NAME -> CODE
-    kb = inline_menu_from_map(LANGUAGE_MAP, "set_lang", per_row=2)
+    language_choices = {code: name for name, code in LANGUAGE_MAP.items()}
+    kb = inline_menu_from_map(language_choices, "set_lang", per_row=2)
     kb = with_back_row(kb, "profile")
 
     await query.edit_message_text(
@@ -176,8 +176,7 @@ async def ask_fuel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.chat_data["current_state"] = STEP_PROFILE_FUEL
     lang = context.user_data.get("lang", DEFAULT_LANGUAGE)
 
-    # Build translated NAME -> CODE mapping for fuels
-    fuel_choices = {t(name, lang): code for name, code in FUEL_MAP.items()}
+    fuel_choices = {code: t(name, lang) for name, code in FUEL_MAP.items()}
     kb = inline_menu_from_map(fuel_choices, "set_fuel", per_row=2)
     kb = with_back_row(kb, "profile")
 

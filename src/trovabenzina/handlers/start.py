@@ -171,7 +171,7 @@ repeat_lang_prompt = make_repeat_handler(
 )
 
 repeat_fuel_prompt = make_repeat_handler(
-    lambda lang: {t(name, lang): code for name, code in FUEL_MAP.items()},
+    lambda lang: {code: t(name, lang) for name, code in FUEL_MAP.items()},
     "select_fuel",
     "fuel",
     "back_lang",
