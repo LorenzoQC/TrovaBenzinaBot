@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from decimal import Decimal
 from typing import Callable, Optional
 
 try:
@@ -182,5 +181,5 @@ def format_date(
         return _tx(t, lang, "unknown_update", "n/a")
 
 
-def format_directions_url(lat: Decimal, lng: Decimal) -> str:
+def format_directions_url(lat: float, lng: float) -> str:
     return f"https://www.google.com/maps/dir/?api=1&destination={lat},{lng}"

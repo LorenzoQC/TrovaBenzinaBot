@@ -1,8 +1,6 @@
 """Cache of geocoding results."""
 
-from decimal import Decimal
-
-from sqlalchemy import String, Numeric, CheckConstraint
+from sqlalchemy import String, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .base import Base
@@ -22,9 +20,8 @@ class GeoCache(TimestampMixin, Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     address: Mapped[str] = mapped_column(String(255), nullable=False)
-    # Precise numeric for coordinates
-    lat: Mapped[Decimal] = mapped_column(Numeric(9, 6), nullable=False)
-    lng: Mapped[Decimal] = mapped_column(Numeric(9, 6), nullable=False)
+    lat: Mapped[float] = mapped_column(nullable=False)
+    lng: Mapped[float] = mapped_column(nullable=False)
 
     def __repr__(self) -> str:
         return f"GeoCache(id={self.id}, address={self.address}, lat={self.lat}, lng={self.lng})"

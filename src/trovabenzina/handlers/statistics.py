@@ -77,7 +77,7 @@ async def statistics_ep(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         )
 
     combined = "\n\n".join(blocks)
-    combined += "\n\n\n" + t("statistics_info", lang) + "\n" + "\n".join(consumption_lines)
+    combined += "\n\n\n" + t("statistics_info", lang) + "\n".join(consumption_lines)
 
     reset_btn = InlineKeyboardButton(t("reset_statistics", lang), callback_data="reset_stats")
     kb = InlineKeyboardMarkup([[reset_btn]])

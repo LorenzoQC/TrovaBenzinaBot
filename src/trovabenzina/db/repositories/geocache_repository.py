@@ -1,5 +1,4 @@
 """Geocache repository: caching results of geocoding lookups."""
-from decimal import Decimal
 from typing import Optional
 
 from sqlalchemy import delete, func, select, text
@@ -27,7 +26,7 @@ async def get_geocache(address: str) -> Optional[GeoCache]:
         return result.scalar_one_or_none()
 
 
-async def save_geocache(address: str, lat: Decimal, lng: Decimal) -> None:
+async def save_geocache(address: str, lat: float, lng: float) -> None:
     """Insert or update a cache entry for an address.
 
     Args:

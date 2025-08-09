@@ -1,5 +1,4 @@
 import logging
-from decimal import Decimal
 from typing import Optional, Tuple
 
 import aiohttp
@@ -16,7 +15,7 @@ __all__ = ["geocode_address"]
 log = logging.getLogger(__name__)
 
 
-async def geocode_address(addr: str) -> Optional[Tuple[Decimal, Decimal]]:
+async def geocode_address(addr: str) -> Optional[Tuple[float, float]]:
     """Resolve an address to coordinates using Google Geocoding API.
 
     Applies a read-through cache and enforces a monthly hard cap. Returns a
@@ -26,7 +25,7 @@ async def geocode_address(addr: str) -> Optional[Tuple[Decimal, Decimal]]:
         addr: The address to geocode (assumed Italian context).
 
     Returns:
-        Optional[Tuple[Decimal, Decimal]]: (latitude, longitude) if found; else None.
+        Optional[Tuple[float, float]]: (latitude, longitude) if found; else None.
     """
     # Try cached coordinates first
     record = await get_geocache(addr)
@@ -78,7 +77,7 @@ async def geocode_address(addr: str) -> Optional[Tuple[Decimal, Decimal]]:
     if not loc or "lat" not in loc or "lng" not in loc:
         return None
 
-    lat, lng = Decimal(loc["lat"]), Decimal(loc["lng"])
+    lat, lng = float(loc["lat"]), float(loc["lng"])
 
     # Update cache on success (non-blocking on failure)
     try:
