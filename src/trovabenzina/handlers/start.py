@@ -136,7 +136,7 @@ async def start_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 # Handlers via factories
 
 language_selected = make_selection_handler(
-    lambda lang: {t(name, lang): code for name, code in FUEL_MAP.items()},
+    lambda lang: {code: t(name, lang) for name, code in FUEL_MAP.items()},
     "lang",
     "select_fuel",
     "fuel",
@@ -155,14 +155,15 @@ fuel_selected = make_selection_handler(
 )
 
 back_to_lang = make_back_handler(
-    lambda lang: dict(LANGUAGE_MAP.items()),
+    lambda lang: {code: name for name, code in LANGUAGE_MAP.items()},
     "select_language",
     "lang",
     STEP_START_LANGUAGE,
 )
 
+# Repeat prompts
 repeat_lang_prompt = make_repeat_handler(
-    lambda lang: dict(LANGUAGE_MAP.items()),
+    lambda lang: {code: name for name, code in LANGUAGE_MAP.items()},
     "select_language",
     "lang",
     None,
