@@ -1,6 +1,3 @@
-from datetime import datetime
-from urllib.parse import quote_plus
-
 from telegram import Update, KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.constants import ParseMode
 from telegram.ext import (
@@ -19,6 +16,13 @@ from trovabenzina.config import (
 )
 from trovabenzina.i18n import t
 from trovabenzina.utils import STEP_SEARCH_LOCATION
+from trovabenzina.utils.formatting import (
+    format_price_unit,
+    format_price,
+    format_avg_comparison_text,
+    format_date,
+    format_directions_url,
+)
 from ..api import get_station_address, search_stations, geocode_address
 from ..db import (
     get_user,
@@ -26,6 +30,7 @@ from ..db import (
     get_geocache,
     save_geocache,
     count_geocoding_month_calls,
+    get_uom_by_code
 )
 
 __all__ = ["search_handler"]
@@ -96,21 +101,23 @@ async def search_receive_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await run_search(update, ctx)
     return ConversationHandler.END
 
+
 async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
     """Perform two radius searches, filter by fuel, send top 3 below-average and log each."""
     uid = origin.effective_user.id
     fuel_code, lang = await get_user(uid)
     lat = ctx.user_data.get("search_lat")
     lng = ctx.user_data.get("search_lng")
-    price_unit_all = f"{t('eur_symbol', lang)}{t('slash_symbol', lang)}{t('liter_symbol', lang)}"
-    price_unit_cng = f"{t('eur_symbol', lang)}{t('slash_symbol', lang)}{t('kilo_symbol', lang)}"
-    price_unit = price_unit_cng if fuel_code == "3" else price_unit_all
+
+    uom = (await get_uom_by_code(fuel_code)) or "L"
+    price_unit = format_price_unit(uom=uom, t=t, lang=lang)
+
     fid = int(fuel_code)
     ft = f"{fuel_code}-x"
 
     for radius, label_key in [
         (DEFAULT_RADIUS_NEAR, "near_label"),
-        (DEFAULT_RADIUS_FAR, "far_label")
+        (DEFAULT_RADIUS_FAR, "far_label"),
     ]:
         res = await search_stations(lat, lng, radius, ft)
         stations = res.get("results", []) if res else []
@@ -128,10 +135,7 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
         # first filter: by fuelId only
         filtered = []
         for st in stations:
-            fuels = [
-                f for f in st.get("fuels", [])
-                if f.get("fuelId") == fid
-            ]
+            fuels = [f for f in st.get("fuels", []) if f.get("fuelId") == fid]
             if fuels:
                 st["_filtered_fuels"] = fuels
                 filtered.append(st)
@@ -139,63 +143,48 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
         if not filtered:
             await origin.message.reply_text(
                 f"<u>{t(label_key, lang)}</u> 📍\n\n{t('no_stations', lang)}",
-                parse_mode=ParseMode.HTML
+                parse_mode=ParseMode.HTML,
             )
             await save_search(uid, fuel_code, radius, num_stations, None, None)
             continue
 
         # determine target service type based on lowest price fuel; prefer self-service on ties
         all_fuels = [f for st in filtered for f in st["_filtered_fuels"]]
-        min_fuel = min(
-            all_fuels,
-            key=lambda f: (f["price"], not f.get("isSelf"))
-        )
+        min_fuel = min(all_fuels, key=lambda f: (f["price"], not f.get("isSelf")))
         target_is_self = min_fuel.get("isSelf")
 
         # choose cheapest for each station (prefer self-service on price ties) and filter by service type
         for st in filtered:
             st["_chosen_fuel"] = min(
-                st["_filtered_fuels"],
-                key=lambda f: (f["price"], not f.get("isSelf"))
+                st["_filtered_fuels"], key=lambda f: (f["price"], not f.get("isSelf"))
             )
-        filtered = [
-            st for st in filtered
-            if st["_chosen_fuel"].get("isSelf") == target_is_self
-        ]
+        filtered = [st for st in filtered if st["_chosen_fuel"].get("isSelf") == target_is_self]
         num_stations = len(filtered)
 
         if not filtered:
             await origin.message.reply_text(
                 f"<u>{t(label_key, lang)}</u> 📍\n\n{t('no_stations', lang)}",
-                parse_mode=ParseMode.HTML
+                parse_mode=ParseMode.HTML,
             )
             await save_search(uid, fuel_code, radius, num_stations, None, None)
             continue
 
         # calculate average on chosen fuels
-        avg = sum(
-            st["_chosen_fuel"]["price"] for st in filtered
-        ) / len(filtered)
+        avg = sum(st["_chosen_fuel"]["price"] for st in filtered) / len(filtered)
 
         # second filter: only stations with price <= average
-        below_avg = [
-            st for st in filtered
-            if st["_chosen_fuel"]["price"] <= avg
-        ]
+        below_avg = [st for st in filtered if st["_chosen_fuel"]["price"] <= avg]
 
         if not below_avg:
             await origin.message.reply_text(
                 f"<u>{t(label_key, lang)}</u> 📍\n\n{t('no_stations', lang)}",
-                parse_mode=ParseMode.HTML
+                parse_mode=ParseMode.HTML,
             )
             await save_search(uid, fuel_code, radius, num_stations, None, None)
             continue
 
         # sort by ascending price
-        sorted_res = sorted(
-            below_avg,
-            key=lambda r: r["_chosen_fuel"]["price"]
-        )
+        sorted_res = sorted(below_avg, key=lambda r: r["_chosen_fuel"]["price"])
 
         # compute the lowest price among those below average
         lowest = sorted_res[0]["_chosen_fuel"]["price"]
@@ -206,35 +195,29 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
         for i, station in enumerate(sorted_res[:3]):
             f0 = station["_chosen_fuel"]
             price = f0["price"]
-            pct = int(round((avg - price) / avg * 100))
-            dest = f"{station['location']['lat']},{station['location']['lng']}"
-            link = f"https://www.google.com/maps/dir/?api=1&destination={quote_plus(dest)}"
+
+            dir_url = format_directions_url(station['location']['lat'], station['location']['lng'])
 
             if not station.get("address"):
                 station["address"] = await get_station_address(station["id"]) or t("no_address", lang)
 
-            raw_date = station.get("insertDate")
-            if raw_date:
-                dt = datetime.fromisoformat(raw_date)
-                formatted_date = dt.strftime("%d/%m/%Y %H:%M")
-            else:
-                formatted_date = t("unknown_update", lang)
+            # Localized timestamp
+            formatted_date = format_date(station.get("insertDate"), t=t, lang=lang)
 
-            price_note = (
-                t('equal_average', lang) if pct == 0 else f"{pct}% {t('below_average', lang)}"
-            )
+            price_txt = format_price(price, price_unit)
+            price_note = format_avg_comparison_text(price, avg, t=t, lang=lang)
 
             lines.append(
-                f"{medals[i]} <b><a href=\"{link}\">{station['brand']} • {station['name']}</a></b>\n"
+                f"{medals[i]} <b><a href=\"{dir_url}\">{station['brand']} • {station['name']}</a></b>\n"
                 f"• <u>{t('address', lang)}</u>: {station['address']}\n"
-                f"• <u>{t('price', lang)}</u>: <b>{price:.3f} {price_unit}</b>, {price_note}\n"
+                f"• <u>{t('price', lang)}</u>: <b>{price_txt}</b>, {price_note}\n"
                 f"<i>[{t('last_update', lang)}: {formatted_date}]</i>"
             )
 
         header = (
             f"<b><u>{t(label_key, lang)}</u></b> 📍\n"
             f"{num_stations} {t('stations_analyzed', lang)}\n"
-            f"{t('average_zone_price', lang)}: <b>{avg:.3f} {price_unit}</b>\n\n"
+            f"{t('average_zone_price', lang)}: <b>{format_price(avg, price_unit)}</b>\n\n"
         )
 
         await origin.message.reply_text(
@@ -249,7 +232,7 @@ async def run_search(origin, ctx: ContextTypes.DEFAULT_TYPE):
             radius,
             num_stations,
             round(avg, 3),
-            round(lowest, 3)
+            round(lowest, 3),
         )
 
 

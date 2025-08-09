@@ -11,7 +11,7 @@ __all__ = [
 
 
 async def help_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    _, _, lang = await get_user(update.effective_user.id) or (None, None, DEFAULT_LANGUAGE)
+    _, lang = await get_user(update.effective_user.id) or (None, DEFAULT_LANGUAGE)
     await update.message.reply_text(t("help", lang))
 
 

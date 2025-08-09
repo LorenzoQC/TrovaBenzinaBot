@@ -1,4 +1,4 @@
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram import InlineKeyboardMarkup, Update
 from telegram.ext import (
     ContextTypes,
     ConversationHandler,
@@ -10,23 +10,11 @@ from telegram.ext import (
 
 from trovabenzina.config import DEFAULT_LANGUAGE, FUEL_MAP, LANGUAGE_MAP
 from trovabenzina.i18n import t
-from trovabenzina.utils import STEP_START_FUEL, STEP_START_LANGUAGE, inline_kb
+from trovabenzina.utils import STEP_START_FUEL, STEP_START_LANGUAGE
+from trovabenzina.utils.telegram import inline_menu_from_map, with_back_row
 from ..db import upsert_user, get_user
 
 __all__ = ["start_handler"]
-
-
-def build_keyboard(choices, prefix, back_callback=None):
-    """
-    Build an InlineKeyboardMarkup from choices.
-    :param choices: iterable of (key, label)
-    :param prefix: callback_data prefix
-    :param back_callback: callback_data for the back button (optional)
-    """
-    kb = inline_kb([(label, f"{prefix}_{key}") for key, label in choices])
-    if back_callback:
-        kb.append([InlineKeyboardButton("↩", callback_data=back_callback)])
-    return kb
 
 
 def make_selection_handler(
@@ -38,13 +26,10 @@ def make_selection_handler(
         final=False,
         back_callback=None,
 ):
-    """
-    Factory for handlers that set a user_data key and move to the next step or finalize.
-    """
+    """Factory for handlers that set a user_data key and move to the next step or finalize."""
     async def handler(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         query = update.callback_query
         await query.answer()
-        # extract selected value
         value = query.data.split("_", 1)[1]
         ctx.user_data[data_key] = value
 
@@ -57,15 +42,17 @@ def make_selection_handler(
             await query.edit_message_text(t("profile_saved", lang))
             return ConversationHandler.END
 
-        # otherwise prompt next
         lang = ctx.user_data.get("lang", DEFAULT_LANGUAGE)
         choices_map = choices_getter(lang)
-        kb = build_keyboard(choices_map.items(), callback_prefix, back_callback)
+        kb = inline_menu_from_map(choices_map, callback_prefix, per_row=2)
+        if back_callback:
+            kb = with_back_row(kb, back_callback)
         await query.edit_message_text(
             t(prompt_key, lang),
             reply_markup=InlineKeyboardMarkup(kb),
         )
         return next_state
+
     return handler
 
 
@@ -76,20 +63,21 @@ def make_back_handler(
         state,
         back_callback=None,
 ):
-    """
-    Factory for handlers that go back one step.
-    """
+    """Factory for handlers that go back one step."""
     async def handler(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         query = update.callback_query
         await query.answer()
         lang = ctx.user_data.get("lang", DEFAULT_LANGUAGE)
         choices_map = choices_getter(lang)
-        kb = build_keyboard(choices_map.items(), callback_prefix, back_callback)
+        kb = inline_menu_from_map(choices_map, callback_prefix, per_row=2)
+        if back_callback:
+            kb = with_back_row(kb, back_callback)
         await query.edit_message_text(
             t(prompt_key, lang),
             reply_markup=InlineKeyboardMarkup(kb),
         )
         return state
+
     return handler
 
 
@@ -100,12 +88,10 @@ def make_repeat_handler(
         back_callback,
         state,
 ):
-    """
-    Factory for handlers that repeat the prompt on invalid text.
-    """
+    """Factory for handlers that repeat the prompt on invalid text."""
     async def handler(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         chat_id = update.effective_chat.id
-        old_id = ctx.user_data.get('prev_prompt_id')
+        old_id = ctx.user_data.get("prev_prompt_id")
         if old_id:
             try:
                 await ctx.bot.delete_message(chat_id=chat_id, message_id=old_id)
@@ -114,43 +100,43 @@ def make_repeat_handler(
 
         lang = ctx.user_data.get("lang", DEFAULT_LANGUAGE)
         choices_map = choices_getter(lang)
-        kb = build_keyboard(choices_map.items(), callback_prefix, back_callback)
+        kb = inline_menu_from_map(choices_map, callback_prefix, per_row=2)
+        if back_callback:
+            kb = with_back_row(kb, back_callback)
         sent = await update.effective_message.reply_text(
             t(prompt_key, lang),
             reply_markup=InlineKeyboardMarkup(kb),
         )
-        ctx.user_data['prev_prompt_id'] = sent.message_id
+        ctx.user_data["prev_prompt_id"] = sent.message_id
         return state
+
     return handler
 
 
 async def start_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """
-    Entry point for /start: ask user to select language or notify if already registered.
-    """
+    """Entry point for /start: ask user to select language or notify if already registered."""
     existing = await get_user(update.effective_user.id)
     if existing:
         _, lang = existing
         lang = lang or DEFAULT_LANGUAGE
-        await update.effective_message.reply_text(
-            t("user_already_registered", lang)
-        )
+        await update.effective_message.reply_text(t("user_already_registered", lang))
         return ConversationHandler.END
 
-    # new user flow: language selection
-    language_choices = {code: name for name, code in LANGUAGE_MAP.items()}
-    kb = build_keyboard(language_choices.items(), "lang")
+    # Language selection
+    language_choices = dict(LANGUAGE_MAP.items())
+    kb = inline_menu_from_map(language_choices, "lang", per_row=2)
     sent = await update.effective_message.reply_text(
         t("select_language", DEFAULT_LANGUAGE),
         reply_markup=InlineKeyboardMarkup(kb),
     )
-    ctx.user_data['prev_prompt_id'] = sent.message_id
+    ctx.user_data["prev_prompt_id"] = sent.message_id
     return STEP_START_LANGUAGE
 
 
 # Handlers via factories
+
 language_selected = make_selection_handler(
-    lambda lang: {code: t(name, lang) for name, code in FUEL_MAP.items()},
+    lambda lang: {t(name, lang): code for name, code in FUEL_MAP.items()},
     "lang",
     "select_fuel",
     "fuel",
@@ -169,14 +155,14 @@ fuel_selected = make_selection_handler(
 )
 
 back_to_lang = make_back_handler(
-    lambda lang: {code: name for name, code in LANGUAGE_MAP.items()},
+    lambda lang: dict(LANGUAGE_MAP.items()),
     "select_language",
     "lang",
     STEP_START_LANGUAGE,
 )
 
 repeat_lang_prompt = make_repeat_handler(
-    lambda lang: {code: name for name, code in LANGUAGE_MAP.items()},
+    lambda lang: dict(LANGUAGE_MAP.items()),
     "select_language",
     "lang",
     None,
@@ -184,7 +170,7 @@ repeat_lang_prompt = make_repeat_handler(
 )
 
 repeat_fuel_prompt = make_repeat_handler(
-    lambda lang: {code: t(name, lang) for name, code in FUEL_MAP.items()},
+    lambda lang: {t(name, lang): code for name, code in FUEL_MAP.items()},
     "select_fuel",
     "fuel",
     "back_lang",
@@ -195,12 +181,12 @@ start_handler = ConversationHandler(
     entry_points=[CommandHandler("start", start_ep)],
     states={
         STEP_START_LANGUAGE: [
-            CallbackQueryHandler(language_selected, pattern="^lang_"),
+            CallbackQueryHandler(language_selected, pattern=r"^lang_"),
             MessageHandler(filters.ALL, repeat_lang_prompt),
         ],
         STEP_START_FUEL: [
-            CallbackQueryHandler(fuel_selected, pattern="^fuel_"),
-            CallbackQueryHandler(back_to_lang, pattern="^back_lang$"),
+            CallbackQueryHandler(fuel_selected, pattern=r"^fuel_"),
+            CallbackQueryHandler(back_to_lang, pattern=r"^back_lang$"),
             MessageHandler(filters.ALL, repeat_fuel_prompt),
         ],
     },

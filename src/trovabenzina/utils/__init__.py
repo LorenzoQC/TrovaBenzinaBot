@@ -1,4 +1,3 @@
-from .geo import reverse_geocode_or_blank
 from .log import setup_logging, describe
 from .pricing import analyse, fmt
 from .states import (
@@ -9,8 +8,6 @@ from .states import (
 from .telegram import inline_kb
 
 __all__ = [
-    # geo
-    "reverse_geocode_or_blank",
     # log
     "setup_logging", "describe",
     # pricing
