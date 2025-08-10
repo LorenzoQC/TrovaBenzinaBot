@@ -7,6 +7,7 @@ from sqlalchemy.dialects.postgresql import insert
 
 from ..models import User, Fuel, Language, Search
 from ..session import AsyncSession
+from ...config import DEFAULT_LANGUAGE
 
 
 async def upsert_user(
@@ -80,6 +81,48 @@ async def get_user(tg_id: int) -> Optional[Tuple[str, Optional[str]]]:
         )
         row = result.first()
         return None if not row else row
+
+
+async def get_user_fuel_code_by_tg_id(tg_id: int) -> str:
+    """Return the user's preferred fuel code.
+
+    Args:
+        tg_id: Telegram user ID.
+
+    Returns:
+        str: `Fuel.code` for the user.
+
+    Raises:
+        sqlalchemy.exc.NoResultFound: If the user does not exist.
+    """
+    async with AsyncSession() as session:
+        result = await session.execute(
+            select(Fuel.code)
+            .select_from(User)
+            .join(Fuel, User.fuel_id == Fuel.id)
+            .where(User.tg_id == tg_id)
+        )
+        return result.scalar_one()
+
+
+async def get_user_language_code_by_tg_id(tg_id: int) -> str:
+    """Return the user's preferred language code, if set.
+
+    Args:
+        tg_id: Telegram user ID.
+
+    Returns:
+        Optional[str]: `Language.code` or `None` if not set or user not found.
+    """
+    async with AsyncSession() as session:
+        result = await session.execute(
+            select(Language.code)
+            .select_from(User)
+            .outerjoin(Language, User.language_id == Language.id)
+            .where(User.tg_id == tg_id)
+        )
+        code = result.scalar_one_or_none()
+        return code or DEFAULT_LANGUAGE
 
 
 async def get_user_id_by_tg_id(tg_id: int) -> Optional[int]:

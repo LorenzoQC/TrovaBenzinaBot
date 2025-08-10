@@ -1,9 +1,8 @@
 from telegram import Update
 from telegram.ext import ContextTypes, CommandHandler
 
-from trovabenzina.config import DEFAULT_LANGUAGE
-from trovabenzina.i18n import t
-from ..db import get_user
+from ..db import get_user_language_code_by_tg_id
+from ..i18n import t
 
 __all__ = [
     "help_handler",
@@ -11,7 +10,7 @@ __all__ = [
 
 
 async def help_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    _, lang = await get_user(update.effective_user.id) or (None, DEFAULT_LANGUAGE)
+    lang = await get_user_language_code_by_tg_id(update.effective_user.id)
     await update.message.reply_text(t("help", lang))
 
 

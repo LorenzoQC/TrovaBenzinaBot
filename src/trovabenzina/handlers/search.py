@@ -11,7 +11,6 @@ from telegram.ext import (
 from trovabenzina.config import (
     DEFAULT_RADIUS_NEAR,
     DEFAULT_RADIUS_FAR,
-    DEFAULT_LANGUAGE,
     GEOCODE_HARD_CAP,
 )
 from trovabenzina.i18n import t
@@ -30,7 +29,8 @@ from ..db import (
     get_geocache,
     save_geocache,
     count_geocoding_month_calls,
-    get_uom_by_code
+    get_uom_by_code,
+    get_user_language_code_by_tg_id,
 )
 
 __all__ = ["search_handler"]
@@ -38,8 +38,7 @@ __all__ = ["search_handler"]
 
 async def search_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     """Handle /search command: ask user for address or location."""
-    uid = update.effective_user.id
-    _, lang = await get_user(uid) or (None, DEFAULT_LANGUAGE)
+    lang = await get_user_language_code_by_tg_id(update.effective_user.id)
 
     button = KeyboardButton(text=t("send_location", lang), request_location=True)
     kb = ReplyKeyboardMarkup([[button]], one_time_keyboard=True, resize_keyboard=True)
@@ -53,8 +52,7 @@ async def search_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 async def search_receive_location(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     """Receive a location and perform the search."""
-    uid = update.effective_user.id
-    _, lang = await get_user(uid) or (None, DEFAULT_LANGUAGE)
+    lang = await get_user_language_code_by_tg_id(update.effective_user.id)
     proc_msg = await update.message.reply_text(
         t("processing_search", lang),
         reply_markup=ReplyKeyboardRemove(),
@@ -70,8 +68,7 @@ async def search_receive_location(update: Update, ctx: ContextTypes.DEFAULT_TYPE
 
 async def search_receive_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     """Receive an address, geocode (with cache) and perform the search."""
-    uid = update.effective_user.id
-    _, lang = await get_user(uid) or (None, DEFAULT_LANGUAGE)
+    lang = await get_user_language_code_by_tg_id(update.effective_user.id)
     proc_msg = await update.message.reply_text(
         t("processing_search", lang),
         reply_markup=ReplyKeyboardRemove(),

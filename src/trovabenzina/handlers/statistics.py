@@ -14,6 +14,7 @@ from ..db import (
     get_user_stats,
     get_user,
     get_fuels_by_ids_map,
+    get_user_language_code_by_tg_id,
     soft_delete_user_searches_by_tg_id,
 )
 
@@ -23,8 +24,7 @@ __all__ = ["statistics_handler"]
 async def statistics_ep(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handler for /statistics command: shows per-fuel stats or a no-data message."""
     tg_id = update.effective_user.id
-    user_row = await get_user(tg_id)
-    _, lang = user_row if user_row else (None, DEFAULT_LANGUAGE)
+    lang = get_user_language_code_by_tg_id(tg_id)
 
     stats = await get_user_stats(tg_id)
     if not stats:

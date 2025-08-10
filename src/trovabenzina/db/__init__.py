@@ -31,6 +31,8 @@ from .repositories import (
     # users
     upsert_user,
     get_user,
+    get_user_language_code_by_tg_id,
+    get_user_fuel_code_by_tg_id,
     get_user_id_by_tg_id,
     get_search_users,
     soft_delete_user_searches,
@@ -72,6 +74,8 @@ __all__ = [
     "get_language_id_by_code",
     "upsert_user",
     "get_user",
+    "get_user_language_code_by_tg_id",
+    "get_user_fuel_code_by_tg_id",
     "get_user_id_by_tg_id",
     "get_search_users",
     "save_search",

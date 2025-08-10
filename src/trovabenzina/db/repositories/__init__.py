@@ -17,7 +17,14 @@ from .search_repository import (
     soft_delete_user_searches_by_tg_id,
 )
 from .stats_repository import count_geocoding_month_calls, get_user_stats
-from .user_repository import upsert_user, get_user, get_user_id_by_tg_id, get_search_users
+from .user_repository import (
+    upsert_user,
+    get_user,
+    get_user_language_code_by_tg_id,
+    get_user_fuel_code_by_tg_id,
+    get_user_id_by_tg_id,
+    get_search_users,
+)
 
 __all__ = [
     "get_fuel_map",
@@ -27,6 +34,8 @@ __all__ = [
     "get_language_id_by_code",
     "upsert_user",
     "get_user",
+    "get_user_language_code_by_tg_id",
+    "get_user_fuel_code_by_tg_id",
     "get_user_id_by_tg_id",
     "get_search_users",
     "save_search",
