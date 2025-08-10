@@ -258,8 +258,8 @@ async def run_search(
     # Inline radius controls only on the initial 5 km message
     reply_markup = None
     if show_radius_cta:
-        narrow_label = t("btn_narrow", lang, radius="2.5 km")
-        widen_label = t("btn_widen", lang, radius="7.5 km")
+        narrow_label = t("btn_narrow", lang, radius="2.5")
+        widen_label = t("btn_widen", lang, radius="7.5")
         reply_markup = InlineKeyboardMarkup(
             [
                 [

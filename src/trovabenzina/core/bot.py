@@ -15,6 +15,7 @@ from trovabenzina.handlers import (
     help_handler,
     profile_handler,
     search_handler,
+    radius_callback_handler,
     statistics_handler,
 )
 from trovabenzina.utils import (
@@ -81,6 +82,7 @@ def main() -> None:
     app.add_handler(help_handler)  # /help
     app.add_handler(profile_handler)  # /profile
     app.add_handler(search_handler)  # /search
+    app.add_handler(radius_callback_handler)  # /search radius callbacks
 
     # Debug: list registered handlers
     log.debug("=== HANDLER REGISTRY ===")
