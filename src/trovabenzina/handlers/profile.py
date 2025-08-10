@@ -143,7 +143,7 @@ async def save_language(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
     await query.answer()
     uid = update.effective_user.id
     username = update.effective_user.username
-    new_lang = query.data.split("_", 1)[1]  # expects "set_lang_<code>"
+    new_lang = query.data.split("_", 2)[2]  # expects "set_lang_<code>"
 
     # persist new language
     fuel_code, _ = (await _get_or_create_defaults(uid, username))[:2]
@@ -197,9 +197,7 @@ async def save_fuel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
     uid = update.effective_user.id
     username = update.effective_user.username
-    new_fuel = query.data.split("_", 1)[1]  # expects "set_fuel_<code>"
-    log.debug(query.data)
-    log.debug(new_fuel)
+    new_fuel = query.data.split("_", 2)[2]  # expects "set_fuel_<code>"
 
     # persist new fuel
     _, lang_code = await _get_or_create_defaults(uid, username)
