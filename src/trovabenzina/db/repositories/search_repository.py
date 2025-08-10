@@ -13,7 +13,7 @@ from ..session import AsyncSession
 async def save_search(
         tg_id: int,
         fuel_code: str,
-        radius: int,
+        radius: float,
         num_stations: int,
         price_avg: Optional[float] = None,
         price_min: Optional[float] = None,

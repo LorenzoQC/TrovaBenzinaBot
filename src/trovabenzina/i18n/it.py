@@ -37,12 +37,11 @@ TRANSLATIONS = {
     # ─────────── /search ───────────
     "ask_location": "Digita un indirizzo oppure invia la tua posizione 📍",
     "send_location": "Invia posizione GPS 🌍",
-    "geocode_cap_reached": "⚠️ Riconoscimento indirizzo al momento non disponibile!\n.Per favore riprova più tardi, oppure invia la tua posizione.",
+    "geocode_cap_reached": "⚠️ Riconoscimento indirizzo al momento non disponibile!\nPer favore riprova più tardi, oppure invia la tua posizione.",
     "invalid_address": "⚠️ Indirizzo non valido",
     "processing_search": "Ricerca in corso...🔍",
     "no_stations": "❌ Nessun distributore trovato",
-    "near_label": "Distributori nel raggio di 2 km",
-    "far_label": "Distributori nel raggio di 7 km",
+    "area_label": "Distributori nel raggio di {radius} km",
     "stations_analyzed": "stazioni analizzate",
     "average_zone_price": "Prezzo medio della zona",
     "address": "Indirizzo",
@@ -53,6 +52,9 @@ TRANSLATIONS = {
     "below_average": "più economico della media",
     "equal_average": "in linea con la media",
     "last_update": "Ultimo aggiornamento",
+    "btn_narrow": "Mostra risultati entro {radius} km",
+    "btn_widen": "Mostra risultati fino a {radius} km",
+    "search_session_expired": "⚠️ Sessione scaduta!\nUtilizza il comando /search per avviare una nuova ricerca.",
 
     # ─────────── /statistics ───────────
     "no_statistics": "⚠️ Nessuna statistica disponibile!\n\nUtilizza il comando /search per avviare una ricerca.",

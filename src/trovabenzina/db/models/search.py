@@ -37,7 +37,7 @@ class Search(TimestampMixin, Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     fuel_id: Mapped[int] = mapped_column(ForeignKey("dom_fuels.id"), nullable=False)
 
-    radius: Mapped[int] = mapped_column(Integer, nullable=False)
+    radius: Mapped[float] = mapped_column(nullable=False)
     num_stations: Mapped[int] = mapped_column(Integer, nullable=False)
     price_avg: Mapped[Optional[Decimal]] = mapped_column(Numeric(10, 4), nullable=True)
     price_min: Mapped[Optional[Decimal]] = mapped_column(Numeric(10, 4), nullable=True)
