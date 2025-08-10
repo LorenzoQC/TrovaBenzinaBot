@@ -69,7 +69,7 @@ def format_price_unit(
     Returns:
         Localized unit string '€/<unit>'.
     """
-    if uom.strip().lower() in {"kg", "kilogram"}:
+    if uom.strip().lower() in {"kg", "kilogram", "kilo"}:
         unit_suffix = symbol_kilo(t, lang)
     else:
         unit_suffix = symbol_liter(t, lang)
