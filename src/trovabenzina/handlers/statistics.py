@@ -96,7 +96,7 @@ async def reset_stats_cb(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     lang = await get_user_language_code_by_tg_id(tg_id)
 
     await soft_delete_user_searches_by_tg_id(tg_id)
-    await query.edit_message_text(t("statistics reset", lang))
+    await query.edit_message_text(t("statistics_reset", lang))
 
 
 statistics_handler = [

@@ -68,6 +68,6 @@ TRANSLATIONS = {
                        "• Il risparmio annuo è calcolato ipotizzando una percorrenza di 10.000km annui con un consumo medio di: \n",
     "fuel_consumption": "  - {fuel_name} = {avg_consumption_per_100km}{uom} ogni 100km",
     "reset_statistics": "Azzera le statistiche ♻️",
-    "statistics reset": "✅ Statistiche resettate correttamente!\n\nUtilizza il comando /search per avviare una ricerca.",
+    "statistics_reset": "✅ Statistiche resettate correttamente!\n\nUtilizza il comando /search per avviare una ricerca.",
 
 }
