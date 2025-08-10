@@ -208,7 +208,7 @@ async def run_search(
 
     if not below_avg:
         await msg_obj.reply_text(
-            f"<u>{t('area_label', lang)}</u> 📍\n\n{t('no_stations', lang)}",
+            f"<u>{t('area_label', lang, radius=radius_km)}</u> 📍\n\n{t('no_stations', lang)}",
             parse_mode=ParseMode.HTML,
         )
         await save_search(uid, fuel_code, radius_km, num_stations, None, None)
@@ -250,7 +250,7 @@ async def run_search(
         )
 
     header = (
-        f"<b><u>{t('area_label', lang)}</u></b> 📍\n"
+        f"<b><u>{t('area_label', lang, radius=radius_km)}</u></b> 📍\n"
         f"{num_stations} {t('stations_analyzed', lang)}\n"
         f"{t('average_zone_price', lang)}: <b>{format_price(avg, price_unit)}</b>\n\n"
     )
