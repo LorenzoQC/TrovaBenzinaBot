@@ -24,7 +24,7 @@ __all__ = ["statistics_handler"]
 async def statistics_ep(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handler for /statistics command: shows per-fuel stats or a no-data message."""
     tg_id = update.effective_user.id
-    lang = get_user_language_code_by_tg_id(tg_id)
+    lang = await get_user_language_code_by_tg_id(tg_id)
 
     stats = await get_user_stats(tg_id)
     if not stats:
