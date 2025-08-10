@@ -8,11 +8,13 @@ from telegram.ext import (
     filters,
 )
 
-from trovabenzina.config import DEFAULT_LANGUAGE, FUEL_MAP, LANGUAGE_MAP
-from trovabenzina.i18n import t
-from trovabenzina.utils import STEP_START_FUEL, STEP_START_LANGUAGE
-from trovabenzina.utils.telegram import inline_menu_from_map, with_back_row
+from ..config import DEFAULT_LANGUAGE, FUEL_MAP, LANGUAGE_MAP
 from ..db import upsert_user, get_user
+from ..i18n import t
+from ..utils import (
+    STEP_START_FUEL, STEP_START_LANGUAGE,
+    inline_menu_from_map, with_back_row,
+)
 
 __all__ = ["start_handler"]
 

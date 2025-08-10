@@ -18,6 +18,7 @@ __all__ = [
     "pct_delta_from_avg",
     "format_avg_comparison_text",
     "format_date",
+    "format_directions_url",
 ]
 
 TFunc = Optional[Callable[[str, Optional[str]], str]]

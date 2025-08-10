@@ -14,19 +14,17 @@ from telegram.ext import (
     ContextTypes,
 )
 
-from trovabenzina.config import DEFAULT_LANGUAGE, FUEL_MAP, LANGUAGE_MAP
-from trovabenzina.i18n import t
-from trovabenzina.utils import STEP_PROFILE_MENU, STEP_PROFILE_LANGUAGE, STEP_PROFILE_FUEL
-from trovabenzina.utils.telegram import inline_kb, inline_menu_from_map, with_back_row
+from ..config import DEFAULT_LANGUAGE, FUEL_MAP, LANGUAGE_MAP
 from ..db import get_user, upsert_user
+from ..i18n import t
+from ..utils import (
+    STEP_PROFILE_MENU, STEP_PROFILE_LANGUAGE, STEP_PROFILE_FUEL,
+    inline_kb, inline_menu_from_map, with_back_row
+)
 
 __all__ = ["profile_handler"]
 
 log = logging.getLogger(__name__)
-
-
-async def exit_profile(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    return ConversationHandler.END
 
 
 # ---------------------------------------------------------------------------
@@ -259,9 +257,6 @@ profile_handler = ConversationHandler(
             MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),
         ],
     },
-    fallbacks=[
-        MessageHandler(filters.COMMAND, exit_profile),
-    ],
     block=False,
     allow_reentry=True,
 )

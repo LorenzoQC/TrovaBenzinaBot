@@ -2,20 +2,18 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes, CommandHandler, CallbackQueryHandler
 
-from trovabenzina.config import DEFAULT_LANGUAGE
-from trovabenzina.i18n import t
-from trovabenzina.utils.formatting import (
+from ..db import (
+    get_user_stats,
+    get_fuels_by_ids_map,
+    get_user_language_code_by_tg_id,
+    soft_delete_user_searches_by_tg_id,
+)
+from ..i18n import t
+from ..utils import (
     format_price_unit,
     symbol_kilo,
     symbol_liter,
     symbol_eur,
-)
-from ..db import (
-    get_user_stats,
-    get_user,
-    get_fuels_by_ids_map,
-    get_user_language_code_by_tg_id,
-    soft_delete_user_searches_by_tg_id,
 )
 
 __all__ = ["statistics_handler"]
@@ -95,8 +93,7 @@ async def reset_stats_cb(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     query = update.callback_query
     await query.answer()
     tg_id = update.effective_user.id
-    user_row = await get_user(tg_id)
-    lang = user_row[1] if user_row else DEFAULT_LANGUAGE
+    lang = await get_user_language_code_by_tg_id(tg_id)
 
     await soft_delete_user_searches_by_tg_id(tg_id)
     await query.edit_message_text(t("statistics reset", lang))

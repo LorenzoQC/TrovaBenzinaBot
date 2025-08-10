@@ -21,7 +21,7 @@ from sqlalchemy import text
 from sqlalchemy.engine.url import make_url
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
-from trovabenzina.config import DATABASE_URL
+from ..config import DATABASE_URL
 from .models.base import Base
 
 log = logging.getLogger(__name__)

@@ -8,21 +8,12 @@ from telegram.ext import (
     filters,
 )
 
-from trovabenzina.config import (
+from ..api import get_station_address, search_stations, geocode_address
+from ..config import (
     DEFAULT_RADIUS_NEAR,
     DEFAULT_RADIUS_FAR,
     GEOCODE_HARD_CAP,
 )
-from trovabenzina.i18n import t
-from trovabenzina.utils import STEP_SEARCH_LOCATION
-from trovabenzina.utils.formatting import (
-    format_price_unit,
-    format_price,
-    format_avg_comparison_text,
-    format_date,
-    format_directions_url,
-)
-from ..api import get_station_address, search_stations, geocode_address
 from ..db import (
     get_user,
     save_search,
@@ -31,6 +22,15 @@ from ..db import (
     count_geocoding_month_calls,
     get_uom_by_code,
     get_user_language_code_by_tg_id,
+)
+from ..i18n import t
+from ..utils import (
+    STEP_SEARCH_LOCATION,
+    format_price_unit,
+    format_price,
+    format_avg_comparison_text,
+    format_date,
+    format_directions_url,
 )
 
 __all__ = ["search_handler"]
