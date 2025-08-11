@@ -264,6 +264,7 @@ async def radius_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     lang = await get_user_language_code_by_tg_id(update.effective_user.id)
 
+    # Anti double tap
     if ctx.user_data.get("radius_processing"):
         await query.answer(t("please_wait", lang))
         return
@@ -273,7 +274,15 @@ async def radius_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await query.answer()
         data = (query.data or "").strip()
 
-        # 1) Remove ALL buttons from the source message (the 5 km message)
+        # Track clicked radii in-session
+        clicked = set(ctx.user_data.get("radius_clicked") or set())
+        if data == _CB_NARROW:
+            clicked.add("2.5")
+        elif data == _CB_WIDEN:
+            clicked.add("7.5")
+        ctx.user_data["radius_clicked"] = clicked
+
+        # 1) Remove ALL buttons from the source message (5 km o il follow-up corrente)
         try:
             await query.edit_message_reply_markup(reply_markup=None)
         except Exception:
@@ -286,11 +295,14 @@ async def radius_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         )
         ctx.user_data["processing_msg_id"] = proc.message_id
 
-        # 3) Run search and offer only the remaining radius in the NEW message
+        # 3) Compute remaining offer (if any) and run search
+        remaining = {"2.5", "7.5"} - clicked
         if data == _CB_NARROW:
-            await run_search(update, ctx, radius_km=2.5, followup_offer_radius=7.5)
+            offer = 7.5 if "7.5" in remaining else None
+            await run_search(update, ctx, radius_km=2.5, followup_offer_radius=offer)
         elif data == _CB_WIDEN:
-            await run_search(update, ctx, radius_km=7.5, followup_offer_radius=2.5)
+            offer = 2.5 if "2.5" in remaining else None
+            await run_search(update, ctx, radius_km=7.5, followup_offer_radius=offer)
     finally:
         ctx.user_data["radius_processing"] = False
 
