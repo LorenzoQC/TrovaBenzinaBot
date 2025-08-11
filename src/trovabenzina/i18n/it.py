@@ -40,6 +40,7 @@ TRANSLATIONS = {
     "geocode_cap_reached": "⚠️ Riconoscimento indirizzo al momento non disponibile!\nPer favore riprova più tardi, oppure invia la tua posizione.",
     "invalid_address": "⚠️ Indirizzo non valido",
     "processing_search": "Ricerca in corso...🔍",
+    "please_wait": "Operazione in corso, attendi un attimo...⏳",
     "no_stations": "❌ Nessun distributore trovato",
     "area_label": "Distributori nel raggio di {radius} km",
     "stations_analyzed": "stazioni analizzate",

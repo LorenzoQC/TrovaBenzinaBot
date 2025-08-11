@@ -69,6 +69,10 @@ async def search_receive_location(update: Update, ctx: ContextTypes.DEFAULT_TYPE
     ctx.user_data["search_lat"] = loc.latitude
     ctx.user_data["search_lng"] = loc.longitude
 
+    # Reset session-click state
+    ctx.user_data["radius_clicked"] = set()
+    ctx.user_data.pop("radius_processing", None)
+
     await run_search(update, ctx, radius_km=_INITIAL_RADIUS, show_radius_cta=True)
     return ConversationHandler.END
 
@@ -102,6 +106,10 @@ async def search_receive_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     ctx.user_data["search_lat"] = lat
     ctx.user_data["search_lng"] = lng
+
+    # Reset session-click state
+    ctx.user_data["radius_clicked"] = set()
+    ctx.user_data.pop("radius_processing", None)
 
     await run_search(update, ctx, radius_km=_INITIAL_RADIUS, show_radius_cta=True)
     return ConversationHandler.END
@@ -163,7 +171,7 @@ async def run_search(
         await save_search(uid, fuel_code, radius_km, num_stations, None, None)
         return
 
-    # Prefer self-service on price ties
+    # Prefer self-service on ties
     all_fuels = [f for st in filtered for f in st["_filtered_fuels"]]
     min_fuel = min(all_fuels, key=lambda f: (f["price"], not f.get("isSelf")))
     target_is_self = min_fuel.get("isSelf")
@@ -197,7 +205,6 @@ async def run_search(
     sorted_res = sorted(below_avg, key=lambda r: r["_chosen_fuel"]["price"])
     lowest = sorted_res[0]["_chosen_fuel"]["price"]
 
-    # Build message
     lines = []
     medals = ["🥇", "🥈", "🥉"]
     for i, station in enumerate(sorted_res[:3]):
@@ -206,16 +213,13 @@ async def run_search(
         dir_url = format_directions_url(
             station["location"]["lat"], station["location"]["lng"]
         )
-
         if not station.get("address"):
             station["address"] = await get_station_address(station["id"]) or t(
                 "no_address", lang
             )
-
         formatted_date = format_date(station.get("insertDate"), t=t, lang=lang)
         price_txt = format_price(price, price_unit)
         price_note = format_avg_comparison_text(price, avg, t=t, lang=lang)
-
         lines.append(
             f"{medals[i]} <b><a href=\"{dir_url}\">{station['brand']} • {station['name']}</a></b>\n"
             f"• <u>{t('address', lang)}</u>: {station['address']}\n"
@@ -232,11 +236,14 @@ async def run_search(
     # Inline radius controls only on the initial 5 km message (one per row)
     reply_markup = None
     if show_radius_cta:
-        items = [
-            (t("btn_narrow", lang, radius="2.5"), _CB_NARROW),
-            (t("btn_widen", lang, radius="7.5"), _CB_WIDEN),
-        ]
-        reply_markup = InlineKeyboardMarkup(inline_kb(items, per_row=1))
+        clicked = set(ctx.user_data.get("radius_clicked") or set())
+        items = []
+        if "2.5" not in clicked:
+            items.append((t("btn_narrow", lang, radius="2.5"), _CB_NARROW))
+        if "7.5" not in clicked:
+            items.append((t("btn_widen", lang, radius="7.5"), _CB_WIDEN))
+        if items:
+            reply_markup = InlineKeyboardMarkup(inline_kb(items, per_row=1))
 
     await msg_obj.reply_text(
         header + "\n\n".join(lines),
@@ -261,35 +268,53 @@ async def radius_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     """Handle inline buttons to refine radius to 2.5 km or 7.5 km."""
     query = update.callback_query
     lang = await get_user_language_code_by_tg_id(update.effective_user.id)
-    await query.answer()
 
-    data = (query.data or "").strip()
+    # Anti double tap guard
+    if ctx.user_data.get("radius_processing"):
+        await query.answer(t("please_wait", lang))
+        return
+    ctx.user_data["radius_processing"] = True
 
-    # Remove the clicked button from the original 5 km message before results appear
     try:
+        await query.answer()
+
+        data = (query.data or "").strip()
+
+        # Track clicked radii in-session
+        clicked = set(ctx.user_data.get("radius_clicked") or set())
         if data == _CB_NARROW:
-            items = [(t("btn_widen", lang, radius="7.5"), _CB_WIDEN)]
+            clicked.add("2.5")
         elif data == _CB_WIDEN:
-            items = [(t("btn_narrow", lang, radius="2.5"), _CB_NARROW)]
-        else:
-            items = []
+            clicked.add("7.5")
+        ctx.user_data["radius_clicked"] = clicked
 
-        new_kb = InlineKeyboardMarkup(inline_kb(items, per_row=1)) if items else None
-        await query.edit_message_reply_markup(reply_markup=new_kb)
-    except Exception:
-        pass  # ignore race conditions
+        # Build the remaining buttons dynamically (never re-show clicked ones)
+        items = []
+        if "2.5" not in clicked:
+            items.append((t("btn_narrow", lang, radius="2.5"), _CB_NARROW))
+        if "7.5" not in clicked:
+            items.append((t("btn_widen", lang, radius="7.5"), _CB_WIDEN))
 
-    # Show 'processing' message (auto-removed by run_search)
-    proc = await query.message.reply_text(
-        t("processing_search", lang),
-        reply_markup=ReplyKeyboardRemove(),
-    )
-    ctx.user_data["processing_msg_id"] = proc.message_id
+        try:
+            new_kb = InlineKeyboardMarkup(inline_kb(items, per_row=1)) if items else None
+            await query.edit_message_reply_markup(reply_markup=new_kb)
+        except Exception:
+            pass  # already edited, ignore
 
-    if data == _CB_NARROW:
-        await run_search(update, ctx, radius_km=2.5, show_radius_cta=False)
-    elif data == _CB_WIDEN:
-        await run_search(update, ctx, radius_km=7.5, show_radius_cta=False)
+        # Show 'processing' message (auto-removed by run_search)
+        proc = await query.message.reply_text(
+            t("processing_search", lang),
+            reply_markup=ReplyKeyboardRemove(),
+        )
+        ctx.user_data["processing_msg_id"] = proc.message_id
+
+        # Run the requested search (no CTA on follow-ups)
+        if data == _CB_NARROW:
+            await run_search(update, ctx, radius_km=2.5, show_radius_cta=False)
+        elif data == _CB_WIDEN:
+            await run_search(update, ctx, radius_km=7.5, show_radius_cta=False)
+    finally:
+        ctx.user_data["radius_processing"] = False
 
 
 # Exported handlers
