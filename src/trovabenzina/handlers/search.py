@@ -23,6 +23,7 @@ from ..db import (
     count_geocoding_month_calls,
     get_uom_by_code,
     get_user_language_code_by_tg_id,
+    get_fuel_name_by_code,
 )
 from ..i18n import t
 from ..utils import (
@@ -38,16 +39,12 @@ from ..utils.telegram import inline_kb
 
 __all__ = ["search_handler", "radius_callback_handler"]
 
-# Callback data identifiers
-_CB_NARROW = "search:r=2.5"  # 2.5 km
-_CB_WIDEN = "search:r=7.5"  # 7.5 km
-
-# Initial radius in km
+_CB_NARROW = "search:r=2.5"
+_CB_WIDEN = "search:r=7.5"
 _INITIAL_RADIUS = 5.0
 
 
 async def search_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Handle /search command: ask user for address or location (no GPS keyboard)."""
     lang = await get_user_language_code_by_tg_id(update.effective_user.id)
     await update.message.reply_text(
         t("ask_location", lang),
@@ -57,7 +54,6 @@ async def search_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 
 async def search_receive_location(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Receive a location and perform the initial 5 km search."""
     lang = await get_user_language_code_by_tg_id(update.effective_user.id)
     proc_msg = await update.message.reply_text(
         t("processing_search", lang),
@@ -69,24 +65,21 @@ async def search_receive_location(update: Update, ctx: ContextTypes.DEFAULT_TYPE
     ctx.user_data["search_lat"] = loc.latitude
     ctx.user_data["search_lng"] = loc.longitude
 
-    # Reset session-click state
-    ctx.user_data["radius_clicked"] = set()
-    ctx.user_data.pop("radius_processing", None)
+    ctx.user_data["radius_processing"] = False
 
-    await run_search(update, ctx, radius_km=_INITIAL_RADIUS, show_radius_cta=True)
+    await run_search(update, ctx, radius_km=_INITIAL_RADIUS, show_initial_cta=True)
     return ConversationHandler.END
 
 
 async def search_receive_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Receive an address, geocode (with cache) and perform the initial 5 km search."""
     lang = await get_user_language_code_by_tg_id(update.effective_user.id)
     proc_msg = await update.message.reply_text(
         t("processing_search", lang),
         reply_markup=ReplyKeyboardRemove(),
     )
     ctx.user_data["processing_msg_id"] = proc_msg.message_id
-    address = update.message.text.strip()
 
+    address = update.message.text.strip()
     record = await get_geocache(address)
     if record:
         lat, lng = record.lat, record.lng
@@ -95,23 +88,18 @@ async def search_receive_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         if stats >= GEOCODE_HARD_CAP:
             await update.message.reply_text(t("geocode_cap_reached", lang))
             return STEP_SEARCH_LOCATION
-
         coords = await geocode_address(address)
         if not coords:
             await update.message.reply_text(t("invalid_address", lang))
             return STEP_SEARCH_LOCATION
-
         lat, lng = coords
         await save_geocache(address, lat, lng)
 
     ctx.user_data["search_lat"] = lat
     ctx.user_data["search_lng"] = lng
+    ctx.user_data["radius_processing"] = False
 
-    # Reset session-click state
-    ctx.user_data["radius_clicked"] = set()
-    ctx.user_data.pop("radius_processing", None)
-
-    await run_search(update, ctx, radius_km=_INITIAL_RADIUS, show_radius_cta=True)
+    await run_search(update, ctx, radius_km=_INITIAL_RADIUS, show_initial_cta=True)
     return ConversationHandler.END
 
 
@@ -120,9 +108,10 @@ async def run_search(
         ctx: ContextTypes.DEFAULT_TYPE,
         *,
         radius_km: float,
-        show_radius_cta: bool = False,
+        show_initial_cta: bool = False,
+        followup_offer_radius: float | None = None,
 ):
-    """Perform a single-radius search, filter by fuel, send top 3 below-average, and log."""
+    """Do one search, render results, optionally attach inline buttons."""
     msg_obj = getattr(origin, "message", None)
     if msg_obj is None and getattr(origin, "callback_query", None):
         msg_obj = origin.callback_query.message
@@ -131,13 +120,14 @@ async def run_search(
     fuel_code, lang = await get_user(uid)
     lat = ctx.user_data.get("search_lat")
     lng = ctx.user_data.get("search_lng")
-
     if lat is None or lng is None:
         await msg_obj.reply_text(t("search_session_expired", lang))
         return
 
+    # fuel meta
     uom = (await get_uom_by_code(fuel_code)) or "L"
     price_unit = format_price_unit(uom=uom, t=t, lang=lang)
+    fuel_name = await get_fuel_name_by_code(fuel_code)
 
     fid = int(fuel_code)
     ft = f"{fuel_code}-x"
@@ -146,7 +136,7 @@ async def run_search(
     stations = res.get("results", []) if res else []
     num_stations = len(stations)
 
-    # Delete the “processing” message if present
+    # clear "processing" toast if any
     chat_id = msg_obj.chat.id
     proc_id = ctx.user_data.pop("processing_msg_id", None)
     if proc_id:
@@ -155,7 +145,7 @@ async def run_search(
         except Exception:
             pass
 
-    # Filter by requested fuelId
+    # filter by fuelId
     filtered = []
     for st in stations:
         fuels = [f for f in st.get("fuels", []) if f.get("fuelId") == fid]
@@ -171,7 +161,6 @@ async def run_search(
         await save_search(uid, fuel_code, radius_km, num_stations, None, None)
         return
 
-    # Prefer self-service on ties
     all_fuels = [f for st in filtered for f in st["_filtered_fuels"]]
     min_fuel = min(all_fuels, key=lambda f: (f["price"], not f.get("isSelf")))
     target_is_self = min_fuel.get("isSelf")
@@ -214,12 +203,11 @@ async def run_search(
             station["location"]["lat"], station["location"]["lng"]
         )
         if not station.get("address"):
-            station["address"] = await get_station_address(station["id"]) or t(
-                "no_address", lang
-            )
+            station["address"] = await get_station_address(station["id"]) or t("no_address", lang)
         formatted_date = format_date(station.get("insertDate"), t=t, lang=lang)
         price_txt = format_price(price, price_unit)
         price_note = format_avg_comparison_text(price, avg, t=t, lang=lang)
+
         lines.append(
             f"{medals[i]} <b><a href=\"{dir_url}\">{station['brand']} • {station['name']}</a></b>\n"
             f"• <u>{t('address', lang)}</u>: {station['address']}\n"
@@ -230,20 +218,23 @@ async def run_search(
     header = (
         f"<b><u>{t('area_label', lang, radius=format_radius(radius_km))}</u></b> 📍\n"
         f"{num_stations} {t('stations_analyzed', lang)}\n"
-        f"{t('average_zone_price', lang)}: <b>{format_price(avg, price_unit)}</b>\n\n"
+        f"{t('average_zone_price', lang, fuel_name=t(fuel_name, lang))}: <b>{format_price(avg, price_unit)}</b>\n\n"
     )
 
-    # Inline radius controls only on the initial 5 km message (one per row)
     reply_markup = None
-    if show_radius_cta:
-        clicked = set(ctx.user_data.get("radius_clicked") or set())
-        items = []
-        if "2.5" not in clicked:
-            items.append((t("btn_narrow", lang, radius="2.5"), _CB_NARROW))
-        if "7.5" not in clicked:
-            items.append((t("btn_widen", lang, radius="7.5"), _CB_WIDEN))
-        if items:
-            reply_markup = InlineKeyboardMarkup(inline_kb(items, per_row=1))
+    if show_initial_cta:
+        items = [
+            (t("btn_narrow", lang, radius="2.5"), _CB_NARROW),
+            (t("btn_widen", lang, radius="7.5"), _CB_WIDEN),
+        ]
+        reply_markup = InlineKeyboardMarkup(inline_kb(items, per_row=1))
+    elif followup_offer_radius is not None:
+        # offer only the remaining radius on the follow-up message
+        if abs(followup_offer_radius - 2.5) < 1e-6:
+            items = [(t("btn_narrow", lang, radius="2.5"), _CB_NARROW)]
+        else:
+            items = [(t("btn_widen", lang, radius="7.5"), _CB_WIDEN)]
+        reply_markup = InlineKeyboardMarkup(inline_kb(items, per_row=1))
 
     await msg_obj.reply_text(
         header + "\n\n".join(lines),
@@ -262,14 +253,17 @@ async def run_search(
     )
 
 
-# ---------- Callback handler for radius refinement ----------
-
 async def radius_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Handle inline buttons to refine radius to 2.5 km or 7.5 km."""
+    """Refine radius to 2.5 or 7.5.
+    UX:
+      - lock against double taps
+      - strip ALL buttons from the 5 km message
+      - show 'processing'
+      - send new results WITH the remaining single button
+    """
     query = update.callback_query
     lang = await get_user_language_code_by_tg_id(update.effective_user.id)
 
-    # Anti double tap guard
     if ctx.user_data.get("radius_processing"):
         await query.answer(t("please_wait", lang))
         return
@@ -277,47 +271,30 @@ async def radius_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     try:
         await query.answer()
-
         data = (query.data or "").strip()
 
-        # Track clicked radii in-session
-        clicked = set(ctx.user_data.get("radius_clicked") or set())
-        if data == _CB_NARROW:
-            clicked.add("2.5")
-        elif data == _CB_WIDEN:
-            clicked.add("7.5")
-        ctx.user_data["radius_clicked"] = clicked
-
-        # Build the remaining buttons dynamically (never re-show clicked ones)
-        items = []
-        if "2.5" not in clicked:
-            items.append((t("btn_narrow", lang, radius="2.5"), _CB_NARROW))
-        if "7.5" not in clicked:
-            items.append((t("btn_widen", lang, radius="7.5"), _CB_WIDEN))
-
+        # 1) Remove ALL buttons from the source message (the 5 km message)
         try:
-            new_kb = InlineKeyboardMarkup(inline_kb(items, per_row=1)) if items else None
-            await query.edit_message_reply_markup(reply_markup=new_kb)
+            await query.edit_message_reply_markup(reply_markup=None)
         except Exception:
-            pass  # already edited, ignore
+            pass
 
-        # Show 'processing' message (auto-removed by run_search)
+        # 2) 'Processing' toast (removed by run_search)
         proc = await query.message.reply_text(
             t("processing_search", lang),
             reply_markup=ReplyKeyboardRemove(),
         )
         ctx.user_data["processing_msg_id"] = proc.message_id
 
-        # Run the requested search (no CTA on follow-ups)
+        # 3) Run search and offer only the remaining radius in the NEW message
         if data == _CB_NARROW:
-            await run_search(update, ctx, radius_km=2.5, show_radius_cta=False)
+            await run_search(update, ctx, radius_km=2.5, followup_offer_radius=7.5)
         elif data == _CB_WIDEN:
-            await run_search(update, ctx, radius_km=7.5, show_radius_cta=False)
+            await run_search(update, ctx, radius_km=7.5, followup_offer_radius=2.5)
     finally:
         ctx.user_data["radius_processing"] = False
 
 
-# Exported handlers
 search_handler = ConversationHandler(
     entry_points=[CommandHandler("search", search_ep)],
     states={

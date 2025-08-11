@@ -44,7 +44,7 @@ TRANSLATIONS = {
     "no_stations": "❌ Nessun distributore trovato",
     "area_label": "Distributori nel raggio di {radius} km",
     "stations_analyzed": "stazioni analizzate",
-    "average_zone_price": "Prezzo medio della zona",
+    "average_zone_price": "Prezzo medio {fuel_name} della zona",
     "address": "Indirizzo",
     "no_address": "-",
     "price": "Prezzo",
@@ -53,8 +53,8 @@ TRANSLATIONS = {
     "below_average": "più economico della media",
     "equal_average": "in linea con la media",
     "last_update": "Ultimo aggiornamento",
-    "btn_narrow": "Mostra risultati entro {radius} km",
-    "btn_widen": "Mostra risultati fino a {radius} km",
+    "btn_narrow": "Ripeti ricerca con raggio di {radius} km",
+    "btn_widen": "Ripeti ricerca con raggio di {radius} km",
     "search_session_expired": "⚠️ Sessione scaduta!\nUtilizza il comando /search per avviare una nuova ricerca.",
 
     # ─────────── /statistics ───────────

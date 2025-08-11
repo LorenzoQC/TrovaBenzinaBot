@@ -54,6 +54,18 @@ async def get_fuel_by_code(code: str) -> Optional[Fuel]:
         return row.scalars().first()
 
 
+async def get_fuel_name_by_code(code: str) -> Optional[str]:
+    """Return the fuel name for a given `fuel_code`, or None if not found/soft-deleted."""
+    code = (code or "").strip()
+    if not code:
+        return None
+    async with AsyncSession() as session:
+        row = await session.execute(
+            select(Fuel.name).where(Fuel.code == code, Fuel.del_ts.is_(None))
+        )
+        return row.scalar_one_or_none()
+
+
 async def get_fuels_by_codes_map(codes: Iterable[str]) -> Dict[str, Fuel]:
     """Return a dict {fuel_code: Fuel} for the given codes.
 
