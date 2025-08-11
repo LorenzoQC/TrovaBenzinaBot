@@ -235,6 +235,10 @@ async def invalid_text(update: Update, context: CallbackContext) -> int:
     return ConversationHandler.END
 
 
+async def exit_profile(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    return ConversationHandler.END
+
+
 # ---------------------------------------------------------------------------
 # Conversation definition
 # ---------------------------------------------------------------------------
@@ -257,7 +261,9 @@ profile_handler = ConversationHandler(
             MessageHandler(filters.TEXT & ~filters.COMMAND, invalid_text),
         ],
     },
-    fallbacks=[],
+    fallbacks=[
+        MessageHandler(filters.COMMAND, exit_profile),
+    ],
     block=False,
     allow_reentry=True,
 )

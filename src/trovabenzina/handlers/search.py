@@ -309,6 +309,10 @@ async def radius_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         ctx.user_data["radius_processing"] = False
 
 
+async def exit_search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    return ConversationHandler.END
+
+
 search_handler = ConversationHandler(
     entry_points=[CommandHandler("search", search_ep)],
     states={
@@ -317,7 +321,9 @@ search_handler = ConversationHandler(
             MessageHandler(filters.TEXT & ~filters.COMMAND, search_receive_text),
         ],
     },
-    fallbacks=[],
+    fallbacks=[
+        MessageHandler(filters.COMMAND, exit_search),
+    ],
     block=True,
     allow_reentry=True,
 )
