@@ -66,6 +66,7 @@ async def search_receive_location(update: Update, ctx: ContextTypes.DEFAULT_TYPE
     ctx.user_data["search_lng"] = loc.longitude
 
     ctx.user_data["radius_processing"] = False
+    ctx.user_data["radius_clicked"] = set()
 
     await run_search(update, ctx, radius_km=_INITIAL_RADIUS, show_initial_cta=True)
     return ConversationHandler.END
@@ -98,6 +99,7 @@ async def search_receive_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     ctx.user_data["search_lat"] = lat
     ctx.user_data["search_lng"] = lng
     ctx.user_data["radius_processing"] = False
+    ctx.user_data["radius_clicked"] = set()
 
     await run_search(update, ctx, radius_km=_INITIAL_RADIUS, show_initial_cta=True)
     return ConversationHandler.END
