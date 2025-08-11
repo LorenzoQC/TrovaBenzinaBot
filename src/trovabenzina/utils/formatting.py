@@ -21,6 +21,7 @@ __all__ = [
     "format_avg_comparison_text",
     "format_date",
     "format_directions_url",
+    "format_radius",
 ]
 
 TFunc = Optional[Callable[[str, Optional[str]], str]]
@@ -214,3 +215,8 @@ def format_directions_url(lat: float, lng: float) -> str:
         A URL that opens Google Maps Directions to ``(lat, lng)``.
     """
     return f"https://www.google.com/maps/dir/?api=1&destination={lat},{lng}"
+
+
+def format_radius(value: float) -> str:
+    """Return radius as label: '5' for 5.0, keep one decimal for non-integers."""
+    return str(int(value)) if float(value).is_integer() else f"{value:.1f}"

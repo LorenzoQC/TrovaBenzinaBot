@@ -16,7 +16,7 @@ AS
     JOIN dom_fuels f
       	ON s.fuel_id = f.id
 	WHERE
-	    s.radius = 7
+	    s.num_stations > 0
 	    AND s.price_avg IS NOT NULL
 	    AND s.price_min IS NOT NULL
 	    AND s.del_ts IS NULL

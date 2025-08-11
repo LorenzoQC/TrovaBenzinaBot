@@ -5,16 +5,17 @@ imported as ``from trovabenzina.utils import ...``.
 """
 
 from .formatting import (
-    format_avg_comparison_text,
-    format_date,
-    format_directions_url,
-    format_price,
-    format_price_unit,
-    pct_delta_from_avg,
     symbol_eur,
     symbol_kilo,
     symbol_liter,
     symbol_slash,
+    format_price,
+    format_price_unit,
+    pct_delta_from_avg,
+    format_avg_comparison_text,
+    format_date,
+    format_directions_url,
+    format_radius,
 )
 from .logging import RailwayLogFormatter, describe, setup_logging
 from .states import (
@@ -33,12 +34,13 @@ __all__ = [
     "symbol_slash",
     "symbol_liter",
     "symbol_kilo",
-    "format_price_unit",
     "format_price",
+    "format_price_unit",
     "pct_delta_from_avg",
     "format_avg_comparison_text",
     "format_date",
     "format_directions_url",
+    "format_radius",
     # logging
     "RailwayLogFormatter",
     "setup_logging",
