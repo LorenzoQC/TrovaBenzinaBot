@@ -266,4 +266,5 @@ profile_handler = ConversationHandler(
     ],
     block=False,
     allow_reentry=True,
+    per_message=True,
 )

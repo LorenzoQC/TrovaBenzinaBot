@@ -326,6 +326,7 @@ search_handler = ConversationHandler(
     ],
     block=True,
     allow_reentry=True,
+    per_message=True,
 )
 
 radius_callback_handler = CallbackQueryHandler(
