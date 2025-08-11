@@ -125,7 +125,7 @@ async def start_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return ConversationHandler.END
 
     # Language selection
-    language_choices = dict(LANGUAGE_MAP.items())
+    language_choices = {code: name for name, code in LANGUAGE_MAP.items()}
     kb = inline_menu_from_map(language_choices, "lang", per_row=2)
     sent = await update.effective_message.reply_text(
         t("select_language", DEFAULT_LANGUAGE),
