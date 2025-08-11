@@ -50,6 +50,7 @@ from .repositories import (
 )
 # Session
 from .session import engine, AsyncSession, init_db
+from .sync import sync_config_tables
 
 __all__ = [
     # Models/mixins
@@ -88,4 +89,6 @@ __all__ = [
     "delete_old_geocache",
     "count_geocoding_month_calls",
     "get_user_stats",
+    # sync
+    "sync_config_tables",
 ]

@@ -11,6 +11,8 @@ import logging
 import sys
 from typing import Any, Dict
 
+from ..config import LOG_LEVEL
+
 __all__ = ["RailwayLogFormatter", "setup_logging", "describe"]
 
 
@@ -48,14 +50,15 @@ class RailwayLogFormatter(logging.Formatter):
         return json.dumps(log_record, ensure_ascii=False)
 
 
-def setup_logging(level: int = logging.DEBUG) -> None:
+def setup_logging(default_level: int = logging.INFO) -> None:
     """Configure the root logger for JSON output on stdout.
 
     Any pre-existing handlers on the root logger are removed.
 
     Args:
-        level: Minimum log level to set on the root logger.
+        default_level: Minimum log level to set on the root logger.
     """
+    level = getattr(logging, LOG_LEVEL, default_level)
     root = logging.getLogger()
     root.setLevel(level)
 
