@@ -1,8 +1,12 @@
-from telegram import (
-    Update,
-    ReplyKeyboardRemove,
-    InlineKeyboardMarkup,
-)
+"""Fuel stations search conversation.
+
+Supports searching by GPS location or typed address, with radius refinement
+callbacks and a compact results layout.
+"""
+
+from typing import Optional
+
+from telegram import Update, ReplyKeyboardRemove, InlineKeyboardMarkup
 from telegram.constants import ParseMode
 from telegram.ext import (
     ContextTypes,
@@ -35,7 +39,7 @@ from ..utils import (
     format_directions_url,
     format_radius,
     inline_kb,
-    reroute_command
+    reroute_command,
 )
 
 __all__ = ["search_ep", "search_handler", "radius_callback_handler"]
@@ -45,7 +49,35 @@ _CB_WIDEN = "search:r=7.5"
 _INITIAL_RADIUS = 5.0
 
 
-async def search_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+def _message_from_update(update: Update):
+    """Return the message object from Update (works for message or callback)."""
+    msg_obj = getattr(update, "message", None)
+    if msg_obj is None and getattr(update, "callback_query", None):
+        msg_obj = update.callback_query.message
+    return msg_obj
+
+
+async def _clear_processing_toast(ctx: ContextTypes.DEFAULT_TYPE, chat_id: int) -> None:
+    """Delete a previously sent 'processing' message if present."""
+    proc_id = ctx.user_data.pop("processing_msg_id", None)
+    if proc_id:
+        try:
+            await ctx.bot.delete_message(chat_id, proc_id)
+        except Exception:
+            # Safe to ignore if already gone
+            pass
+
+
+async def search_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> int:
+    """Entry point for /search: ask for a location or address.
+
+    Args:
+        update: Telegram update.
+        ctx: Callback context.
+
+    Returns:
+        int: Conversation state expecting a location or text address.
+    """
     lang = await get_user_language_code_by_tg_id(update.effective_user.id)
     await update.message.reply_text(
         t("ask_location", lang),
@@ -54,7 +86,16 @@ async def search_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     return STEP_SEARCH_LOCATION
 
 
-async def search_receive_location(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+async def search_receive_location(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> int:
+    """Receive a GPS location and run the initial search at 5 km.
+
+    Args:
+        update: Telegram update with a location.
+        ctx: Callback context.
+
+    Returns:
+        int: Conversation END (results will be posted immediately).
+    """
     lang = await get_user_language_code_by_tg_id(update.effective_user.id)
     proc_msg = await update.message.reply_text(
         t("processing_search", lang),
@@ -73,7 +114,16 @@ async def search_receive_location(update: Update, ctx: ContextTypes.DEFAULT_TYPE
     return ConversationHandler.END
 
 
-async def search_receive_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+async def search_receive_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> int:
+    """Receive a typed address, geocode it (with cache) and run the search.
+
+    Args:
+        update: Telegram update with text.
+        ctx: Callback context.
+
+    Returns:
+        int: Conversation END (results will be posted immediately).
+    """
     lang = await get_user_language_code_by_tg_id(update.effective_user.id)
     proc_msg = await update.message.reply_text(
         t("processing_search", lang),
@@ -112,12 +162,18 @@ async def run_search(
         *,
         radius_km: float,
         show_initial_cta: bool = False,
-        followup_offer_radius: float | None = None,
-):
-    """Do one search, render results, optionally attach inline buttons."""
-    msg_obj = getattr(origin, "message", None)
-    if msg_obj is None and getattr(origin, "callback_query", None):
-        msg_obj = origin.callback_query.message
+        followup_offer_radius: Optional[float] = None,
+) -> None:
+    """Execute one search and render results.
+
+    Args:
+        origin: The original update (message or callback).
+        ctx: Callback context.
+        radius_km: Search radius in kilometers.
+        show_initial_cta: If True, attach both 2.5 and 7.5 buttons.
+        followup_offer_radius: If set, attach only the remaining single button.
+    """
+    msg_obj = _message_from_update(origin)
 
     uid = origin.effective_user.id
     fuel_code, lang = await get_user(uid)
@@ -127,7 +183,7 @@ async def run_search(
         await msg_obj.reply_text(t("search_session_expired", lang))
         return
 
-    # fuel meta
+    # Fuel metadata
     uom = (await get_uom_by_code(fuel_code)) or "L"
     price_unit = format_price_unit(uom=uom, t=t, lang=lang)
     fuel_name = await get_fuel_name_by_code(fuel_code)
@@ -139,16 +195,10 @@ async def run_search(
     stations = res.get("results", []) if res else []
     num_stations = len(stations)
 
-    # clear "processing" toast if any
-    chat_id = msg_obj.chat.id
-    proc_id = ctx.user_data.pop("processing_msg_id", None)
-    if proc_id:
-        try:
-            await ctx.bot.delete_message(chat_id, proc_id)
-        except Exception:
-            pass
+    # Clear "processing" toast if any
+    await _clear_processing_toast(ctx, msg_obj.chat.id)
 
-    # filter by fuelId
+    # Filter by fuelId and select the price candidate per station
     filtered = []
     for st in stations:
         fuels = [f for f in st.get("fuels", []) if f.get("fuelId") == fid]
@@ -164,6 +214,7 @@ async def run_search(
         await save_search(uid, fuel_code, radius_km, num_stations, None, None)
         return
 
+    # Keep cheapest; tie-break preferring self-service
     all_fuels = [f for st in filtered for f in st["_filtered_fuels"]]
     min_fuel = min(all_fuels, key=lambda f: (f["price"], not f.get("isSelf")))
     target_is_self = min_fuel.get("isSelf")
@@ -232,7 +283,7 @@ async def run_search(
         ]
         reply_markup = InlineKeyboardMarkup(inline_kb(items, per_row=1))
     elif followup_offer_radius is not None:
-        # offer only the remaining radius on the follow-up message
+        # Offer only the remaining radius on follow-up messages
         if abs(followup_offer_radius - 2.5) < 1e-6:
             items = [(t("btn_narrow", lang, radius="2.5"), _CB_NARROW)]
         else:
@@ -256,13 +307,14 @@ async def run_search(
     )
 
 
-async def radius_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Refine radius to 2.5 or 7.5.
-    UX:
-      - lock against double taps
-      - strip ALL buttons from the 5 km message
-      - show 'processing'
-      - send new results WITH the remaining single button
+async def radius_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
+    """Refine radius to 2.5 km or 7.5 km with double-tap guard.
+
+    UX rules:
+      - guard against double taps
+      - strip ALL buttons from the source message
+      - show a temporary 'processing' toast
+      - send new results with the remaining single button
     """
     query = update.callback_query
     lang = await get_user_language_code_by_tg_id(update.effective_user.id)
@@ -285,7 +337,7 @@ async def radius_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             clicked.add("7.5")
         ctx.user_data["radius_clicked"] = clicked
 
-        # 1) Remove ALL buttons from the source message (5 km o il follow-up corrente)
+        # 1) Remove ALL buttons from the source message
         try:
             await query.edit_message_reply_markup(reply_markup=None)
         except Exception:

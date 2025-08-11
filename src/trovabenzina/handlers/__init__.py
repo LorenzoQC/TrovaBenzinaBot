@@ -1,3 +1,9 @@
+"""Conversation handlers public API.
+
+This module exposes the conversation handlers used by the bot so they can be
+imported as a group from `trovabenzina.handlers`.
+"""
+
 from .help import help_handler
 from .profile import profile_handler
 from .search import search_handler, radius_callback_handler

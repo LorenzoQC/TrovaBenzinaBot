@@ -1,3 +1,9 @@
+"""Profile management conversation.
+
+Allows users to view and edit profile preferences (language, fuel).
+Keeps a consistent inline keyboard UX with a back-to-menu button.
+"""
+
 from __future__ import annotations
 
 import logging
@@ -18,8 +24,12 @@ from ..config import DEFAULT_LANGUAGE, FUEL_MAP, LANGUAGE_MAP
 from ..db import get_user, upsert_user
 from ..i18n import t
 from ..utils import (
-    STEP_PROFILE_MENU, STEP_PROFILE_LANGUAGE, STEP_PROFILE_FUEL,
-    inline_kb, inline_menu_from_map, with_back_row,
+    STEP_PROFILE_MENU,
+    STEP_PROFILE_LANGUAGE,
+    STEP_PROFILE_FUEL,
+    inline_kb,
+    inline_menu_from_map,
+    with_back_row,
     reroute_command,
 )
 
@@ -28,12 +38,15 @@ __all__ = ["profile_ep", "profile_handler"]
 log = logging.getLogger(__name__)
 
 
-# ---------------------------------------------------------------------------
-# Helper utilities
-# ---------------------------------------------------------------------------
-
 def _build_profile_keyboard(locale: str) -> InlineKeyboardMarkup:
-    """Inline keyboard with edit actions: language and fuel."""
+    """Return the main profile menu keyboard.
+
+    Args:
+        locale: Language code for translations.
+
+    Returns:
+        InlineKeyboardMarkup: Keyboard with actions to edit language and fuel.
+    """
     items = [
         (t("edit_language", locale), "profile_set_language"),
         (t("edit_fuel", locale), "profile_set_fuel"),
@@ -42,7 +55,15 @@ def _build_profile_keyboard(locale: str) -> InlineKeyboardMarkup:
 
 
 async def _get_or_create_defaults(uid: int, username: str) -> tuple[str, str]:
-    """Return user's (fuel, language) or set defaults."""
+    """Return user's (fuel_code, language_code), creating defaults if missing.
+
+    Args:
+        uid: Telegram user id.
+        username: Telegram username.
+
+    Returns:
+        tuple[str, str]: The fuel code and language code.
+    """
     row = await get_user(uid)
     if row is not None:
         if isinstance(row, Mapping) or hasattr(row, "keys"):
@@ -53,18 +74,22 @@ async def _get_or_create_defaults(uid: int, username: str) -> tuple[str, str]:
             fuel_code, lang_code = seq
         return fuel_code, lang_code or DEFAULT_LANGUAGE
 
-    # bootstrap defaults
+    # Bootstrap defaults on first access
     fuel_code = next(iter(FUEL_MAP.values()))
     await upsert_user(uid, username, fuel_code, DEFAULT_LANGUAGE)
     return fuel_code, DEFAULT_LANGUAGE
 
 
-# ---------------------------------------------------------------------------
-# BACK BUTTON HANDLER
-# ---------------------------------------------------------------------------
-
 async def back_to_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Handle '↩' callback by returning to the main profile menu."""
+    """Handle '↩' callback to return to the main profile menu.
+
+    Args:
+        update: Telegram update.
+        context: Callback context.
+
+    Returns:
+        int: Conversation state for the profile menu.
+    """
     query = update.callback_query
     await query.answer()
 
@@ -89,10 +114,16 @@ async def back_to_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
     return STEP_PROFILE_MENU
 
 
-# ---------------------------------------------------------------------------
-# /profile entry-point
-# ---------------------------------------------------------------------------
 async def profile_ep(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Entry point for /profile: show current settings and actions.
+
+    Args:
+        update: Telegram update.
+        context: Callback context.
+
+    Returns:
+        int: Conversation state for the profile menu.
+    """
     uid = update.effective_user.id
     username = update.effective_user.username
     fuel_code, lang_code = await _get_or_create_defaults(uid, username)
@@ -116,10 +147,16 @@ async def profile_ep(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     return STEP_PROFILE_MENU
 
 
-# ---------------------------------------------------------------------------
-# Language flow
-# ---------------------------------------------------------------------------
 async def ask_language(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Prompt the user to select a language.
+
+    Args:
+        update: Telegram update.
+        context: Callback context.
+
+    Returns:
+        int: Conversation state for language selection.
+    """
     query = update.callback_query
     await query.answer()
     context.chat_data["current_state"] = STEP_PROFILE_LANGUAGE
@@ -137,14 +174,21 @@ async def ask_language(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
 
 
 async def save_language(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Save new language and show confirmation + profile menu in one message."""
+    """Persist a new language and return to the menu with a confirmation.
+
+    Args:
+        update: Telegram update.
+        context: Callback context.
+
+    Returns:
+        int: Conversation state for the profile menu.
+    """
     query = update.callback_query
     await query.answer()
     uid = update.effective_user.id
     username = update.effective_user.username
-    new_lang = query.data.split("_", 2)[2]  # expects "set_lang_<code>"
+    new_lang = query.data.split("_", 2)[2]  # "set_lang_<code>"
 
-    # persist new language
     fuel_code, _ = (await _get_or_create_defaults(uid, username))[:2]
     await upsert_user(uid, username, fuel_code, new_lang)
     context.user_data["lang"] = new_lang
@@ -169,10 +213,16 @@ async def save_language(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
     return STEP_PROFILE_MENU
 
 
-# ---------------------------------------------------------------------------
-# Fuel flow
-# ---------------------------------------------------------------------------
 async def ask_fuel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Prompt the user to select a fuel.
+
+    Args:
+        update: Telegram update.
+        context: Callback context.
+
+    Returns:
+        int: Conversation state for fuel selection.
+    """
     query = update.callback_query
     await query.answer()
     context.chat_data["current_state"] = STEP_PROFILE_FUEL
@@ -190,15 +240,22 @@ async def ask_fuel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 async def save_fuel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Save new fuel and show confirmation + profile menu in one message."""
+    """Persist a new fuel and return to the menu with a confirmation.
+
+    Args:
+        update: Telegram update.
+        context: Callback context.
+
+    Returns:
+        int: Conversation state for the profile menu.
+    """
     query = update.callback_query
     await query.answer()
 
     uid = update.effective_user.id
     username = update.effective_user.username
-    new_fuel = query.data.split("_", 2)[2]  # expects "set_fuel_<code>"
+    new_fuel = query.data.split("_", 2)[2]  # "set_fuel_<code>"
 
-    # persist new fuel
     _, lang_code = await _get_or_create_defaults(uid, username)
     await upsert_user(uid, username, new_fuel, lang_code)
 
@@ -222,10 +279,16 @@ async def save_fuel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     return STEP_PROFILE_MENU
 
 
-# ---------------------------------------------------------------------------
-# Invalid text handler
-# ---------------------------------------------------------------------------
 async def invalid_text(update: Update, context: CallbackContext) -> int:
+    """Gracefully handle unexpected text by repeating the current step.
+
+    Args:
+        update: Telegram update.
+        context: Callback context.
+
+    Returns:
+        int: The current conversation state to repeat.
+    """
     state = context.chat_data.get("current_state", STEP_PROFILE_MENU)
     if state == STEP_PROFILE_MENU:
         return ConversationHandler.END
@@ -236,9 +299,6 @@ async def invalid_text(update: Update, context: CallbackContext) -> int:
     return ConversationHandler.END
 
 
-# ---------------------------------------------------------------------------
-# Conversation definition
-# ---------------------------------------------------------------------------
 profile_handler = ConversationHandler(
     entry_points=[CommandHandler("profile", profile_ep)],
     states={

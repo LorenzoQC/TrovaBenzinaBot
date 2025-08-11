@@ -1,3 +1,8 @@
+"""User statistics for searches (/statistics).
+
+Shows per-fuel aggregated stats with a one-tap reset button.
+"""
+
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes, CommandHandler, CallbackQueryHandler
@@ -20,7 +25,12 @@ __all__ = ["statistics_ep", "statistics_handler"]
 
 
 async def statistics_ep(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Handler for /statistics command: shows per-fuel stats or a no-data message."""
+    """Handle /statistics: render per-fuel blocks or a no-data message.
+
+    Args:
+        update: Telegram update.
+        context: Callback context.
+    """
     tg_id = update.effective_user.id
     lang = await get_user_language_code_by_tg_id(tg_id)
 
@@ -44,7 +54,8 @@ async def statistics_ep(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         fid = s.get("fuel_id")
 
         fmeta = fuels.get(fid)
-        uom = getattr(fmeta, "uom", None).strip()
+        # More robust uom handling; default to liters for symbols and unit label.
+        uom = ((getattr(fmeta, "uom", None) or "").strip() or "L")
         cons = float(getattr(fmeta, "avg_consumption_per_100km", 0.0)) if fmeta else 0.0
 
         pu = format_price_unit(uom=uom, t=t, lang=lang)
@@ -89,7 +100,12 @@ async def statistics_ep(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 
 
 async def reset_stats_cb(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Callback for resetting the user's search statistics (soft-delete)."""
+    """Soft-delete all user searches and confirm reset.
+
+    Args:
+        update: Telegram update.
+        context: Callback context.
+    """
     query = update.callback_query
     await query.answer()
     tg_id = update.effective_user.id
