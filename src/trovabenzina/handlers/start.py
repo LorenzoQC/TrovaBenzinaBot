@@ -16,7 +16,7 @@ from ..utils import (
     inline_menu_from_map, with_back_row,
 )
 
-__all__ = ["start_handler"]
+__all__ = ["start_ep", "start_handler"]
 
 
 def make_selection_handler(

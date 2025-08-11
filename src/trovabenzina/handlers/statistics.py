@@ -16,7 +16,7 @@ from ..utils import (
     symbol_eur,
 )
 
-__all__ = ["statistics_handler"]
+__all__ = ["statistics_ep", "statistics_handler"]
 
 
 async def statistics_ep(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:

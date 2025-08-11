@@ -4,9 +4,7 @@ from telegram.ext import ContextTypes, CommandHandler
 from ..db import get_user_language_code_by_tg_id
 from ..i18n import t
 
-__all__ = [
-    "help_handler",
-]
+__all__ = ["help_ep", "help_handler"]
 
 
 async def help_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE):

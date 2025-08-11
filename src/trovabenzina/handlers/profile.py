@@ -19,10 +19,11 @@ from ..db import get_user, upsert_user
 from ..i18n import t
 from ..utils import (
     STEP_PROFILE_MENU, STEP_PROFILE_LANGUAGE, STEP_PROFILE_FUEL,
-    inline_kb, inline_menu_from_map, with_back_row
+    inline_kb, inline_menu_from_map, with_back_row,
+    reroute_command,
 )
 
-__all__ = ["profile_handler"]
+__all__ = ["profile_ep", "profile_handler"]
 
 log = logging.getLogger(__name__)
 
@@ -235,10 +236,6 @@ async def invalid_text(update: Update, context: CallbackContext) -> int:
     return ConversationHandler.END
 
 
-async def exit_profile(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    return ConversationHandler.END
-
-
 # ---------------------------------------------------------------------------
 # Conversation definition
 # ---------------------------------------------------------------------------
@@ -262,7 +259,7 @@ profile_handler = ConversationHandler(
         ],
     },
     fallbacks=[
-        MessageHandler(filters.COMMAND, exit_profile),
+        MessageHandler(filters.COMMAND, reroute_command),
     ],
     block=False,
     allow_reentry=True,

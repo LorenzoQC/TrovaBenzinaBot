@@ -34,10 +34,11 @@ from ..utils import (
     format_date,
     format_directions_url,
     format_radius,
+    inline_kb,
+    reroute_command
 )
-from ..utils.telegram import inline_kb
 
-__all__ = ["search_handler", "radius_callback_handler"]
+__all__ = ["search_ep", "search_handler", "radius_callback_handler"]
 
 _CB_NARROW = "search:r=2.5"
 _CB_WIDEN = "search:r=7.5"
@@ -309,10 +310,6 @@ async def radius_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         ctx.user_data["radius_processing"] = False
 
 
-async def exit_search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    return ConversationHandler.END
-
-
 search_handler = ConversationHandler(
     entry_points=[CommandHandler("search", search_ep)],
     states={
@@ -322,11 +319,10 @@ search_handler = ConversationHandler(
         ],
     },
     fallbacks=[
-        MessageHandler(filters.COMMAND, exit_search),
+        MessageHandler(filters.COMMAND, reroute_command),
     ],
     block=True,
     allow_reentry=True,
-    per_message=True,
 )
 
 radius_callback_handler = CallbackQueryHandler(

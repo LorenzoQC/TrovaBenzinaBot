@@ -18,6 +18,7 @@ from .formatting import (
     format_radius,
 )
 from .logging import RailwayLogFormatter, describe, setup_logging
+from .routing import reroute_command
 from .states import (
     STEP_PROFILE_FUEL,
     STEP_PROFILE_LANGUAGE,
@@ -45,6 +46,8 @@ __all__ = [
     "RailwayLogFormatter",
     "setup_logging",
     "describe",
+    # routing
+    "reroute_command",
     # states
     "STEP_START_LANGUAGE",
     "STEP_START_FUEL",
