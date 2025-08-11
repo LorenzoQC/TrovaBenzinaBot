@@ -9,14 +9,14 @@ BASE_URL = os.getenv("BASE_URL")
 # Logging level
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
-# Geocoding cache: maximum number of monthly requests to cache
-GEOCODE_HARD_CAP = int(os.getenv("GEOCODE_HARD_CAP", "10000"))
+# Default fallback language
+DEFAULT_LANGUAGE = "it"
 
-# Donation feature toggle and PayPal link
-ENABLE_DONATION = os.getenv("ENABLE_DONATION", "true").lower() == "true"
-PAYPAL_LINK = os.getenv("PAYPAL_LINK", "https://www.paypal.com/donate")
+# In‐memory maps, populated at startup from the database
+FUEL_MAP = {}
+LANGUAGE_MAP = {}
 
-# MISE API endpoints (non-sensitive)
+# MISE API endpoints
 MISE_SEARCH_URL = os.getenv(
     "MISE_SEARCH_URL",
     "https://carburanti.mise.gov.it/ospzApi/search/zone"
@@ -26,15 +26,15 @@ MISE_DETAIL_URL = os.getenv(
     "https://carburanti.mise.gov.it/ospzApi/registry/servicearea/{id}"
 )
 
-# Google Maps Geocoding API endpoint (non-sensitive)
-GEOCODE_URL = os.getenv(
+# Google Maps Geocoding API endpoint
+MAPS_GEOCODING_URL = os.getenv(
     "GEOCODE_URL",
     "https://maps.googleapis.com/maps/api/geocode/json"
 )
 
-# In‐memory maps (populated at startup from the database)
-FUEL_MAP = {}
-LANGUAGE_MAP = {}
+# Geocoding cache: maximum number of monthly requests to cache
+GEOCODE_HARD_CAP = int(os.getenv("GEOCODE_HARD_CAP", "10000"))
 
-# Default fallback language
-DEFAULT_LANGUAGE = "it"
+# Donation feature toggle and PayPal link
+ENABLE_DONATION = os.getenv("ENABLE_DONATION", "true").lower() == "true"
+PAYPAL_LINK = os.getenv("PAYPAL_LINK", "https://www.paypal.com/donate")

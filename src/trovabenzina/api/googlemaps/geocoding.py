@@ -3,7 +3,7 @@ from typing import Optional, Tuple
 
 import aiohttp
 
-from trovabenzina.config import GEOCODE_HARD_CAP, GOOGLE_API_KEY, GEOCODE_URL
+from trovabenzina.config import GEOCODE_HARD_CAP, GOOGLE_API_KEY, MAPS_GEOCODING_URL
 from trovabenzina.db import (
     get_geocache,
     count_geocoding_month_calls,
@@ -48,7 +48,7 @@ async def geocode_address(addr: str) -> Optional[Tuple[float, float]]:
     try:
         timeout = aiohttp.ClientTimeout(total=10)
         async with aiohttp.ClientSession(timeout=timeout) as session:
-            async with session.get(GEOCODE_URL, params=params) as resp:
+            async with session.get(MAPS_GEOCODING_URL, params=params) as resp:
                 if resp.status != 200:
                     log.warning("Geocoding failed (status=%s) for %r", resp.status, addr)
                     return None
