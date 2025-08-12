@@ -3,7 +3,7 @@ import logging
 import os
 
 from telegram.ext import (
-    ApplicationBuilder,
+    ApplicationBuilder, MessageHandler, filters,
 )
 from telegram.request import HTTPXRequest
 
@@ -21,6 +21,8 @@ from ..handlers import (
     search_handler,
     radius_callback_handler,
     statistics_handler,
+    handle_unrecognized_message,
+    handle_unknown_command,
 )
 from ..utils import (
     setup_logging,
@@ -86,6 +88,10 @@ def main() -> None:
     app.add_handler(search_handler)  # /search
     app.add_handler(radius_callback_handler)  # /search radius callbacks
     app.add_handler(profile_handler)  # /profile
+    app.add_handler(MessageHandler(filters.COMMAND, handle_unknown_command), group=98)  # unknown commands
+    app.add_handler(
+        MessageHandler(filters.ALL & ~filters.COMMAND & ~filters.StatusUpdate.ALL, handle_unrecognized_message),
+        group=99)  # all other non-command messages
 
     # Debug: list registered handlers
     log.debug("=== HANDLER REGISTRY ===")
