@@ -52,7 +52,8 @@ _INITIAL_RADIUS = 5.0
 
 def _message_from_update(update: Update):
     """
-    Return the message object from Update (works for message or callback)."""
+    Return the message object from Update (works for message or callback).
+    """
     msg_obj = getattr(update, "message", None)
     if msg_obj is None and getattr(update, "callback_query", None):
         msg_obj = update.callback_query.message
@@ -61,7 +62,8 @@ def _message_from_update(update: Update):
 
 async def _clear_processing_toast(ctx: ContextTypes.DEFAULT_TYPE, chat_id: int) -> None:
     """
-    Delete a previously sent 'processing' message if present."""
+    Delete a previously sent 'processing' message if present.
+    """
     proc_id = ctx.user_data.pop("processing_msg_id", None)
     if proc_id:
         try:
@@ -144,12 +146,16 @@ async def search_receive_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE) ->
     else:
         stats = await count_geocoding_month_calls()
         if stats >= GEOCODE_HARD_CAP:
+            await _clear_processing_toast(ctx, update.effective_chat.id)
             await update.message.reply_text(t("geocode_cap_reached", lang))
             return STEP_SEARCH_LOCATION
+
         coords = await geocode_address(address)
         if not coords:
+            await _clear_processing_toast(ctx, update.effective_chat.id)
             await update.message.reply_text(t("invalid_address", lang))
             return STEP_SEARCH_LOCATION
+
         lat, lng = coords
         await save_geocache(address, lat, lng)
 
