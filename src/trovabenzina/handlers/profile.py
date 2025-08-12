@@ -1,4 +1,5 @@
-"""Profile management conversation.
+"""
+Profile management conversation.
 
 Allows users to view and edit profile preferences (language, fuel).
 Keeps a consistent inline keyboard UX with a back-to-menu button.
@@ -39,7 +40,8 @@ log = logging.getLogger(__name__)
 
 
 def _build_profile_keyboard(locale: str) -> InlineKeyboardMarkup:
-    """Return the main profile menu keyboard.
+    """
+    Return the main profile menu keyboard.
 
     Args:
         locale: Language code for translations.
@@ -55,7 +57,8 @@ def _build_profile_keyboard(locale: str) -> InlineKeyboardMarkup:
 
 
 async def _get_or_create_defaults(uid: int, username: str) -> tuple[str, str]:
-    """Return user's (fuel_code, language_code), creating defaults if missing.
+    """
+    Return user's (fuel_code, language_code), creating defaults if missing.
 
     Args:
         uid: Telegram user id.
@@ -81,7 +84,8 @@ async def _get_or_create_defaults(uid: int, username: str) -> tuple[str, str]:
 
 
 async def back_to_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Handle '↩' callback to return to the main profile menu.
+    """
+    Handle '↩' callback to return to the main profile menu.
 
     Args:
         update: Telegram update.
@@ -115,7 +119,8 @@ async def back_to_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
 
 
 async def profile_ep(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Entry point for /profile: show current settings and actions.
+    """
+    Entry point for /profile: show current settings and actions.
 
     Args:
         update: Telegram update.
@@ -148,7 +153,8 @@ async def profile_ep(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 async def ask_language(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Prompt the user to select a language.
+    """
+    Prompt the user to select a language.
 
     Args:
         update: Telegram update.
@@ -174,7 +180,8 @@ async def ask_language(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
 
 
 async def save_language(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Persist a new language and return to the menu with a confirmation.
+    """
+    Persist a new language and return to the menu with a confirmation.
 
     Args:
         update: Telegram update.
@@ -214,7 +221,8 @@ async def save_language(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
 
 
 async def ask_fuel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Prompt the user to select a fuel.
+    """
+    Prompt the user to select a fuel.
 
     Args:
         update: Telegram update.
@@ -240,7 +248,8 @@ async def ask_fuel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 async def save_fuel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Persist a new fuel and return to the menu with a confirmation.
+    """
+    Persist a new fuel and return to the menu with a confirmation.
 
     Args:
         update: Telegram update.
@@ -280,7 +289,8 @@ async def save_fuel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 async def invalid_text(update: Update, context: CallbackContext) -> int:
-    """Gracefully handle unexpected text by repeating the current step.
+    """
+    Gracefully handle unexpected text by repeating the current step.
 
     Args:
         update: Telegram update.

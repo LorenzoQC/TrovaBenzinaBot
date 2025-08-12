@@ -1,4 +1,5 @@
-"""Fuel stations search conversation.
+"""
+Fuel stations search conversation.
 
 Supports searching by GPS location or typed address, with radius refinement
 callbacks and a compact results layout.
@@ -50,7 +51,8 @@ _INITIAL_RADIUS = 5.0
 
 
 def _message_from_update(update: Update):
-    """Return the message object from Update (works for message or callback)."""
+    """
+    Return the message object from Update (works for message or callback)."""
     msg_obj = getattr(update, "message", None)
     if msg_obj is None and getattr(update, "callback_query", None):
         msg_obj = update.callback_query.message
@@ -58,7 +60,8 @@ def _message_from_update(update: Update):
 
 
 async def _clear_processing_toast(ctx: ContextTypes.DEFAULT_TYPE, chat_id: int) -> None:
-    """Delete a previously sent 'processing' message if present."""
+    """
+    Delete a previously sent 'processing' message if present."""
     proc_id = ctx.user_data.pop("processing_msg_id", None)
     if proc_id:
         try:
@@ -69,7 +72,8 @@ async def _clear_processing_toast(ctx: ContextTypes.DEFAULT_TYPE, chat_id: int) 
 
 
 async def search_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> int:
-    """Entry point for /search: ask for a location or address.
+    """
+    Entry point for /search: ask for a location or address.
 
     Args:
         update: Telegram update.
@@ -87,7 +91,8 @@ async def search_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 async def search_receive_location(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> int:
-    """Receive a GPS location and run the initial search at 5 km.
+    """
+    Receive a GPS location and run the initial search at 5 km.
 
     Args:
         update: Telegram update with a location.
@@ -115,7 +120,8 @@ async def search_receive_location(update: Update, ctx: ContextTypes.DEFAULT_TYPE
 
 
 async def search_receive_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> int:
-    """Receive a typed address, geocode it (with cache) and run the search.
+    """
+    Receive a typed address, geocode it (with cache) and run the search.
 
     Args:
         update: Telegram update with text.
@@ -164,7 +170,8 @@ async def run_search(
         show_initial_cta: bool = False,
         followup_offer_radius: Optional[float] = None,
 ) -> None:
-    """Execute one search and render results.
+    """
+    Execute one search and render results.
 
     Args:
         origin: The original update (message or callback).
@@ -308,7 +315,8 @@ async def run_search(
 
 
 async def radius_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
-    """Refine radius to 2.5 km or 7.5 km with double-tap guard.
+    """
+    Refine radius to 2.5 km or 7.5 km with double-tap guard.
 
     UX rules:
       - guard against double taps

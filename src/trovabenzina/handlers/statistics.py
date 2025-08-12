@@ -1,4 +1,5 @@
-"""User statistics for searches (/statistics).
+"""
+User statistics for searches (/statistics).
 
 Shows per-fuel aggregated stats with a one-tap reset button.
 """
@@ -25,7 +26,8 @@ __all__ = ["statistics_ep", "statistics_handler"]
 
 
 async def statistics_ep(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Handle /statistics: render per-fuel blocks or a no-data message.
+    """
+    Handle /statistics: render per-fuel blocks or a no-data message.
 
     Args:
         update: Telegram update.
@@ -100,7 +102,8 @@ async def statistics_ep(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 
 
 async def reset_stats_cb(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Soft-delete all user searches and confirm reset.
+    """
+    Soft-delete all user searches and confirm reset.
 
     Args:
         update: Telegram update.

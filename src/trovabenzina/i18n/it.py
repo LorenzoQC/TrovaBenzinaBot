@@ -20,10 +20,15 @@ TRANSLATIONS = {
 
     # ─────────── /help ───────────
     "help": (
-        "/start – configura il profilo\n"
-        "/search – cerca i distributori più economici\n"
-        "/profile – modifica il profilo\n"
-        "/help – mostra questo messaggio"
+        "🚀 /start – avvia il bot e configura il profilo\n"
+        "🔍 /search – cerca i distributori più economici\n"
+        "👤 /profile – visualizza e modifica le tue impostazioni\n"
+        "📊 /statistics - visualizza le tue statistiche\n"
+        "📢 /help – mostra questo messaggio\n\n"
+    ),
+    "disclaimer": (
+        "ℹ️ Dati sui distributori forniti dal Ministero delle Imprese e del Made in Italy (MISE).\n"
+        "Non si garantisce l'accuratezza o l'aggiornamento delle informazioni mostrate dal bot."
     ),
 
     # ─────────── /profile ───────────
@@ -38,13 +43,13 @@ TRANSLATIONS = {
     "ask_location": "Digita un indirizzo oppure invia la tua posizione 📍",
     "send_location": "Invia posizione GPS 🌍",
     "geocode_cap_reached": "⚠️ Riconoscimento indirizzo al momento non disponibile!\nPer favore riprova più tardi, oppure invia la tua posizione.",
-    "invalid_address": "⚠️ Indirizzo non valido",
+    "invalid_address": "⚠️ Indirizzo non valido!",
     "processing_search": "Ricerca in corso...🔍",
     "please_wait": "Operazione in corso, attendi un attimo...⏳",
     "no_stations": "❌ Nessun distributore trovato",
     "area_label": "Distributori nel raggio di {radius} km",
     "stations_analyzed": "stazioni analizzate",
-    "average_zone_price": "Prezzo medio {fuel_name} della zona",
+    "average_zone_price": "Prezzo medio {fuel_name} nella zona",
     "address": "Indirizzo",
     "no_address": "-",
     "price": "Prezzo",
@@ -53,9 +58,9 @@ TRANSLATIONS = {
     "below_average": "più economico della media",
     "equal_average": "in linea con la media",
     "last_update": "Ultimo aggiornamento",
-    "btn_narrow": "Ripeti ricerca con raggio di {radius} km",
-    "btn_widen": "Ripeti ricerca con raggio di {radius} km",
-    "search_session_expired": "⚠️ Sessione scaduta!\nUtilizza il comando /search per avviare una nuova ricerca.",
+    "btn_narrow": "Ripetere ricerca con raggio di {radius} km 🔄",
+    "btn_widen": "Ripetere ricerca con raggio di {radius} km 🔄",
+    "search_session_expired": "⚠️ Sessione scaduta!\n\nUtilizza il comando /search per avviare una nuova ricerca.",
 
     # ─────────── /statistics ───────────
     "no_statistics": "⚠️ Nessuna statistica disponibile!\n\nUtilizza il comando /search per avviare una ricerca.",
@@ -66,8 +71,8 @@ TRANSLATIONS = {
         "Risparmio medio: <b>{avg_eur_save_per_unit} {price_unit}</b>, ovvero il <b>{avg_pct_save}%</b>.\n"
         "Risparmio annuo stimato: <b>{estimated_annual_save_eur}</b>."
     ),
-    "statistics_info": "<i>ℹ️ Come abbiamo calcolato questi dati?</i>\n"
-                       "• Il risparmio medio è calcolato ipotizzando di effettuare sempre il rifornimento presso il distributore più economico proposto dal bot, confrontandone il prezzo con il prezzo medio della zona.\n"
+    "statistics_info": "<i>❓ Come abbiamo calcolato questi dati?</i>\n"
+                       "• Il risparmio medio è calcolato come media del risparmio ottenuto in ogni ricerca, pari alla differenza tra il prezzo medio della zona e il prezzo del distributore più economico trovato.\n"
                        "• Il risparmio annuo è calcolato ipotizzando una percorrenza di 10.000km annui con un consumo medio di: \n",
     "fuel_consumption": "  - {fuel_name} = {avg_consumption_per_100km}{uom} ogni 100km",
     "reset_statistics": "Azzera le statistiche ♻️",

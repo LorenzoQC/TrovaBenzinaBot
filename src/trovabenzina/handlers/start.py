@@ -1,4 +1,5 @@
-"""Initial onboarding conversation (/start).
+"""
+Initial onboarding conversation (/start).
 
 Guides the user through language and fuel selection, then persists the profile.
 """
@@ -35,7 +36,8 @@ def make_selection_handler(
         final: bool = False,
         back_callback: str | None = None,
 ):
-    """Factory for selection handlers that set `user_data[data_key]`.
+    """
+    Factory for selection handlers that set `user_data[data_key]`.
 
     If `final=True`, it persists the profile and ends the conversation.
 
@@ -88,7 +90,8 @@ def make_back_handler(
         state: int,
         back_callback: str | None = None,
 ):
-    """Factory for back-navigation handlers.
+    """
+    Factory for back-navigation handlers.
 
     Args:
         choices_getter: Callable(lang) -> dict[code, label] for the target step.
@@ -125,7 +128,8 @@ def make_repeat_handler(
         back_callback: str | None,
         state: int,
 ):
-    """Factory for handlers that repeat a prompt on invalid input.
+    """
+    Factory for handlers that repeat a prompt on invalid input.
 
     Args:
         choices_getter: Callable(lang) -> dict[code, label] for the step.
@@ -163,7 +167,8 @@ def make_repeat_handler(
 
 
 async def start_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> int:
-    """Entry point for /start: asks language unless user already registered.
+    """
+    Entry point for /start: asks language unless user already registered.
 
     Args:
         update: Telegram update.

@@ -1,4 +1,5 @@
-"""Conversation handlers public API.
+"""
+Conversation handlers public API.
 
 This module exposes the conversation handlers used by the bot so they can be
 imported as a group from `trovabenzina.handlers`.
