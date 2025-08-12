@@ -72,35 +72,53 @@ def setup_logging(default_level: int = logging.INFO) -> None:
 
 
 def describe(handler: Any) -> str:
-    """Return a compact, useful description of a PTB handler.
-
-    This is helpful when logging the configured conversation graph.
-
-    Args:
-        handler: Any python-telegram-bot handler instance.
-
-    Returns:
-        A human-friendly string describing the handler.
     """
-    from telegram.ext import CallbackQueryHandler, CommandHandler, ConversationHandler
+    Return a compact, useful description of a PTB handler.
 
+    Helpful when logging the configured conversation graph.
+    """
+    from telegram.ext import (
+        CallbackQueryHandler,
+        CommandHandler,
+        ConversationHandler,
+        MessageHandler,
+    )
+
+    # CommandHandler
     if isinstance(handler, CommandHandler):
         return f"CommandHandler(commands={list(handler.commands)})"
 
+    # CallbackQueryHandler
     if isinstance(handler, CallbackQueryHandler):
-        patt = handler.pattern.pattern if handler.pattern else None
+        patt = handler.pattern.pattern if getattr(handler, "pattern", None) else None
         return f"CallbackQueryHandler(pattern='{patt}')"
 
+    # ConversationHandler
     if isinstance(handler, ConversationHandler):
         entry_points = []
-        for e in handler.entry_points:
-            if isinstance(e, CommandHandler):
-                entry_points.append("/" + ",".join(e.commands))
-            elif isinstance(e, CallbackQueryHandler):
-                entry_points.append(f"pattern:{e.pattern.pattern}")
+        for ep in handler.entry_points:
+            if isinstance(ep, CommandHandler):
+                entry_points.append("/" + ",".join(ep.commands))
+            elif isinstance(ep, CallbackQueryHandler):
+                ep_pat = ep.pattern.pattern if getattr(ep, "pattern", None) else None
+                entry_points.append(f"pattern:{ep_pat}")
             else:
-                entry_points.append(e.__class__.__name__)
+                entry_points.append(ep.__class__.__name__)
         return f"ConversationHandler(entry_points={entry_points})"
 
-    attrs = {k: v for k, v in vars(handler).items() if not k.startswith("_")}
-    return f"{handler.__class__.__name__}({attrs})"
+    # MessageHandler (no __dict__ → avoid vars())
+    if isinstance(handler, MessageHandler):
+        # filters has a readable __str__ in PTB 22.x
+        try:
+            filt_str = str(handler.filters)
+        except Exception:
+            filt_str = handler.filters.__class__.__name__
+        return f"MessageHandler(filters={filt_str})"
+
+    # Generic, but safe if __dict__ is absent (e.g., __slots__)
+    try:
+        attrs = {k: v for k, v in vars(handler).items() if not k.startswith("_")}
+        return f"{handler.__class__.__name__}({attrs})"
+    except TypeError:
+        # Last-resort: class name only
+        return f"{handler.__class__.__name__}()"
