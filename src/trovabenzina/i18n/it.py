@@ -23,11 +23,11 @@ TRANSLATIONS = {
         "🚀 /start – avvia il bot e configura il profilo\n"
         "🔍 /search – cerca i distributori più economici\n"
         "👤 /profile – visualizza e modifica le tue impostazioni\n"
-        "📊 /statistics - visualizza le tue statistiche\n"
+        "📊 /statistics – visualizza le tue statistiche\n"
         "📢 /help – mostra questo messaggio\n\n"
     ),
     "disclaimer": (
-        "ℹ️ Dati sui distributori forniti dal Ministero delle Imprese e del Made in Italy (MISE).\n"
+        "ℹ️ Dati sui distributori forniti dal <b>Ministero delle Imprese e del Made in Italy (MISE)</b>.\n"
         "Non si garantisce l'accuratezza o l'aggiornamento delle informazioni mostrate dal bot."
     ),
 

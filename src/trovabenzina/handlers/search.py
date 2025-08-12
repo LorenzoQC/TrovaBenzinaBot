@@ -298,7 +298,7 @@ async def run_search(
         reply_markup = InlineKeyboardMarkup(inline_kb(items, per_row=1))
 
     await msg_obj.reply_text(
-        header + "\n\n".join(lines),
+        header + "\n\n".join(lines) + "\n\n" + t("disclaimer", lang),
         parse_mode=ParseMode.HTML,
         disable_web_page_preview=True,
         reply_markup=reply_markup,
