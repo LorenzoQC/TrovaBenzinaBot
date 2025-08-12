@@ -15,36 +15,41 @@ TRANSLATIONS = {
     "invalid_language": "⚠️ Ungültige Sprache!",
     "select_fuel": "Kraftstoff auswählen ⛽",
     "invalid_fuel": "⚠️ Ungültiger Kraftstoff!",
-    "profile_saved": "✅ Profil erfolgreich gespeichert!\n\nVerwende /search, um eine Suche zu starten.",
-    "user_already_registered": "⚠️ Benutzer bereits registriert!\n\nVerwende /profile, um die Einstellungen zu ändern oder /search für eine Suche.",
+    "profile_saved": "✅ Profil erfolgreich gespeichert!\n\nVerwende den Befehl /search, um eine Suche zu starten.",
+    "user_already_registered": "⚠️ Benutzer bereits registriert!\n\nVerwende den Befehl /profile, um die Einstellungen zu ändern, oder /search, um eine Suche zu starten.",
 
     # ─────────── /help ───────────
     "help": (
-        "/start – Profil einrichten\n"
-        "/search – Günstigste Tankstellen suchen\n"
-        "/profile – Profil bearbeiten\n"
-        "/help – Diese Hilfe anzeigen"
+        "🚀 /start – Bot starten und Profil einrichten\n"
+        "🔍 /search – günstigste Tankstellen finden\n"
+        "👤 /profile – Einstellungen anzeigen und bearbeiten\n"
+        "📊 /statistics – Statistiken anzeigen\n"
+        "📢 /help – diese Nachricht anzeigen\n\n"
+    ),
+    "disclaimer": (
+        "ℹ️ Daten zu Tankstellen werden vom <b>Ministerium für Unternehmen und Made in Italy (MISE)</b> bereitgestellt.\n"
+        "Für die Genauigkeit oder Aktualität der vom Bot angezeigten Informationen wird keine Gewähr übernommen."
     ),
 
     # ─────────── /profile ───────────
     "language": "🌐️ Sprache",
     "fuel": "⛽ Kraftstoff",
-    "edit_language": "Sprache bearbeiten 🌐️",
-    "edit_fuel": "Kraftstoff bearbeiten ⛽",
+    "edit_language": "Sprache ändern 🌐️",
+    "edit_fuel": "Kraftstoff ändern ⛽",
     "language_updated": "✅ Sprache erfolgreich aktualisiert!",
     "fuel_updated": "✅ Kraftstoff erfolgreich aktualisiert!",
 
     # ─────────── /search ───────────
-    "ask_location": "Adresse eingeben oder deinen Standort senden 📍",
+    "ask_location": "Gib eine Adresse ein oder sende deinen Standort 📍",
     "send_location": "GPS-Standort senden 🌍",
-    "geocode_cap_reached": "⚠️ Adresserkennung momentan nicht verfügbar!\nBitte später erneut versuchen oder Standort senden.",
-    "invalid_address": "⚠️ Ungültige Adresse",
-    "processing_search": "Suche läuft...🔍",
+    "geocode_cap_reached": "⚠️ Adresserkennung derzeit nicht verfügbar!\nBitte versuche es später erneut, oder sende deinen Standort.",
+    "invalid_address": "⚠️ Ungültige Adresse!",
+    "processing_search": "Suche läuft.🔍",
+    "please_wait": "Vorgang läuft, bitte einen Moment warten.⏳",
     "no_stations": "❌ Keine Tankstellen gefunden",
-    "near_label": "Tankstellen innerhalb von 2 km",
-    "far_label": "Tankstellen innerhalb von 7 km",
-    "stations_analyzed": "Stationen analysiert",
-    "average_zone_price": "Durchschnittspreis der Zone",
+    "area_label": "Tankstellen im Umkreis von {radius} km",
+    "stations_analyzed": "Tankstellen analysiert",
+    "average_zone_price": "Durchschnittspreis {fuel_name} in der Umgebung",
     "address": "Adresse",
     "no_address": "-",
     "price": "Preis",
@@ -53,20 +58,24 @@ TRANSLATIONS = {
     "below_average": "günstiger als der Durchschnitt",
     "equal_average": "entspricht dem Durchschnitt",
     "last_update": "Letzte Aktualisierung",
+    "btn_narrow": "Suche mit Radius von {radius} km wiederholen 🔄",
+    "btn_widen": "Suche mit Radius von {radius} km wiederholen 🔄",
+    "search_session_expired": "⚠️ Sitzung abgelaufen!\n\nVerwende /search, um eine neue Suche zu starten.",
 
     # ─────────── /statistics ───────────
     "no_statistics": "⚠️ Keine Statistiken verfügbar!\n\nVerwende /search, um eine Suche zu starten.",
     "statistics": (
-        "<b><u>{fuel_name} Statistiken</u></b> 📊\n"
+        "<b><u>{fuel_name}-Statistiken</u></b> 📊\n"
         "<b>{num_searches} Suchen</b> durchgeführt.\n"
-        "<b>{num_stations} Stationen</b> analysiert.\n"
-        "Durchschnittliche Einsparung: <b>{avg_eur_save_per_unit} {price_unit}</b>, bzw. <b>{avg_pct_save}%</b>.\n"
-        "Geschätzte jährliche Einsparung: <b>{estimated_annual_save_eur}</b>."
+        "<b>{num_stations} Tankstellen</b> analysiert.\n"
+        "Durchschnittliche Ersparnis: <b>{avg_eur_save_per_unit} {price_unit}</b>, also <b>{avg_pct_save}%</b>.\n"
+        "Geschätzte jährliche Ersparnis: <b>{estimated_annual_save_eur}</b>."
     ),
-    "statistics_info": "<i>ℹ️ Wie wurden diese Daten berechnet?</i>\n"
-                       "• Die durchschnittliche Einsparung basiert darauf, stets an der günstigsten vom Bot vorgeschlagenen Tankstelle im Vergleich zum Durchschnittspreis der Zone zu tanken.\n"
-                       "• Die jährliche Einsparung basiert auf einer Fahrleistung von 10.000 km pro Jahr bei einem Durchschnittsverbrauch von:\n",
-    "fuel_consumption": "  - {fuel_name} = {avg_consumption_per_100km}{uom} pro 100 km",
+    "statistics_info": "<i>❓ Wie haben wir diese Werte berechnet?</i>\n"
+                       "• Die durchschnittliche Ersparnis ist der Mittelwert über alle Suchen der Differenz zwischen dem Durchschnittspreis der Umgebung und dem vom Bot gefundenen günstigsten Preis.\n"
+                       "• Die jährliche Ersparnis setzt 10.000km pro Jahr mit einem durchschnittlichen Verbrauch von: \n",
+    "fuel_consumption": "  - {fuel_name} = {avg_consumption_per_100km}{uom} je 100km",
     "reset_statistics": "Statistiken zurücksetzen ♻️",
     "statistics_reset": "✅ Statistiken erfolgreich zurückgesetzt!\n\nVerwende /search, um eine Suche zu starten.",
+
 }

@@ -4,8 +4,8 @@ TRANSLATIONS = {
     "language_code": "pt",
     "language_name": "Português",
     "gasoline": "Gasolina",
-    "diesel": "Diesel",
-    "cng": "GNC",
+    "diesel": "Gasóleo",
+    "cng": "GNV",
     "lpg": "GLP",
     "liter_symbol": "L",
     "kilo_symbol": "kg",
@@ -15,15 +15,20 @@ TRANSLATIONS = {
     "invalid_language": "⚠️ Idioma inválido!",
     "select_fuel": "Selecionar combustível ⛽",
     "invalid_fuel": "⚠️ Combustível inválido!",
-    "profile_saved": "✅ Perfil salvo com sucesso!\n\nUse /search para iniciar uma busca.",
-    "user_already_registered": "⚠️ Usuário já registrado!\n\nUse /profile para modificar preferências ou /search para iniciar uma busca.",
+    "profile_saved": "✅ Perfil salvo com sucesso!\n\nUse o comando /search para iniciar uma busca.",
+    "user_already_registered": "⚠️ Usuário já registrado!\n\nUse o comando /profile para alterar as preferências ou o comando /search para iniciar uma busca.",
 
     # ─────────── /help ───────────
     "help": (
-        "/start – configurar seu perfil\n"
-        "/search – buscar os postos mais baratos\n"
-        "/profile – modificar seu perfil\n"
-        "/help – mostrar esta mensagem"
+        "🚀 /start – iniciar o bot e configurar o perfil\n"
+        "🔍 /search – buscar os postos mais baratos\n"
+        "👤 /profile – ver e editar suas configurações\n"
+        "📊 /statistics – ver suas estatísticas\n"
+        "📢 /help – mostrar esta mensagem\n\n"
+    ),
+    "disclaimer": (
+        "ℹ️ Dados dos postos fornecidos pelo <b>Ministério das Empresas e do Made in Italy (MISE)</b>.\n"
+        "Não se garante a precisão ou a atualização das informações exibidas pelo bot."
     ),
 
     # ─────────── /profile ───────────
@@ -37,14 +42,14 @@ TRANSLATIONS = {
     # ─────────── /search ───────────
     "ask_location": "Digite um endereço ou envie sua localização 📍",
     "send_location": "Enviar localização GPS 🌍",
-    "geocode_cap_reached": "⚠️ Reconhecimento de endereço indisponível no momento!\nPor favor, tente novamente mais tarde ou envie sua localização.",
-    "invalid_address": "⚠️ Endereço inválido",
-    "processing_search": "Pesquisando...🔍",
+    "geocode_cap_reached": "⚠️ Reconhecimento de endereço indisponível no momento!\nTente novamente mais tarde, ou envie sua localização.",
+    "invalid_address": "⚠️ Endereço inválido!",
+    "processing_search": "Busca em andamento.🔍",
+    "please_wait": "Processando, aguarde um instante.⏳",
     "no_stations": "❌ Nenhum posto encontrado",
-    "near_label": "Postos dentro de 2 km",
-    "far_label": "Postos dentro de 7 km",
+    "area_label": "Postos num raio de {radius} km",
     "stations_analyzed": "postos analisados",
-    "average_zone_price": "Preço médio da área",
+    "average_zone_price": "Preço médio de {fuel_name} na zona",
     "address": "Endereço",
     "no_address": "-",
     "price": "Preço",
@@ -53,9 +58,12 @@ TRANSLATIONS = {
     "below_average": "mais barato que a média",
     "equal_average": "em linha com a média",
     "last_update": "Última atualização",
+    "btn_narrow": "Repetir busca com raio de {radius} km 🔄",
+    "btn_widen": "Repetir busca com raio de {radius} km 🔄",
+    "search_session_expired": "⚠️ Sessão expirada!\n\nUse o comando /search para iniciar uma nova busca.",
 
     # ─────────── /statistics ───────────
-    "no_statistics": "⚠️ Nenhuma estatística disponível!\n\nUse /search para iniciar uma busca.",
+    "no_statistics": "⚠️ Nenhuma estatística disponível!\n\nUse o comando /search para iniciar uma busca.",
     "statistics": (
         "<b><u>Estatísticas {fuel_name}</u></b> 📊\n"
         "<b>{num_searches} buscas</b> realizadas.\n"
@@ -63,12 +71,11 @@ TRANSLATIONS = {
         "Economia média: <b>{avg_eur_save_per_unit} {price_unit}</b>, ou <b>{avg_pct_save}%</b>.\n"
         "Economia anual estimada: <b>{estimated_annual_save_eur}</b>."
     ),
-    "statistics_info": "<i>ℹ️ Como esses números são calculados?</i>\n"
-                       "• A economia média assume sempre abastecer no posto mais barato sugerido pelo bot em comparação com o preço médio da área.\n"
-                       "• A economia anual assume 10.000 km por ano com consumo médio de:\n",
-    "fuel_consumption": "  - {fuel_name} = {avg_consumption_per_100km}{uom} por 100 km",
+    "statistics_info": "<i>❓ Como calculamos estes números?</i>\n"
+                       "• A economia média é a média, em todas as buscas, da diferença entre o preço médio da zona e o preço do posto mais barato encontrado pelo bot.\n"
+                       "• A economia anual considera 10.000km por ano com um consumo médio de: \n",
+    "fuel_consumption": "  - {fuel_name} = {avg_consumption_per_100km}{uom} por 100km",
     "reset_statistics": "Redefinir estatísticas ♻️",
-    "statistics_reset": "✅ Estatísticas redefinidas com sucesso!\n\nUse /search para iniciar uma busca.",
-
+    "statistics_reset": "✅ Estatísticas redefinidas com sucesso!\n\nUse o comando /search para iniciar uma busca.",
 
 }
