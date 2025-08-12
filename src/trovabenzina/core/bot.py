@@ -28,7 +28,7 @@ from ..utils import (
     describe,
 )
 
-KNOWN_CMDS_RE = r"^/(start|find|profile|help)(?:@\w+)?(?:\s|$)"
+KNOWN_CMDS_RE = r"^/(start|search|profile|statistics|help)(?:@\w+)?(?:\s|$)"
 
 # Configure logging
 setup_logging()
