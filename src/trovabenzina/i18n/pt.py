@@ -42,8 +42,8 @@ TRANSLATIONS = {
     # ─────────── /search ───────────
     "ask_location": "Digite um endereço ou envie sua localização 📍",
     "send_location": "Enviar localização GPS 🌍",
-    "geocode_cap_reached": "⚠️ Reconhecimento de endereço indisponível no momento!\nTente novamente mais tarde, ou envie sua localização.",
-    "invalid_address": "⚠️ Endereço inválido!",
+    "geocode_cap_reached": "⚠️ Reconhecimento de endereço indisponível no momento!\n\nTente novamente mais tarde, ou envie sua localização.",
+    "invalid_address": "⚠️ Endereço inválido!\n\nDigite outro endereço ou envie sua localização.",
     "processing_search": "Busca em andamento.🔍",
     "please_wait": "Processando, aguarde um instante.⏳",
     "no_stations": "❌ Nenhum posto encontrado",

@@ -42,8 +42,8 @@ TRANSLATIONS = {
     # ─────────── /search ───────────
     "ask_location": "住所を入力するか、位置情報を送信してください 📍",
     "send_location": "GPS 位置情報を送信 🌍",
-    "geocode_cap_reached": "⚠️ 現在、住所の認識は利用できません！\n後でもう一度お試しいただくか、位置情報を送信してください。",
-    "invalid_address": "⚠️ 無効な住所です！",
+    "geocode_cap_reached": "⚠️ 現在、住所の認識は利用できません！\n\n後でもう一度お試しいただくか、位置情報を送信してください。",
+    "invalid_address": "⚠️ 無効な住所です！\n\n別の住所を入力するか、位置情報を送信してください。",
     "processing_search": "検索中です。🔍",
     "please_wait": "処理中です。少々お待ちください。⏳",
     "no_stations": "❌ スタンドが見つかりませんでした",

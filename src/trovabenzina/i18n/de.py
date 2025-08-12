@@ -42,8 +42,8 @@ TRANSLATIONS = {
     # ─────────── /search ───────────
     "ask_location": "Gib eine Adresse ein oder sende deinen Standort 📍",
     "send_location": "GPS-Standort senden 🌍",
-    "geocode_cap_reached": "⚠️ Adresserkennung derzeit nicht verfügbar!\nBitte versuche es später erneut, oder sende deinen Standort.",
-    "invalid_address": "⚠️ Ungültige Adresse!",
+    "geocode_cap_reached": "⚠️ Adresserkennung derzeit nicht verfügbar!\n\nBitte versuche es später erneut, oder sende deinen Standort.",
+    "invalid_address": "⚠️ Ungültige Adresse!\n\nGib eine andere Adresse ein oder sende deinen Standort.",
     "processing_search": "Suche läuft.🔍",
     "please_wait": "Vorgang läuft, bitte einen Moment warten.⏳",
     "no_stations": "❌ Keine Tankstellen gefunden",
