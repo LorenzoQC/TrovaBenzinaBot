@@ -20,13 +20,18 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Fetch ALL branches and tags from origin
+      - name: Detach HEAD to allow ref updates
+        run: |
+          set -euo pipefail
+          git checkout --detach
+
+      - name: Fetch all branches and tags
         run: |
           set -euo pipefail
           git fetch origin +refs/heads/*:refs/heads/* --prune
           git fetch origin +refs/tags/*:refs/tags/* --prune-tags
 
-      - name: Configure Git and add mirror remote
+      - name: Configure mirror remote
         env:
           MIRROR_OWNER: ${{ secrets.MIRROR_OWNER }}
           MIRROR_REPO:  ${{ secrets.MIRROR_REPO }}
@@ -37,7 +42,7 @@ jobs:
           git remote add mirror "https://${MIRROR_OWNER}:${MIRROR_TOKEN}@github.com/${MIRROR_OWNER}/${MIRROR_REPO}.git"
           git ls-remote --heads mirror > /dev/null
 
-      - name: Push all refs to mirror (including deletions)
+      - name: Push all refs to mirror
         run: |
           set -euo pipefail
           git push --prune --mirror mirror
