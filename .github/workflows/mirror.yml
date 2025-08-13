@@ -1,0 +1,29 @@
+name: Mirror to private repo
+
+on:
+  push:
+    branches:
+      - '**'
+    tags:
+      - '**'
+  delete: {}
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push to mirror (all refs, including deletions)
+        env:
+          MIRROR_TOKEN: ${{ secrets.MIRROR_TOKEN }}
+          MIRROR_OWNER: ${{ secrets.MIRROR_OWNER }}
+          MIRROR_REPO: ${{ secrets.MIRROR_REPO }}
+        run: |
+          set -e
+          git remote add mirror https://${MIRROR_TOKEN}@github.com/${MIRROR_OWNER}/${MIRROR_REPO}.git
+          git fetch --all --tags --prune
+          git push --mirror mirror
