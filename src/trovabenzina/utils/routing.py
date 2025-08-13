@@ -5,7 +5,7 @@ from __future__ import annotations
 from telegram import Update
 from telegram.ext import ContextTypes, ConversationHandler
 
-from ..utils import (
+from .states import (
     STEP_PROFILE_MENU,
     STEP_PROFILE_LANGUAGE,
     STEP_PROFILE_FUEL,
