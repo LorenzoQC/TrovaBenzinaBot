@@ -56,6 +56,21 @@ def _build_profile_keyboard(locale: str) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_kb(items, per_row=1))
 
 
+def _remember_profile_message(context: ContextTypes.DEFAULT_TYPE, chat_id: int, message_id: int) -> None:
+    """
+    Store the latest /profile message reference in chat_data.
+
+    Args:
+        context: Callback context.
+        chat_id: Chat identifier.
+        message_id: Message identifier.
+
+    Returns:
+        None
+    """
+    context.chat_data["profile_msg"] = {"chat_id": chat_id, "message_id": message_id}
+
+
 async def _get_or_create_defaults(uid: int, username: str) -> tuple[str, str]:
     """
     Return user's (fuel_code, language_code), creating defaults if missing.
@@ -110,10 +125,11 @@ async def back_to_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
 
     summary = f"{t('language', lang_code)}: {lang_name}\n{t('fuel', lang_code)}: {fuel_label}"
 
-    await query.edit_message_text(
+    msg = await query.edit_message_text(
         summary,
         reply_markup=_build_profile_keyboard(lang_code),
     )
+    _remember_profile_message(context, msg.chat_id, msg.message_id)
     context.chat_data["current_state"] = STEP_PROFILE_MENU
     return STEP_PROFILE_MENU
 
@@ -144,10 +160,11 @@ async def profile_ep(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
     summary = f"{t('language', lang_code)}: {lang_name}\n{t('fuel', lang_code)}: {fuel_label}"
 
-    await update.effective_message.reply_text(
+    msg = await update.effective_message.reply_text(
         summary,
         reply_markup=_build_profile_keyboard(lang_code),
     )
+    _remember_profile_message(context, msg.chat_id, msg.message_id)
     context.chat_data["current_state"] = STEP_PROFILE_MENU
     return STEP_PROFILE_MENU
 
@@ -172,10 +189,11 @@ async def ask_language(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
     kb = inline_menu_from_map(language_choices, "set_lang", per_row=2)
     kb = with_back_row(kb, "profile")
 
-    await query.edit_message_text(
+    msg = await query.edit_message_text(
         t("select_language", lang),
         reply_markup=InlineKeyboardMarkup(kb),
     )
+    _remember_profile_message(context, msg.chat_id, msg.message_id)
     return STEP_PROFILE_LANGUAGE
 
 
@@ -212,10 +230,11 @@ async def save_language(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
         f"{t('language', new_lang)}: {lang_name}\n"
         f"{t('fuel', new_lang)}: {fuel_label}"
     )
-    await query.edit_message_text(
+    msg = await query.edit_message_text(
         summary,
         reply_markup=_build_profile_keyboard(new_lang),
     )
+    _remember_profile_message(context, msg.chat_id, msg.message_id)
     context.chat_data["current_state"] = STEP_PROFILE_MENU
     return STEP_PROFILE_MENU
 
@@ -240,10 +259,11 @@ async def ask_fuel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     kb = inline_menu_from_map(fuel_choices, "set_fuel", per_row=2)
     kb = with_back_row(kb, "profile")
 
-    await query.edit_message_text(
+    msg = await query.edit_message_text(
         t("select_fuel", lang),
         reply_markup=InlineKeyboardMarkup(kb),
     )
+    _remember_profile_message(context, msg.chat_id, msg.message_id)
     return STEP_PROFILE_FUEL
 
 
@@ -280,10 +300,11 @@ async def save_fuel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         f"{t('language', lang_code)}: {lang_name}\n"
         f"{t('fuel', lang_code)}: {fuel_label}"
     )
-    await query.edit_message_text(
+    msg = await query.edit_message_text(
         summary,
         reply_markup=_build_profile_keyboard(lang_code),
     )
+    _remember_profile_message(context, msg.chat_id, msg.message_id)
     context.chat_data["current_state"] = STEP_PROFILE_MENU
     return STEP_PROFILE_MENU
 
