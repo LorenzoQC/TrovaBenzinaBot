@@ -352,6 +352,6 @@ profile_handler = ConversationHandler(
     fallbacks=[
         MessageHandler(filters.COMMAND, reroute_command),
     ],
-    block=False,
+    block=True,
     allow_reentry=True,
 )
