@@ -1,13 +1,12 @@
 import asyncio
 import logging
-import os
 
 from telegram.ext import (
     ApplicationBuilder, MessageHandler, filters,
 )
 from telegram.request import HTTPXRequest
 
-from ..config import BOT_TOKEN, BASE_URL
+from ..config import BOT_TOKEN
 from ..db import (
     init_db,
     sync_config_tables,
@@ -76,10 +75,12 @@ def main() -> None:
     )
 
     # Build the Telegram application
-    app = (ApplicationBuilder()
-           .token(BOT_TOKEN)
-           .request(httpx_request)
-           .build())
+    app = (
+        ApplicationBuilder()
+        .token(BOT_TOKEN)
+        .request(httpx_request)
+        .build()
+    )
 
     # Add handlers
     app.add_handler(start_handler)  # /start
@@ -89,8 +90,10 @@ def main() -> None:
     app.add_handler(search_handler)  # /search
     app.add_handler(radius_callback_handler)  # /search radius callbacks
     app.add_handler(profile_handler)  # /profile
-    app.add_handler(MessageHandler(filters.COMMAND & ~filters.Regex(KNOWN_CMDS_RE), handle_unknown_command),
-                    group=98)  # unknown commands
+    app.add_handler(
+        MessageHandler(filters.COMMAND & ~filters.Regex(KNOWN_CMDS_RE), handle_unknown_command),
+        group=98,
+    )  # unknown commands
 
     # Debug: list registered handlers
     log.debug("=== HANDLER REGISTRY ===")
@@ -98,13 +101,12 @@ def main() -> None:
         for handler in handler_list:
             log.debug("Group %s -> %s", group, describe(handler))
 
-    # Start webhook server
-    log.info("Starting webhook server")
-    app.run_webhook(
-        listen="0.0.0.0",
-        port=int(os.getenv("PORT", "8080")),
-        url_path="webhook",
-        webhook_url=f"{BASE_URL}/webhook",
+    # Start polling
+    log.info("Starting polling")
+    app.run_polling(
+        allowed_updates=None,
+        close_loop=False,
+        drop_pending_updates=False
     )
 
 

@@ -22,7 +22,6 @@ from ..utils import (
     STEP_START_LANGUAGE,
     inline_menu_from_map,
     with_back_row,
-    delete_last_profile_message,
 )
 
 __all__ = ["start_ep", "start_handler"]
@@ -179,8 +178,6 @@ async def start_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> int:
         int: The conversation state to wait for a language selection,
              or END if the user already has a profile.
     """
-    await delete_last_profile_message(ctx)
-
     existing = await get_user(update.effective_user.id)
     if existing:
         _, lang = existing
