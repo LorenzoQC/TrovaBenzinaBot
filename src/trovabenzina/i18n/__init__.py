@@ -5,6 +5,14 @@ from trovabenzina.config import DEFAULT_LANGUAGE
 _lang_modules = {
     "it": "trovabenzina.i18n.it",
     "en": "trovabenzina.i18n.en",
+    "de": "trovabenzina.i18n.de",
+    "fr": "trovabenzina.i18n.fr",
+    "es": "trovabenzina.i18n.es",
+    "ru": "trovabenzina.i18n.ru",
+    "zh": "trovabenzina.i18n.zh",
+    "ja": "trovabenzina.i18n.ja",
+    "pt": "trovabenzina.i18n.pt",
+    "ar": "trovabenzina.i18n.ar",
 }
 _translations = {}
 

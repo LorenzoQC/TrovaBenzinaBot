@@ -1,61 +1,84 @@
 # EN - English
 TRANSLATIONS = {
+    # ─────────── config ───────────
     "language_code": "en",
     "language_name": "English",
+    "gasoline": "Gasoline",
+    "diesel": "Diesel",
+    "cng": "CNG",
+    "lpg": "LPG",
+    "liter_symbol": "L",
+    "kilo_symbol": "kg",
 
     # ─────────── /start ───────────
     "select_language": "Select language 🌐️",
-    "invalid_language": "⚠️ Invalid language",
-    "select_fuel": "Select fuel 🛢️",
-    "invalid_fuel": "⚠️ Invalid fuel",
-    "select_service": "Select service ⛽",
-    "invalid_service": "⚠️ Invalid service",
-    "profile_saved": "✅ Profile saved correctly",
-
-    # ─────────── /profile ───────────
-    "language": "🌐️ Language",
-    "fuel": "🛢️ Fuel",
-    "service": "⛽ Service",
-    "edit_language": "Edit language 🌐️",
-    "edit_fuel": "Edit fuel 🛢️",
-    "edit_service": "Edit service ⛽",
-
-    # ─────────── /find ───────────
-    "select_radius": "Select search radius 📏",
-    "invalid_radius": "⚠️ Invalid radius",
-    "send_location": "Send GPS location 📍",
-    "ask_location": "➤ Send your location or pick a favourite place",
-    "invalid_address": "⚠️ Invalid address",
-    "no_stations": "❌ No stations found",
-
-    # price notes
-    "note_cheaper": "Save {pct}%!",
-    "note_equal": "In line with average",
-    "note_more_expensive": "Costs {pct}% more",
-    "compared_to_avg": "(average: {avg:.3f} €/L)",
-    "lets_go": "Let's go!",
-    "no_address": "Address not available",
-
-    # ─────────── /favorites ───────────
-    "favorites_title": "Saved favourite places:",
-    "add_favorite_btn": "➕ Add favourite",
-    "edit_favorite_btn": "🗑️ Edit favourites",
-    "which_fav_remove": "Which favourite do you want to remove?",
-    "fav_removed": "Favourite removed",
-    "fav_saved": "✅ Favourite saved successfully",
-    "no_favorites": "No favourite places saved",
-    "ask_fav_name": "Give a name to the favourite place",
-    "ask_fav_location": "Send location or address for the favourite",
+    "invalid_language": "⚠️ Invalid language!",
+    "select_fuel": "Select fuel ⛽",
+    "invalid_fuel": "⚠️ Invalid fuel!",
+    "profile_saved": "✅ Profile saved successfully!\n\nUse /search to start a search.",
+    "user_already_registered": "⚠️ User already registered!\n\nUse /profile to change preferences or /search to start a search.",
 
     # ─────────── /help ───────────
     "help": (
-        "/start – set up your profile\n"
-        "/find – cheapest stations nearby\n"
-        "/favorites – manage favourites\n"
-        "/profile – edit profile\n"
-        "/help – show this message"
+        "🚀 /start – launch the bot and set up your profile\n"
+        "🔍 /search – find the cheapest fuel stations\n"
+        "👤 /profile – view and edit your settings\n"
+        "📊 /statistics – view your statistics\n"
+        "📢 /help – show this message\n\n"
+    ),
+    "disclaimer": (
+        "ℹ️ Station data provided by the <b>Ministry of Enterprises and Made in Italy (MISE)</b>.\n"
+        "The accuracy or timeliness of the information shown by the bot is not guaranteed."
     ),
 
-    # ─────────── generics ───────────
-    "use_commands": "⛔ Please use commands",
+    # ─────────── /profile ───────────
+    "language": "🌐️ Language",
+    "fuel": "⛽ Fuel",
+    "edit_language": "Edit language 🌐️",
+    "edit_fuel": "Edit fuel ⛽",
+    "language_updated": "✅ Language updated successfully!",
+    "fuel_updated": "✅ Fuel updated successfully!",
+
+    # ─────────── /search ───────────
+    "ask_location": "Type an address or send your location 📍",
+    "send_location": "Send GPS location 🌍",
+    "geocode_cap_reached": "⚠️ Address recognition currently unavailable!\n\nPlease try again later, or send your location.",
+    "invalid_address": "⚠️ Invalid address!\n\nType another address or send your location.",
+    "italy_only": "⚠️ Search is only available in Italy!\n\nType an Italian address or send your location.",
+    "processing_search": "Search in progress...🔍",
+    "please_wait": "Working on it, please wait...⏳",
+    "no_stations": "❌ No stations found",
+    "area_label": "Stations within {radius} km",
+    "stations_analyzed": "stations analyzed",
+    "average_zone_price": "Average {fuel_name} price in the area",
+    "address": "Address",
+    "no_address": "-",
+    "price": "Price",
+    "eur_symbol": "€",
+    "slash_symbol": "/\u200b",
+    "below_average": "cheaper than the average",
+    "equal_average": "in line with the average",
+    "last_update": "Last update",
+    "btn_narrow": "Repeat search with {radius} km radius 🔄",
+    "btn_widen": "Repeat search with {radius} km radius 🔄",
+    "search_session_expired": "⚠️ Session expired!\n\nUse /search to start a new search.",
+
+    # ─────────── /statistics ───────────
+    "no_statistics": "⚠️ No statistics available!\n\nUse /search to start a search.",
+    "statistics": (
+        "<b><u>{fuel_name} statistics</u></b> 📊\n"
+        "<b>{num_searches} searches</b> performed.\n"
+        "<b>{num_stations} stations</b> analyzed.\n"
+        "Average saving: <b>{avg_eur_save_per_unit} {price_unit}</b>, i.e. <b>{avg_pct_save}%</b>.\n"
+        "Estimated annual saving: <b>{estimated_annual_save_eur}</b>."
+    ),
+    "statistics_info": "<i>❓ How did we calculate these figures?</i>\n"
+                       "• The average saving is computed as the average difference, for each search, between the area’s average price and the cheapest station found by the bot.\n"
+                       "• The annual saving assumes 10,000km per year with an average consumption of: \n",
+    "fuel_consumption": "  - {fuel_name} = {avg_consumption_per_100km}{uom} every 100km",
+    "reset_statistics": "Reset statistics ♻️",
+    "statistics_reset": "✅ Statistics reset successfully!\n\nUse /search to start a search.",
+
+    "unknown_command_hint": "⚠️ Invalid command!\n\nUse the /help command for a list of available commands.",
+
 }

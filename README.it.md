@@ -13,13 +13,15 @@ Bot Telegram che permette agli utenti di trovare i distributori di carburante pi
 * **Personalizzazione**: Gli utenti possono selezionare lingua, tipo di carburante e tipo di servizio preferiti.
 * **Interfaccia Intuitiva**: Comandi semplici e pulsanti inline per una navigazione immediata.
 
-## 🛠️ Tecnologie Utilizzate
+## 🛠️ Tecnologie utilizzate
 
 * Python 3.12
-* Telegram Bot API (`python-telegram-bot[webhooks] v22.2`)
-* Web framework: `aiohttp` per la gestione dei webhook
-* Database PostgreSQL (`asyncpg`)
-* APScheduler per attività periodiche
+* Telegram Bot API (`python-telegram-bot[webhooks]==22.2`)
+* Framework web: `aiohttp==3.10.11` per la gestione dei webhook
+* Driver database: `asyncpg>=0.27.0` per PostgreSQL
+* Scheduling: `APScheduler==3.10.4`
+* ORM e supporto async: `SQLAlchemy[asyncio]>=2.0.0`
+* Operazioni su file: `aiofiles~=24.1.0`
 
 ## 📦 Requisiti
 
@@ -34,7 +36,7 @@ pip install -r requirements.txt
 Il bot è attualmente deployato su [Railway](https://railway.app) ed è disponibile su Telegram
 come [@trovabenzinabot](https://t.me/trovabenzinabot).
 
-## 🌐 Configurazione Variabili d'Ambiente
+## 🌐 Configurazione variabili d'ambiente
 
 Imposta le seguenti variabili d'ambiente:
 
@@ -42,29 +44,35 @@ Imposta le seguenti variabili d'ambiente:
 * `DATABASE_URL`: URL di connessione a PostgreSQL
 * `GOOGLE_MAPS_API_KEY`: API Key per Google Maps Geocoding
 
-## 🔧 Struttura del Progetto
+## 🔧 Struttura del progetto
 
 ```plaintext
 .
-├── assets/            # Immagini e risorse multimediali del bot
-├── src/               # Codice sorgente dell'applicazione
+├── assets/                  # Risorse statiche del bot
+│   ├── config/              # File di configurazione aggiuntiva
+│   │   ├── csv/             # File CSV di dati
+│   │   └── sql/             # Script SQL di inizializzazione
+│   └── images/              # Immagini e icone
+├── src/                     # Codice sorgente dell'applicazione
 │   └── trovabenzina/
-│       ├── bot/       # Inizializzazione del bot e configurazione scheduler
-│       ├── config/    # Gestione configurazioni e segreti
-│       ├── core/      # Moduli core: interazioni con API e database
-│       ├── handlers/  # Gestori dei comandi del bot
-│       ├── i18n/      # File di traduzione per le lingue supportate
-│       └── utils/     # Funzioni di utilità e helper
-├── requirements.txt   # Dipendenze del progetto
-├── Dockerfile         # Configurazione Docker per il deployment
-└── README.md          # Documentazione del progetto
+│       ├── api/             # Integrazioni con API esterne (Google Maps, MISE)
+│       ├── config/          # Gestione configurazioni e segreti
+│       ├── core/            # Avvio del bot e scheduler
+│       ├── db/              # Accesso e sincronizzazione database
+│       ├── handlers/        # Gestori dei comandi e conversazioni
+│       ├── i18n/            # Traduzioni multilingua
+│       └── utils/           # Funzioni di utilità e helper
+├── requirements.txt         # Dipendenze del progetto
+├── Dockerfile               # Configurazione Docker per il deployment
+└── README.md                # Documentazione del progetto
 ```
 
-## 📌 Comandi Principali del Bot
+## 📌 Comandi del bot
 
 * `/start`: Avvia la configurazione del profilo utente.
-* `/find`: Trova il distributore di carburante più economico in base alla posizione attuale.
-* `/preferences`: Modifica preferenze di lingua, carburante e tipo di servizio.
+* `/find`: Cerca i distributori di carburante più economici in base alla posizione attuale.
+* `/profile`: Visualizza o modifica le preferenze del profilo (lingua, tipo di carburante).
+* `/help`: Mostra informazioni di aiuto e comandi disponibili.
 
 ## 🤝 Contribuire
 

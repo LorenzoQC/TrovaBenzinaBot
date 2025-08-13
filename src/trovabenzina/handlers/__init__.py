@@ -1,41 +1,29 @@
-from .favorites import (
-    favorites_conv,
-    favorites_cmd,
-    favorites_callback,
-    fav_name,
-    fav_loc,
-)
-from .find import (
-    find_conv,
-    find_cmd,
-    find_receive_location,
-    find_receive_text,
-    favloc_clicked,
-    radius_selected,
-)
-from .help import help_cmd
-from .profile import (
-    profile_entry,
-    ask_language, save_language,
-    ask_fuel, save_fuel,
-    ask_service, save_service,
-    invalid_text,
-    LANG_SELECT, FUEL_SELECT, SERVICE_SELECT,
-)
-from .start import (
-    start_conv
-)
+"""
+Conversation handlers public API.
+
+This module exposes the conversation handlers used by the bot so they can be
+imported as a group from `trovabenzina.handlers`.
+"""
+
+from .help import help_handler
+from .misc import handle_unrecognized_message, handle_unknown_command
+from .profile import profile_handler
+from .search import search_handler, radius_callback_handler
+from .start import start_handler
+from .statistics import statistics_handler
 
 __all__ = [
-    # favorites
-    "favorites_conv", "favorites_cmd", "favorites_callback", "fav_name", "fav_loc",
-    # find
-    "find_conv", "find_cmd", "find_receive_location", "find_receive_text", "favloc_clicked", "radius_selected",
-    # help
-    "help_cmd",
-    # profile
-    "profile_entry", "ask_language", "save_language", "ask_fuel", "save_fuel", "ask_service", "save_service",
-    "invalid_text", "LANG_SELECT", "FUEL_SELECT", "SERVICE_SELECT",
     # start
-    "start_conv",
+    "start_handler",
+    # help
+    "help_handler",
+    # profile
+    "profile_handler",
+    # search
+    "search_handler",
+    "radius_callback_handler",
+    # statistics
+    "statistics_handler",
+    # misc
+    "handle_unrecognized_message", "handle_unknown_command",
 ]

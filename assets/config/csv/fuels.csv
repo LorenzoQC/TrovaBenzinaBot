@@ -1,0 +1,5 @@
+avg_consumption_per_100km,uom,code,name
+7.0,liter,1,gasoline
+5.0,liter,2,diesel
+4.0,kilo,3,cng
+8.0,liter,4,lpg

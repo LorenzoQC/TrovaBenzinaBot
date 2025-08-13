@@ -1,23 +1,31 @@
 import os
 
-# Database
+# Bot startup mode: "POLLING" (long-polling) or "WEBHOOK"
+TB_MODE = os.getenv("TB_MODE", "WEBHOOK")
+
+# Database connection URL (e.g. postgresql+asyncpg://user:pass@host:port/dbname)
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Geocoding
-GEOCODE_HARD_CAP = int(os.getenv("GEOCODE_HARD_CAP", "10000"))  # max monthly requests cached
+# Port to bind the HTTP server on when running in WEBHOOK mode
+PORT = int(os.getenv("PORT", "8080"))
 
-# Telegram base URL (non-sensitive)
-BASE_URL = os.getenv("BASE_URL")  # e.g. https://your.domain
+# Telegram webhook base URL
+BASE_URL = os.getenv("BASE_URL")
 
-# Scheduler
-SCHEDULER_TIMEZONE = os.getenv("SCHEDULER_TIMEZONE", "Europe/Rome")
-CACHE_CLEAN_HOUR = int(os.getenv("CACHE_CLEAN_HOUR", "4"))  # daily at 4:00
-MONTHLY_REPORT_DAY = int(os.getenv("MONTHLY_REPORT_DAY", "1"))  # day of month
-MONTHLY_REPORT_HOUR = int(os.getenv("MONTHLY_REPORT_HOUR", "9"))
-ENABLE_DONATION = os.getenv("ENABLE_DONATION", "true").lower() == "true"
-PAYPAL_LINK = os.getenv("PAYPAL_LINK", "https://www.paypal.com/donate")
+# URL path segment to receive webhook updates (joined with BASE_URL)
+WEBHOOK_PATH = os.getenv("WEBHOOK_PATH", "webhook")
 
-# MISE API (endpoints, non-sensitive)
+# Logging level
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
+
+# Default fallback language
+DEFAULT_LANGUAGE = "it"
+
+# In‐memory maps, populated at startup from the database
+FUEL_MAP = {}
+LANGUAGE_MAP = {}
+
+# MISE API endpoints
 MISE_SEARCH_URL = os.getenv(
     "MISE_SEARCH_URL",
     "https://carburanti.mise.gov.it/ospzApi/search/zone"
@@ -27,30 +35,15 @@ MISE_DETAIL_URL = os.getenv(
     "https://carburanti.mise.gov.it/ospzApi/registry/servicearea/{id}"
 )
 
-# Maps API (endpoint, non-sensitive)
-GEOCODE_URL = os.getenv(
+# Google Maps Geocoding API endpoint
+MAPS_GEOCODING_URL = os.getenv(
     "GEOCODE_URL",
     "https://maps.googleapis.com/maps/api/geocode/json"
 )
 
-# Default search radii (km)
-DEFAULT_RADIUS_NEAR = float(os.getenv("DEFAULT_RADIUS_NEAR", "2"))
-DEFAULT_RADIUS_FAR = float(os.getenv("DEFAULT_RADIUS_FAR", "7"))
+# Geocoding cache: maximum number of monthly requests to cache
+GEOCODE_HARD_CAP = int(os.getenv("GEOCODE_HARD_CAP", "10000"))
 
-# Fuel and service mappings
-FUEL_MAP = {"Benzina": "1", "Gasolio": "2", "Metano": "3",
-            "GPL": "4", "L-GNC": "323", "GNL": "324"}
-SERVICE_MAP = {"Self-service": "1", "Servito": "0", "Indifferente": "x"}
-
-# Conversation states
-LOC_STATE = 1
-
-# Supported languages
-LANGUAGES = {
-    "it": "Italiano", "en": "English", "de": "Deutsch",
-    "fr": "Français", "es": "Español", "ru": "Русский",
-    "zh": "中文", "ja": "日本語", "pt": "Português", "ar": "العربية",
-}
-
-# Default language
-DEFAULT_LANGUAGE = "it"
+# Donation feature toggle and PayPal link
+ENABLE_DONATION = os.getenv("ENABLE_DONATION", "true").lower() == "true"
+PAYPAL_LINK = os.getenv("PAYPAL_LINK", "https://www.paypal.com/donate")
