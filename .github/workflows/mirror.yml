@@ -5,6 +5,7 @@ on:
     branches: ['**']
     tags: ['**']
   delete: {}
+  workflow_dispatch: {}
 
 permissions:
   contents: read
@@ -19,6 +20,12 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Fetch ALL branches and tags from origin
+        run: |
+          set -euo pipefail
+          git fetch origin +refs/heads/*:refs/heads/* --prune
+          git fetch origin +refs/tags/*:refs/tags/* --prune-tags
+
       - name: Configure Git and add mirror remote
         env:
           MIRROR_OWNER: ${{ secrets.MIRROR_OWNER }}
@@ -26,15 +33,8 @@ jobs:
           MIRROR_TOKEN: ${{ secrets.MIRROR_TOKEN }}
         run: |
           set -euo pipefail
-
           git config --global --unset-all http.https://github.com/.extraheader || true
-
-          test -n "${MIRROR_OWNER}" || (echo "Missing MIRROR_OWNER" && exit 1)
-          test -n "${MIRROR_REPO}"  || (echo "Missing MIRROR_REPO" && exit 1)
-          test -n "${MIRROR_TOKEN}" || (echo "Missing MIRROR_TOKEN" && exit 1)
-
           git remote add mirror "https://${MIRROR_OWNER}:${MIRROR_TOKEN}@github.com/${MIRROR_OWNER}/${MIRROR_REPO}.git"
-
           git ls-remote --heads mirror > /dev/null
 
       - name: Push all refs to mirror (including deletions)
