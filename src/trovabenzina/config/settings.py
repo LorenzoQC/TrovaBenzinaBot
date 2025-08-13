@@ -1,10 +1,19 @@
 import os
 
+# Bot startup mode: "POLLING" (long-polling) or "WEBHOOK"
+TB_MODE = os.getenv("TB_MODE", "WEBHOOK")
+
 # Database connection URL (e.g. postgresql+asyncpg://user:pass@host:port/dbname)
 DATABASE_URL = os.getenv("DATABASE_URL")
 
+# Port to bind the HTTP server on when running in WEBHOOK mode
+PORT = int(os.getenv("PORT", "8080"))
+
 # Telegram webhook base URL
 BASE_URL = os.getenv("BASE_URL")
+
+# URL path segment to receive webhook updates (joined with BASE_URL)
+WEBHOOK_PATH = os.getenv("WEBHOOK_PATH", "webhook")
 
 # Logging level
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
