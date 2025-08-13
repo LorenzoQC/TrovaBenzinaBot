@@ -78,7 +78,6 @@ TRANSLATIONS = {
     "reset_statistics": "Azzera le statistiche ♻️",
     "statistics_reset": "✅ Statistiche resettate correttamente!\n\nUtilizza il comando /search per avviare una ricerca.",
 
-    "unknown_message_hint": "⚠️ Messaggio non riconosciuto!\n\nUtilizza il comando /help per l'elenco dei comandi disponibili.",
-    "unknown_command_hint": "⚠️ Comando non valido!\n\nUtilizza il comando /help per l'elenco dei comandi disponibili."
+    "unknown_command_hint": "⚠️ Comando non valido!\n\nUtilizza il comando /help per l'elenco dei comandi disponibili.",
 
 }

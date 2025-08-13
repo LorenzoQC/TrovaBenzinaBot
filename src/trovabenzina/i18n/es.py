@@ -78,4 +78,6 @@ TRANSLATIONS = {
     "reset_statistics": "Restablecer estadísticas ♻️",
     "statistics_reset": "✅ ¡Estadísticas restablecidas correctamente!\n\nUsa el comando /search para iniciar una búsqueda.",
 
+    "unknown_command_hint": "⚠️ ¡Comando no válido!\n\nUsa el comando /help para ver la lista de comandos disponibles.",
+
 }
