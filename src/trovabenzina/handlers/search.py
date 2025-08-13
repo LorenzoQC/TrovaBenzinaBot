@@ -41,6 +41,7 @@ from ..utils import (
     format_radius,
     inline_kb,
     reroute_command,
+    delete_last_profile_message,
 )
 
 __all__ = ["search_ep", "search_handler", "radius_callback_handler"]
@@ -84,6 +85,8 @@ async def search_ep(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> int:
     Returns:
         int: Conversation state expecting a location or text address.
     """
+    await delete_last_profile_message(ctx)
+
     lang = await get_user_language_code_by_tg_id(update.effective_user.id)
     await update.message.reply_text(
         t("ask_location", lang),

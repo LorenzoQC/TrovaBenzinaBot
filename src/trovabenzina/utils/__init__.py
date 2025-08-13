@@ -27,7 +27,13 @@ from .states import (
     STEP_START_FUEL,
     STEP_START_LANGUAGE,
 )
-from .telegram import inline_kb, inline_menu_from_map, with_back_row
+from .telegram import (
+    inline_kb,
+    inline_menu_from_map,
+    with_back_row,
+    remember_profile_message,
+    delete_last_profile_message,
+)
 
 __all__ = [
     # formatting
@@ -59,4 +65,6 @@ __all__ = [
     "inline_kb",
     "inline_menu_from_map",
     "with_back_row",
+    "remember_profile_message",
+    "delete_last_profile_message",
 ]

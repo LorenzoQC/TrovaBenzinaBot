@@ -20,6 +20,7 @@ from ..utils import (
     symbol_kilo,
     symbol_liter,
     symbol_eur,
+    delete_last_profile_message,
 )
 
 __all__ = ["statistics_ep", "statistics_handler"]
@@ -33,6 +34,8 @@ async def statistics_ep(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         update: Telegram update.
         context: Callback context.
     """
+    await delete_last_profile_message(context)
+
     tg_id = update.effective_user.id
     lang = await get_user_language_code_by_tg_id(tg_id)
 
