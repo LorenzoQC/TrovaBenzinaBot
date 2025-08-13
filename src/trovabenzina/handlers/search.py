@@ -18,7 +18,7 @@ from telegram.ext import (
     filters,
 )
 
-from ..api import get_station_address, search_stations, geocode_address
+from ..api import get_station_address, search_stations, geocode_address_with_country
 from ..config import GEOCODE_HARD_CAP
 from ..db import (
     get_user,
@@ -150,13 +150,22 @@ async def search_receive_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE) ->
             await update.message.reply_text(t("geocode_cap_reached", lang))
             return STEP_SEARCH_LOCATION
 
-        coords = await geocode_address(address)
+        # Country-aware geocoding
+        coords = await geocode_address_with_country(address)
         if not coords:
             await _clear_processing_toast(ctx, update.effective_chat.id)
             await update.message.reply_text(t("invalid_address", lang))
             return STEP_SEARCH_LOCATION
 
-        lat, lng = coords
+        lat, lng, country = coords
+
+        # If the address is not in Italy, inform the user and stop
+        if country and country != "IT":
+            await _clear_processing_toast(ctx, update.effective_chat.id)
+            await update.message.reply_text(t("italy_only", lang))
+            return STEP_SEARCH_LOCATION
+
+        # Cache if not already cached (idempotent)
         await save_geocache(address, lat, lng)
 
     ctx.user_data["search_lat"] = lat

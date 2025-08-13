@@ -44,6 +44,7 @@ TRANSLATIONS = {
     "send_location": "Send GPS location 🌍",
     "geocode_cap_reached": "⚠️ Address recognition currently unavailable!\n\nPlease try again later, or send your location.",
     "invalid_address": "⚠️ Invalid address!\n\nType another address or send your location.",
+    "italy_only": "⚠️ Search is only available in Italy!\n\nType an Italian address or send your location.",
     "processing_search": "Search in progress...🔍",
     "please_wait": "Working on it, please wait...⏳",
     "no_stations": "❌ No stations found",

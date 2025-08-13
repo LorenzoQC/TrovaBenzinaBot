@@ -44,6 +44,7 @@ TRANSLATIONS = {
     "send_location": "GPS 位置情報を送信 🌍",
     "geocode_cap_reached": "⚠️ 現在、住所の認識は利用できません！\n\n後でもう一度お試しいただくか、位置情報を送信してください。",
     "invalid_address": "⚠️ 無効な住所です！\n\n別の住所を入力するか、位置情報を送信してください。",
+    "italy_only": "⚠️ 検索はイタリア国内のみ利用可能です！\n\nイタリアの住所を入力するか、位置情報を送信してください。",
     "processing_search": "検索中です。🔍",
     "please_wait": "処理中です。少々お待ちください。⏳",
     "no_stations": "❌ スタンドが見つかりませんでした",

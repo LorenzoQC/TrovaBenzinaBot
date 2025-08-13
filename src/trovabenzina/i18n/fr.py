@@ -44,6 +44,7 @@ TRANSLATIONS = {
     "send_location": "Envoyer la position GPS 🌍",
     "geocode_cap_reached": "⚠️ La reconnaissance d’adresse est actuellement indisponible !\n\nVeuillez réessayer plus tard ou envoyer votre position.",
     "invalid_address": "⚠️ Adresse non valide !\n\nSaisissez une autre adresse ou envoyez votre position.",
+    "italy_only": "⚠️ La recherche est disponible uniquement en Italie !\n\nSaisissez une adresse en Italie ou envoyez votre position.",
     "processing_search": "Recherche en cours...🔍",
     "please_wait": "Un instant, s’il vous plaît...⏳",
     "no_stations": "❌ Aucune station trouvée",

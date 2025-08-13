@@ -44,6 +44,7 @@ TRANSLATIONS = {
     "send_location": "发送 GPS 位置 🌍",
     "geocode_cap_reached": "⚠️ 目前无法识别地址！\n\n请稍后再试，或者发送你的位置。",
     "invalid_address": "⚠️ 地址无效！\n\n请输入其他地址或发送你的位置。",
+    "italy_only": "⚠️ 搜索仅限意大利！\n\n请输入意大利地址或发送你的位置。",
     "processing_search": "正在搜索。🔍",
     "please_wait": "正在处理，请稍候。⏳",
     "no_stations": "❌ 未找到加油站",

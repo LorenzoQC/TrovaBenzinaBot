@@ -10,7 +10,7 @@ from trovabenzina.db import (
     save_geocache,
 )
 
-__all__ = ["geocode_address"]
+__all__ = ["geocode_address", "geocode_address_with_country"]
 
 log = logging.getLogger(__name__)
 
@@ -86,3 +86,75 @@ async def geocode_address(addr: str) -> Optional[Tuple[float, float]]:
         log.debug("Failed to update geocache for %r: %s", addr, exc)
 
     return lat, lng
+
+
+async def geocode_address_with_country(addr: str) -> Optional[Tuple[float, float, Optional[str]]]:
+    """Geocode an address and also detect the country (ISO2).
+
+    Unlike :func:`geocode_address`, this does *not* constrain the search to Italy.
+    It returns (lat, lng, country_code). If the country is not Italy, the caller
+    can decide how to handle it (e.g., show a message and stop).
+
+    Caching policy:
+      - If the result is in Italy (IT), it will be cached (address -> lat/lng).
+      - If the result is outside Italy, it will NOT be cached.
+
+    Args:
+        addr: Free-form address string.
+
+    Returns:
+        Optional[Tuple[float, float, Optional[str]]]: (lat, lng, country_code) or None.
+    """
+    # Try cached coordinates first; assume Italy for cached entries
+    record = await get_geocache(addr)
+    if record:
+        return record.lat, record.lng, "IT"
+
+    # Enforce monthly hard cap
+    count = await count_geocoding_month_calls()
+    if count >= GEOCODE_HARD_CAP:
+        log.info("Geocoding hard cap reached: %s >= %s", count, GEOCODE_HARD_CAP)
+        return None
+
+    params = {
+        "address": addr,
+        "language": "it",
+        "key": GOOGLE_API_KEY,
+    }
+
+    try:
+        timeout = aiohttp.ClientTimeout(total=10)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with session.get(MAPS_GEOCODING_URL, params=params) as resp:
+                if resp.status != 200:
+                    log.warning("Geocoding (country-aware) failed (status=%s) for %r", resp.status, addr)
+                    return None
+                data = await resp.json()
+    except Exception as exc:
+        log.warning("Geocoding (country-aware) error for %r: %s", addr, exc)
+        return None
+
+    results = data.get("results", [])
+    if not results:
+        return None
+
+    best = next((x for x in results if not x.get("partial_match")), results[0])
+
+    comps = best.get("address_components", []) or []
+    country_comp = next((c for c in comps if "country" in (c.get("types") or [])), None)
+    country_code = (country_comp or {}).get("short_name")
+
+    loc = best.get("geometry", {}).get("location") or {}
+    if "lat" not in loc or "lng" not in loc:
+        return None
+
+    lat, lng = float(loc["lat"]), float(loc["lng"])
+
+    # Cache only if in Italy
+    if country_code == "IT":
+        try:
+            await save_geocache(addr, lat, lng)
+        except Exception as exc:
+            log.debug("Failed to update geocache for %r: %s", addr, exc)
+
+    return lat, lng, country_code
