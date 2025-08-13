@@ -4,13 +4,15 @@
 
 Telegram bot that allows users to find the cheapest fuel stations nearby in Italy.
 
+
 ## 🚀 Features
 
-* **Fuel Station Search**: Finds stations offering the lowest prices for the selected fuel type near the user's
+* **Fuel stations search**: Finds stations offering the lowest prices for the selected fuel type near the user's
   location.
 * **Geolocation**: Uses Telegram's location sharing to quickly locate nearby fuel stations.
-* **Personalization**: Users can select their preferred language, fuel type, and service type.
-* **Intuitive Interface**: Simple commands and inline buttons for seamless navigation.
+* **Personalization**: Users can select their preferred language and fuel type.
+* **Savings statistics**: Displays personalized statistics on the savings achieved by the user thanks to the bot.
+* **Intuitive interface**: Simple commands and inline buttons for seamless navigation.
 
 ## 🛠️ Technologies used
 
@@ -22,26 +24,12 @@ Telegram bot that allows users to find the cheapest fuel stations nearby in Ital
 * ORM & async support: `SQLAlchemy[asyncio]>=2.0.0`
 * File operations: `aiofiles~=24.1.0`
 
-## 📦 Requirements
-
-Required packages are listed in the `requirements.txt` file. Install them using:
-
-```bash
-pip install -r requirements.txt
-```
 
 ## 🚀 Deployment
 
 The bot is currently deployed on [Railway](https://railway.app) and is available on Telegram
 as [@trovabenzinabot](https://t.me/trovabenzinabot).
 
-## 🌐 Environment variables configuration
-
-Set the following environment variables:
-
-* `TELEGRAM_TOKEN`: Telegram bot token
-* `DATABASE_URL`: PostgreSQL connection URL
-* `GOOGLE_MAPS_API_KEY`: API Key for Google Maps Geocoding
 
 ## 🔧 Project structure
 
@@ -71,6 +59,7 @@ Set the following environment variables:
 * `/start`: Start user profile setup.
 * `/search`: Search the cheapest fuel stations based on the current location.
 * `/profile`: View or edit your profile preferences (language, fuel type).
+* `/statistics`: View savings statistics.
 * `/help`: Show help information and available commands.
 
 ## 🤝 Contributing

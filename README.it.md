@@ -4,14 +4,16 @@
 
 Bot Telegram che permette agli utenti di trovare i distributori di carburante più economici in Italia.
 
+
 ## 🚀 Funzionalità
 
-* **Ricerca Distributori**: Individua i distributori con i prezzi più bassi per il tipo di carburante selezionato nelle
+* **Ricerca distributori**: Individua i distributori con i prezzi più bassi per il tipo di carburante selezionato nelle
   vicinanze dell'utente.
 * **Geolocalizzazione**: Utilizza la condivisione della posizione di Telegram per identificare rapidamente i
   distributori più vicini.
-* **Personalizzazione**: Gli utenti possono selezionare lingua, tipo di carburante e tipo di servizio preferiti.
-* **Interfaccia Intuitiva**: Comandi semplici e pulsanti inline per una navigazione immediata.
+* **Personalizzazione**: Gli utenti possono selezionare lingua e tipo di carburante preferiti.
+* **Statistiche di risparmio**: Mostra statistiche personalizzate sul risparmio ottenuto dall'utente grazie al bot.
+* **Interfaccia intuitiva**: Comandi semplici e pulsanti inline per una navigazione immediata.
 
 ## 🛠️ Tecnologie utilizzate
 
@@ -23,26 +25,12 @@ Bot Telegram che permette agli utenti di trovare i distributori di carburante pi
 * ORM e supporto async: `SQLAlchemy[asyncio]>=2.0.0`
 * Operazioni su file: `aiofiles~=24.1.0`
 
-## 📦 Requisiti
-
-I pacchetti necessari sono elencati nel file `requirements.txt`. Installali con:
-
-```bash
-pip install -r requirements.txt
-```
 
 ## 🚀 Deployment
 
 Il bot è attualmente deployato su [Railway](https://railway.app) ed è disponibile su Telegram
 come [@trovabenzinabot](https://t.me/trovabenzinabot).
 
-## 🌐 Configurazione variabili d'ambiente
-
-Imposta le seguenti variabili d'ambiente:
-
-* `TELEGRAM_TOKEN`: Token del bot Telegram
-* `DATABASE_URL`: URL di connessione a PostgreSQL
-* `GOOGLE_MAPS_API_KEY`: API Key per Google Maps Geocoding
 
 ## 🔧 Struttura del progetto
 
@@ -72,6 +60,7 @@ Imposta le seguenti variabili d'ambiente:
 * `/start`: Avvia la configurazione del profilo utente.
 * `/find`: Cerca i distributori di carburante più economici in base alla posizione attuale.
 * `/profile`: Visualizza o modifica le preferenze del profilo (lingua, tipo di carburante).
+* `/statistics`: Visualizza le statistiche di risparmio.
 * `/help`: Mostra informazioni di aiuto e comandi disponibili.
 
 ## 🤝 Contribuire
