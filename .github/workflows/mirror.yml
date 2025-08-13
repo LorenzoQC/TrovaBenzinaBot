@@ -2,11 +2,12 @@ name: Mirror to private repo
 
 on:
   push:
-    branches:
-      - '**'
-    tags:
-      - '**'
+    branches: ['**']
+    tags: ['**']
   delete: {}
+
+permissions:
+  contents: read
 
 jobs:
   mirror:
@@ -16,14 +17,27 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
-      - name: Push to mirror (all refs, including deletions)
+      - name: Configure Git and add mirror remote
         env:
-          MIRROR_TOKEN: ${{ secrets.MIRROR_TOKEN }}
           MIRROR_OWNER: ${{ secrets.MIRROR_OWNER }}
-          MIRROR_REPO: ${{ secrets.MIRROR_REPO }}
+          MIRROR_REPO:  ${{ secrets.MIRROR_REPO }}
+          MIRROR_TOKEN: ${{ secrets.MIRROR_TOKEN }}
         run: |
-          set -e
-          git remote add mirror https://${MIRROR_TOKEN}@github.com/${MIRROR_OWNER}/${MIRROR_REPO}.git
-          git fetch --all --tags --prune
-          git push --mirror mirror
+          set -euo pipefail
+
+          git config --global --unset-all http.https://github.com/.extraheader || true
+
+          test -n "${MIRROR_OWNER}" || (echo "Missing MIRROR_OWNER" && exit 1)
+          test -n "${MIRROR_REPO}"  || (echo "Missing MIRROR_REPO" && exit 1)
+          test -n "${MIRROR_TOKEN}" || (echo "Missing MIRROR_TOKEN" && exit 1)
+
+          git remote add mirror "https://${MIRROR_OWNER}:${MIRROR_TOKEN}@github.com/${MIRROR_OWNER}/${MIRROR_REPO}.git"
+
+          git ls-remote --heads mirror > /dev/null
+
+      - name: Push all refs to mirror (including deletions)
+        run: |
+          set -euo pipefail
+          git push --prune --mirror mirror
