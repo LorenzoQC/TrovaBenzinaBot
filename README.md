@@ -4,8 +4,7 @@
 
 Telegram bot that allows users to find the cheapest fuel stations nearby in Italy.
 
-
-## 🚀 Features
+## ✨ Features
 
 * **Fuel stations search**: Finds stations offering the lowest prices for the selected fuel type near the user's
   location.
@@ -30,8 +29,7 @@ Telegram bot that allows users to find the cheapest fuel stations nearby in Ital
 The bot is currently deployed on [Railway](https://railway.app) and is available on Telegram
 as [@trovabenzinabot](https://t.me/trovabenzinabot).
 
-
-## 🔧 Project structure
+## 🗂️ Project structure
 
 ```plaintext
 .

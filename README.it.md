@@ -4,8 +4,7 @@
 
 Bot Telegram che permette agli utenti di trovare i distributori di carburante più economici in Italia.
 
-
-## 🚀 Funzionalità
+## ✨ Funzionalità
 
 * **Ricerca distributori**: Individua i distributori con i prezzi più bassi per il tipo di carburante selezionato nelle
   vicinanze dell'utente.
@@ -31,8 +30,7 @@ Bot Telegram che permette agli utenti di trovare i distributori di carburante pi
 Il bot è attualmente deployato su [Railway](https://railway.app) ed è disponibile su Telegram
 come [@trovabenzinabot](https://t.me/trovabenzinabot).
 
-
-## 🔧 Struttura del progetto
+## 🗂️ Struttura del progetto
 
 ```plaintext
 .
